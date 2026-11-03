@@ -15,9 +15,13 @@ namespace UltimoActo.Player
         [Tooltip("Velocidad al correr en m/s")]
         [SerializeField] private float sprintSpeed = 5.5f;
 
+        [Header("Salto")]
+        [Tooltip("Fuerza/altura del salto en metros")]
+        [SerializeField] private float jumpHeight = 1.6f;
+
         [Header("Física y Gravedad")]
-        [SerializeField] private float gravity = -15f;
-        [SerializeField] private float groundedGravity = -2f;
+        [SerializeField] private float gravity = -18f;
+        [SerializeField] private float groundedGravity = -4f;
 
         private CharacterController controller;
         private Vector3 verticalVelocity;
@@ -44,19 +48,28 @@ namespace UltimoActo.Player
                 moveDirection.Normalize();
             }
 
-            controller.Move(moveDirection * currentSpeed * Time.deltaTime);
-
-            // Gravedad
-            if (controller.isGrounded && verticalVelocity.y < 0)
+            // Salto y Gravedad
+            if (controller.isGrounded)
             {
-                verticalVelocity.y = groundedGravity;
+                if (verticalVelocity.y < 0)
+                {
+                    verticalVelocity.y = groundedGravity;
+                }
+
+                // Salto con la barra espaciadora
+                if (ReadJumpInput())
+                {
+                    verticalVelocity.y = Mathf.Sqrt(2f * Mathf.Abs(gravity) * jumpHeight);
+                }
             }
             else
             {
                 verticalVelocity.y += gravity * Time.deltaTime;
             }
 
-            controller.Move(verticalVelocity * Time.deltaTime);
+            // Movimiento unificado en una sola llamada para suavidad absoluta en escaleras y rampas
+            Vector3 finalMovement = (moveDirection * currentSpeed) + verticalVelocity;
+            controller.Move(finalMovement * Time.deltaTime);
         }
 
         private Vector2 ReadMoveInput()
@@ -86,6 +99,16 @@ namespace UltimoActo.Player
             return keyboard != null && (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed);
 #else
             return Input.GetKey(KeyCode.LeftShift);
+#endif
+        }
+
+        private bool ReadJumpInput()
+        {
+#if ENABLE_INPUT_SYSTEM
+            var keyboard = Keyboard.current;
+            return keyboard != null && keyboard.spaceKey.wasPressedThisFrame;
+#else
+            return Input.GetKeyDown(KeyCode.Space);
 #endif
         }
     }

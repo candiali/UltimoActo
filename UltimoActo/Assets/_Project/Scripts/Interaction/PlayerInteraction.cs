@@ -25,6 +25,15 @@ namespace UltimoActo.Interaction
 
         public IInteractable CurrentInteractable => currentInteractable;
 
+        private void Awake()
+        {
+            if (playerCamera == null)
+            {
+                playerCamera = GetComponentInChildren<Camera>();
+                if (playerCamera == null) playerCamera = Camera.main;
+            }
+        }
+
         private void Start()
         {
             if (playerCamera == null)

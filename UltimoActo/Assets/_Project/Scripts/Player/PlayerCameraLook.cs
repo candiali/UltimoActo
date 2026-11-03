@@ -23,6 +23,16 @@ namespace UltimoActo.Player
 
         public Transform CameraTransform => cameraTransform;
 
+        private void Awake()
+        {
+            if (cameraTransform == null)
+            {
+                Camera c = GetComponentInChildren<Camera>();
+                if (c != null) cameraTransform = c.transform;
+                else if (Camera.main != null) cameraTransform = Camera.main.transform;
+            }
+        }
+
         private void Start()
         {
             if (cameraTransform == null && Camera.main != null)
