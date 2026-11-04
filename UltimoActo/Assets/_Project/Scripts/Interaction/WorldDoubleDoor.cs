@@ -25,6 +25,7 @@ namespace UltimoActo.Interaction
         [SerializeField] private bool isLocked = false;
         [SerializeField] private string requiredKeyId = "";
         [SerializeField] private bool isOpen = false;
+        [SerializeField] private string lockedDescription = "Puertas atrancadas desde el interior";
 
         private Quaternion leftClosedRot;
         private Quaternion leftOpenRot;
@@ -40,8 +41,13 @@ namespace UltimoActo.Interaction
         {
             get
             {
-                if (isLocked) return "[E] Puertas atrancadas desde el interior";
-                return isOpen ? "[E] Cerrar puertas dobles" : "[E] Abrir puertas de la Academia";
+                if (isLocked)
+                {
+                    if (!string.IsNullOrEmpty(lockedDescription))
+                        return $"[E] {lockedDescription}";
+                    return "[E] Puertas atrancadas desde el interior";
+                }
+                return isOpen ? "[E] Cerrar puertas dobles" : "[E] Abrir puertas";
             }
         }
 
@@ -49,14 +55,30 @@ namespace UltimoActo.Interaction
         {
             if (leftDoorHinge != null)
             {
-                leftClosedRot = leftDoorHinge.localRotation;
-                leftOpenRot = leftClosedRot * Quaternion.Euler(0f, -openAngle, 0f);
+                if (isOpen)
+                {
+                    leftOpenRot = leftDoorHinge.localRotation;
+                    leftClosedRot = leftOpenRot * Quaternion.Euler(0f, -openAngle, 0f);
+                }
+                else
+                {
+                    leftClosedRot = leftDoorHinge.localRotation;
+                    leftOpenRot = leftClosedRot * Quaternion.Euler(0f, openAngle, 0f);
+                }
             }
 
             if (rightDoorHinge != null)
             {
-                rightClosedRot = rightDoorHinge.localRotation;
-                rightOpenRot = rightClosedRot * Quaternion.Euler(0f, openAngle, 0f);
+                if (isOpen)
+                {
+                    rightOpenRot = rightDoorHinge.localRotation;
+                    rightClosedRot = rightOpenRot * Quaternion.Euler(0f, openAngle, 0f);
+                }
+                else
+                {
+                    rightClosedRot = rightDoorHinge.localRotation;
+                    rightOpenRot = rightClosedRot * Quaternion.Euler(0f, -openAngle, 0f);
+                }
             }
         }
 
@@ -123,6 +145,19 @@ namespace UltimoActo.Interaction
         {
             isLocked = locked;
             if (!string.IsNullOrEmpty(keyId)) requiredKeyId = keyId;
+        }
+
+        public void Configure(Transform leftHinge, Transform rightHinge, float angle = 90f, float duration = 1.0f, bool startOpen = false, bool locked = false, string keyId = "", string doorId = "", string lockDesc = "Puertas atrancadas desde el interior")
+        {
+            leftDoorHinge = leftHinge;
+            rightDoorHinge = rightHinge;
+            openAngle = angle;
+            animationDuration = duration;
+            isOpen = startOpen;
+            isLocked = locked;
+            requiredKeyId = keyId;
+            if (!string.IsNullOrEmpty(doorId)) id = doorId;
+            if (!string.IsNullOrEmpty(lockDesc)) lockedDescription = lockDesc;
         }
     }
 }

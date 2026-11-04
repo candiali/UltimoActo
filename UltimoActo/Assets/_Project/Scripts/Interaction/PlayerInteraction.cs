@@ -3,6 +3,7 @@ using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
+using UltimoActo.UI;
 
 namespace UltimoActo.Interaction
 {
@@ -13,7 +14,7 @@ namespace UltimoActo.Interaction
         [SerializeField] private Camera playerCamera;
 
         [Tooltip("Distancia máxima de interacción en metros")]
-        [SerializeField] private float maxDistance = 2.5f;
+        [SerializeField] private float maxDistance = 3.8f;
 
         [Tooltip("Capas con las que puede colisionar el rayo de interacción")]
         [SerializeField] private LayerMask interactionLayers = ~0;
@@ -52,11 +53,25 @@ namespace UltimoActo.Interaction
         private void PerformRaycast()
         {
             if (playerCamera == null) return;
+            if (DocumentUI.Instance != null && DocumentUI.Instance.IsOpen) return;
 
             Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
             if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, interactionLayers))
             {
-                IInteractable interactable = hit.collider.GetComponentInParent<IInteractable>();
+                IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+                if (interactable == null)
+                {
+                    var behaviours = hit.collider.GetComponentsInParent<MonoBehaviour>();
+                    for (int i = 0; i < behaviours.Length; i++)
+                    {
+                        if (behaviours[i] is IInteractable it)
+                        {
+                            interactable = it;
+                            break;
+                        }
+                    }
+                }
+
                 if (interactable != null)
                 {
                     if (interactable != currentInteractable)
@@ -79,16 +94,20 @@ namespace UltimoActo.Interaction
         private void CheckInteractionInput()
         {
             if (currentInteractable == null) return;
+            if (DocumentUI.Instance != null && DocumentUI.Instance.IsOpen) return;
 
             bool interactPressed = false;
 #if ENABLE_INPUT_SYSTEM
             var keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.eKey.wasPressedThisFrame)
+            var mouse = Mouse.current;
+            if ((keyboard != null && (keyboard.eKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame)) ||
+                (mouse != null && mouse.leftButton.wasPressedThisFrame))
             {
                 interactPressed = true;
             }
-#else
-            if (Input.GetKeyDown(KeyCode.E))
+#endif
+#if !ENABLE_INPUT_SYSTEM || ENABLE_LEGACY_INPUT_MANAGER
+            if (!interactPressed && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)))
             {
                 interactPressed = true;
             }

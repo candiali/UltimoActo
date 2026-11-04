@@ -20,6 +20,7 @@ namespace UltimoActo.Interaction
         [SerializeField] private bool isLocked = false;
         [SerializeField] private string requiredKeyId = "";
         [SerializeField] private bool isOpen = false;
+        [SerializeField] private string lockedDescription = "Cerrada con llave";
 
         private Quaternion closedRotation;
         private Quaternion openRotation;
@@ -35,6 +36,8 @@ namespace UltimoActo.Interaction
             {
                 if (isLocked)
                 {
+                    if (!string.IsNullOrEmpty(lockedDescription))
+                        return $"[E] {lockedDescription}";
                     return "[E] Cerrada con llave";
                 }
                 return isOpen ? "[E] Cerrar puerta" : "[E] Abrir puerta";
@@ -45,8 +48,16 @@ namespace UltimoActo.Interaction
         {
             if (doorHinge == null) doorHinge = transform;
 
-            closedRotation = doorHinge.localRotation;
-            openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+            if (isOpen)
+            {
+                openRotation = doorHinge.localRotation;
+                closedRotation = openRotation * Quaternion.Euler(0f, -openAngle, 0f);
+            }
+            else
+            {
+                closedRotation = doorHinge.localRotation;
+                openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+            }
         }
 
         public bool CanInteract(GameObject player)
@@ -103,6 +114,18 @@ namespace UltimoActo.Interaction
         {
             isLocked = locked;
             if (!string.IsNullOrEmpty(keyId)) requiredKeyId = keyId;
+        }
+
+        public void Configure(Transform hinge, float angle = 90f, float duration = 0.8f, bool startOpen = false, bool locked = false, string keyId = "", string doorId = "", string lockDesc = "Cerrada con llave")
+        {
+            doorHinge = hinge;
+            openAngle = angle;
+            animationDuration = duration;
+            isOpen = startOpen;
+            isLocked = locked;
+            requiredKeyId = keyId;
+            if (!string.IsNullOrEmpty(doorId)) id = doorId;
+            if (!string.IsNullOrEmpty(lockDesc)) lockedDescription = lockDesc;
         }
     }
 }

@@ -29,9 +29,15 @@ namespace UltimoActo.Narrative
 
         public void Interact(GameObject player)
         {
-            if (DocumentUI.Instance != null)
+            DocumentUI ui = DocumentUI.Instance;
+            if (ui == null)
             {
-                DocumentUI.Instance.OpenDocument(this);
+                ui = Object.FindFirstObjectByType<DocumentUI>(FindObjectsInactive.Include);
+            }
+
+            if (ui != null)
+            {
+                ui.OpenDocument(this);
             }
             else
             {

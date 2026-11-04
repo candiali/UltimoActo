@@ -10,7 +10,7 @@ namespace UltimoActo.UI
 {
     public class DocumentUI : MonoBehaviour
     {
-        public static DocumentUI Instance { get; private set; }
+        public static DocumentUI Instance { get; set; }
 
         [Header("Elementos de UI")]
         [SerializeField] private GameObject documentPanel;

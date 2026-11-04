@@ -50,5 +50,12 @@ namespace UltimoActo.Interaction
             // Desactivamos el objeto en la escena
             gameObject.SetActive(false);
         }
+
+        public void Configure(string itemId, string itemName, ItemType type = ItemType.Key)
+        {
+            id = itemId;
+            displayName = itemName;
+            itemType = type;
+        }
     }
 }

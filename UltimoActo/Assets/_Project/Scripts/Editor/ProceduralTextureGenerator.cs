@@ -29,6 +29,8 @@ namespace UltimoActo.Editor
             GenerateWallIvoryTextures();
             GenerateFacadeTextures();
             GenerateMahoganyTextures();
+            GenerateGreenVelvetTextures();
+            GenerateLeatherTextures();
 
             AssetDatabase.Refresh();
             Debug.Log("<color=green>[Último Acto]</color> ¡Todas las texturas PBR y Normal Maps generadas con éxito!");
@@ -321,6 +323,71 @@ namespace UltimoActo.Editor
             GenerateNormalMapFromHeights(heightMap, normal, 1.5f);
             SaveTexture(albedo, "Tex_Mahogany_Albedo.png", false);
             SaveTexture(normal, "Tex_Mahogany_Normal.png", true);
+        }
+
+        private static void GenerateGreenVelvetTextures()
+        {
+            int size = 512;
+            Texture2D albedo = new Texture2D(size, size, TextureFormat.RGBA32, true);
+            Texture2D normal = new Texture2D(size, size, TextureFormat.RGBA32, true);
+            float[,] heightMap = new float[size, size];
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float u = (float)x / size;
+                    float v = (float)y / size;
+
+                    float weave = Mathf.Sin(u * 80f) * Mathf.Cos(v * 80f) * 0.15f;
+                    float pile = Mathf.PerlinNoise(x * 0.1f, y * 0.1f) * 0.25f;
+
+                    heightMap[x, y] = weave + pile;
+
+                    Color baseGreen = new Color(0.06f, 0.18f, 0.10f);
+                    Color highlightGreen = new Color(0.12f, 0.28f, 0.16f);
+
+                    Color pixelColor = Color.Lerp(baseGreen, highlightGreen, pile + weave);
+                    albedo.SetPixel(x, y, pixelColor);
+                }
+            }
+
+            GenerateNormalMapFromHeights(heightMap, normal, 1.8f);
+            SaveTexture(albedo, "Tex_GreenVelvet_Albedo.png", false);
+            SaveTexture(normal, "Tex_GreenVelvet_Normal.png", true);
+        }
+
+        private static void GenerateLeatherTextures()
+        {
+            int size = 512;
+            Texture2D albedo = new Texture2D(size, size, TextureFormat.RGBA32, true);
+            Texture2D normal = new Texture2D(size, size, TextureFormat.RGBA32, true);
+            float[,] heightMap = new float[size, size];
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float u = (float)x / size;
+                    float v = (float)y / size;
+
+                    // Textura de cuero gastado con microgrietas
+                    float grain = Mathf.PerlinNoise(x * 0.25f, y * 0.25f) * 0.4f;
+                    float wrinkle = Mathf.PerlinNoise(u * 8f, v * 8f) * 0.3f;
+
+                    heightMap[x, y] = grain + wrinkle;
+
+                    Color darkLeather = new Color(0.14f, 0.08f, 0.06f);
+                    Color wornLeather = new Color(0.24f, 0.14f, 0.09f);
+
+                    Color pixelColor = Color.Lerp(darkLeather, wornLeather, grain * 0.7f);
+                    albedo.SetPixel(x, y, pixelColor);
+                }
+            }
+
+            GenerateNormalMapFromHeights(heightMap, normal, 2.4f);
+            SaveTexture(albedo, "Tex_Leather_Albedo.png", false);
+            SaveTexture(normal, "Tex_Leather_Normal.png", true);
         }
 
         private static void GenerateNormalMapFromHeights(float[,] heights, Texture2D normalTex, float strength)

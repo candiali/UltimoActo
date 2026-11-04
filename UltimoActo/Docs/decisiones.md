@@ -18,3 +18,14 @@
 - **Física de Escaleras**: Integración de rampa invisible de precisión a -17.1° combinada con 12 peldaños sólidos y placa base anti-abismo `Bedrock_Safety_Ground` de 70m × 160m. Movimiento unificado de un solo paso en `PlayerMovement.cs` para evitar cualquier bloqueo o caída.
 - **Texturizado y Relieves**: Materiales PBR con albedo en base blanca pura, normal maps generados y elementos arquitectónicos 3D: alfombra roja damasco con varillas doradas en cada escalón, paneles Boiserie en relieve, molduras de zócalo en caoba, cenefa de mármol negro y lámpara de araña deteriorada.
 - **Auto-Rebuild en Editor**: Marcado `[InitializeOnLoad]` en `Section1SceneBuilder.cs` para garantizar que la escena se actualice automáticamente en el editor sin depender de ejecuciones manuales.
+
+## [2026-11-03] Sección 2 — Recepción y Administración
+- **Integración Arquitectónica Continua**: Se conecta el Vestíbulo de la Sección 1 (`Arch_Administration` a $X = -11\text{m}$, $Z = 20\text{m}$) con las 5 áreas de administración y se cierra el circuito circular desembocando de nuevo en el Pasillo Principal a $X = -4\text{m}$, $Z = 48\text{m}$.
+- **Salto y Fluidez de Movimiento**: Se añade la acción de salto (`jumpHeight = 1.6m`) con barra espaciadora (`[Space]`) y se retira el muro de colisión residual `Stairs_Sub_Base` de la escalinata para garantizar ascenso suave tanto caminando como saltando.
+- **Áreas Ambientadas y Narrativa Ambiental**:
+  1. *Recepción Antigua*: Mostrador en L de caoba, timbre de bronce, teléfono de disco, reloj parado a las 20:15, calendario de 1924 y Libro de Visitas interactivo.
+  2. *Oficina de Administración*: Gran escritorio de caoba con cartas confidenciales sin enviar, sillón de cuero capitoné, ventanal con cortinas borgoña y retrato al óleo de la directora Isadora Vale.
+  3. *Archivo de Expedientes*: Estanterías metálicas altas, cajas de archivo desordenadas, estante volcado, mesa de examen y expedientes confidenciales interactivos de Elena Vesper y Mara Bell.
+  4. *Sala de Espera*: Sillones de terciopelo verde esmeralda y borgoña, mesita baja con folletos de la academia, fotografía histórica de la compañía de 1923 con un espacio vacío inexplicable y una silla solitaria encarada a la pared.
+  5. *Pasillo de los Retratos*: Galería clásica con molduras doradas, 8 retratos enmarcados de antiguas primeras bailarinas con placas de latón y cuadro central de *El Lago de las Sombras*.
+- **Modal de Lectura de Documentos**: Interfaz UI en pantalla con fondo de viñeta oscura, tarjeta ornamental con marco dorado, tipografía nítida y cierre interactivo con `[E]` o `[Escape]`.
