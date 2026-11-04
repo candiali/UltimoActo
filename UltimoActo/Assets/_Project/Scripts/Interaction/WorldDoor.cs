@@ -46,6 +46,16 @@ namespace UltimoActo.Interaction
 
         private void Awake()
         {
+            InitRotations();
+        }
+
+        private void Start()
+        {
+            InitRotations();
+        }
+
+        public void InitRotations()
+        {
             if (doorHinge == null) doorHinge = transform;
 
             if (isOpen)
@@ -126,6 +136,7 @@ namespace UltimoActo.Interaction
             requiredKeyId = keyId;
             if (!string.IsNullOrEmpty(doorId)) id = doorId;
             if (!string.IsNullOrEmpty(lockDesc)) lockedDescription = lockDesc;
+            InitRotations();
         }
     }
 }

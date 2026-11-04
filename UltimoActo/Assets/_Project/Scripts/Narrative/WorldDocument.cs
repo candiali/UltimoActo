@@ -41,7 +41,7 @@ namespace UltimoActo.Narrative
             }
             else
             {
-                Debug.Log($"[Documento] {title}:\n{content}");
+                Debug.LogWarning($"[WorldDocument] No se encontró DocumentUI en la escena para '{title}'. Mostrando en consola:\n{content}");
             }
         }
     }

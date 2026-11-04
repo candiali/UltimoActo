@@ -94,7 +94,7 @@ namespace UltimoActo.Interaction
         private void CheckInteractionInput()
         {
             if (currentInteractable == null) return;
-            if (DocumentUI.Instance != null && DocumentUI.Instance.IsOpen) return;
+            if (DocumentUI.Instance != null && (DocumentUI.Instance.IsOpen || Time.unscaledTime - DocumentUI.Instance.LastClosedTime < 0.35f || Time.frameCount == DocumentUI.Instance.LastClosedFrame)) return;
 
             bool interactPressed = false;
 #if ENABLE_INPUT_SYSTEM

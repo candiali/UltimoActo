@@ -43,7 +43,7 @@ namespace UltimoActo.Editor
         private const string ElenaPortraitPath = "Assets/_Project/Textures/Portraits/Elena_Vesper_Portrait.jpg";
         private const string IsadoraPortraitPath = "Assets/_Project/Textures/Portraits/Isadora_Vale_Portrait.jpg";
         private const string TroupePhotoPath = "Assets/_Project/Textures/Portraits/Troupe_1923_Photo.jpg";
-        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1And2_V9";
+        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1And2_V11";
 
         static Section1SceneBuilder()
         {
@@ -1386,6 +1386,19 @@ namespace UltimoActo.Editor
 
             WorldDoor door = root.AddComponent<WorldDoor>();
             door.Configure(hinge.transform, 90f, 0.9f, false, isLocked, requiredKeyId, name, lockDesc);
+            SerializedObject serDoor = new SerializedObject(door);
+            SerializedProperty pDHinge = serDoor.FindProperty("doorHinge");
+            if (pDHinge != null) pDHinge.objectReferenceValue = hinge.transform;
+            SerializedProperty pDLocked = serDoor.FindProperty("isLocked");
+            if (pDLocked != null) pDLocked.boolValue = isLocked;
+            SerializedProperty pDKey = serDoor.FindProperty("requiredKeyId");
+            if (pDKey != null) pDKey.stringValue = requiredKeyId;
+            SerializedProperty pDId = serDoor.FindProperty("id");
+            if (pDId != null) pDId.stringValue = name;
+            SerializedProperty pDDesc = serDoor.FindProperty("lockedDescription");
+            if (pDDesc != null) pDDesc.stringValue = lockDesc;
+            serDoor.ApplyModifiedProperties();
+            EditorUtility.SetDirty(door);
             return root;
         }
 
@@ -1440,6 +1453,21 @@ namespace UltimoActo.Editor
 
             WorldDoubleDoor dd = root.AddComponent<WorldDoubleDoor>();
             dd.Configure(leftHinge.transform, rightHinge.transform, openAngle, 1.1f, startOpen, isLocked, requiredKeyId, name, lockDesc);
+            SerializedObject serDD = new SerializedObject(dd);
+            SerializedProperty pLHinge = serDD.FindProperty("leftDoorHinge");
+            if (pLHinge != null) pLHinge.objectReferenceValue = leftHinge.transform;
+            SerializedProperty pRHinge = serDD.FindProperty("rightDoorHinge");
+            if (pRHinge != null) pRHinge.objectReferenceValue = rightHinge.transform;
+            SerializedProperty pDDLocked = serDD.FindProperty("isLocked");
+            if (pDDLocked != null) pDDLocked.boolValue = isLocked;
+            SerializedProperty pDDKey = serDD.FindProperty("requiredKeyId");
+            if (pDDKey != null) pDDKey.stringValue = requiredKeyId;
+            SerializedProperty pDDId = serDD.FindProperty("id");
+            if (pDDId != null) pDDId.stringValue = name;
+            SerializedProperty pDDDesc = serDD.FindProperty("lockedDescription");
+            if (pDDDesc != null) pDDDesc.stringValue = lockDesc;
+            serDD.ApplyModifiedProperties();
+            EditorUtility.SetDirty(dd);
             return root;
         }
 
@@ -1615,7 +1643,7 @@ namespace UltimoActo.Editor
         private static void CreateDocumentViewerModal(GameObject canvasObj)
         {
             GameObject docPanel = new GameObject("DocumentViewer_Panel");
-            docPanel.transform.parent = canvasObj.transform;
+            docPanel.transform.SetParent(canvasObj.transform, false);
             RectTransform panelRect = docPanel.AddComponent<RectTransform>();
             panelRect.anchorMin = Vector2.zero;
             panelRect.anchorMax = Vector2.one;
@@ -1626,7 +1654,7 @@ namespace UltimoActo.Editor
             bg.color = new Color(0.04f, 0.04f, 0.06f, 0.94f);
 
             GameObject card = new GameObject("Card");
-            card.transform.parent = docPanel.transform;
+            card.transform.SetParent(docPanel.transform, false);
             RectTransform cardRect = card.AddComponent<RectTransform>();
             cardRect.anchoredPosition = Vector2.zero;
             cardRect.sizeDelta = new Vector2(860f, 620f);
@@ -1634,7 +1662,7 @@ namespace UltimoActo.Editor
             cardBg.color = new Color(0.12f, 0.11f, 0.12f, 0.98f);
 
             GameObject border = new GameObject("Gold_Card_Border");
-            border.transform.parent = card.transform;
+            border.transform.SetParent(card.transform, false);
             RectTransform bRect = border.AddComponent<RectTransform>();
             bRect.anchorMin = Vector2.zero;
             bRect.anchorMax = Vector2.one;
@@ -1646,7 +1674,7 @@ namespace UltimoActo.Editor
             border.transform.SetAsFirstSibling();
 
             GameObject titleObj = new GameObject("TitleText");
-            titleObj.transform.parent = card.transform;
+            titleObj.transform.SetParent(card.transform, false);
             TextMeshProUGUI titleTMP = titleObj.AddComponent<TextMeshProUGUI>();
             titleTMP.fontSize = 28;
             titleTMP.fontStyle = FontStyles.Bold;
@@ -1657,7 +1685,7 @@ namespace UltimoActo.Editor
             tRect.sizeDelta = new Vector2(800f, 45f);
 
             GameObject contentObj = new GameObject("ContentText");
-            contentObj.transform.parent = card.transform;
+            contentObj.transform.SetParent(card.transform, false);
             TextMeshProUGUI contentTMP = contentObj.AddComponent<TextMeshProUGUI>();
             contentTMP.fontSize = 20;
             contentTMP.lineSpacing = 16f;
@@ -1668,7 +1696,7 @@ namespace UltimoActo.Editor
             cRect.sizeDelta = new Vector2(760f, 440f);
 
             GameObject hintObj = new GameObject("CloseHintText");
-            hintObj.transform.parent = card.transform;
+            hintObj.transform.SetParent(card.transform, false);
             TextMeshProUGUI hintTMP = hintObj.AddComponent<TextMeshProUGUI>();
             hintTMP.text = "[E] o [Escape] para cerrar documento";
             hintTMP.fontSize = 17;
@@ -1689,6 +1717,7 @@ namespace UltimoActo.Editor
             SerializedProperty pHint = serUI.FindProperty("closeHintText");
             if (pHint != null) pHint.objectReferenceValue = hintTMP;
             serUI.ApplyModifiedProperties();
+            EditorUtility.SetDirty(docUI);
 
             docPanel.SetActive(false);
         }
