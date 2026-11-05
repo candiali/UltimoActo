@@ -105,7 +105,11 @@ namespace UltimoActo.UI
         public void OpenDocument(WorldDocument doc)
         {
             if (doc == null) return;
+            ShowDocument(doc.Title, doc.Content, doc.Subtitle);
+        }
 
+        public void ShowDocument(string title, string body, string subtitle = "")
+        {
             EnsureReferences();
 
             if (documentPanel == null)
@@ -118,12 +122,12 @@ namespace UltimoActo.UI
             openTime = Time.unscaledTime;
             documentPanel.SetActive(true);
 
-            if (titleText != null) titleText.text = doc.Title;
-            if (subtitleText != null) subtitleText.text = doc.Subtitle;
-            if (bodyText != null) bodyText.text = doc.Content;
+            if (titleText != null) titleText.text = title;
+            if (subtitleText != null) subtitleText.text = subtitle;
+            if (bodyText != null) bodyText.text = body;
             if (closeHintText != null) closeHintText.text = "Presiona [E] o [Esc] para cerrar";
 
-            Debug.Log($"<color=cyan>[DocumentUI]</color> Abriendo documento en pantalla: {doc.Title}");
+            Debug.Log($"<color=cyan>[DocumentUI]</color> Abriendo documento en pantalla: {title}");
 
             // Pausar rotación de cámara para leer cómodamente
             if (playerCameraLook != null)
