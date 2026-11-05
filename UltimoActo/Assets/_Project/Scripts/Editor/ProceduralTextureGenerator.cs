@@ -31,6 +31,8 @@ namespace UltimoActo.Editor
             GenerateMahoganyTextures();
             GenerateGreenVelvetTextures();
             GenerateLeatherTextures();
+            GenerateCeramicTileTextures();
+            GenerateRustedMetalTextures();
 
             AssetDatabase.Refresh();
             Debug.Log("<color=green>[Último Acto]</color> ¡Todas las texturas PBR y Normal Maps generadas con éxito!");
@@ -388,6 +390,81 @@ namespace UltimoActo.Editor
             GenerateNormalMapFromHeights(heightMap, normal, 2.4f);
             SaveTexture(albedo, "Tex_Leather_Albedo.png", false);
             SaveTexture(normal, "Tex_Leather_Normal.png", true);
+        }
+
+        private static void GenerateCeramicTileTextures()
+        {
+            int size = 512;
+            Texture2D albedo = new Texture2D(size, size, TextureFormat.RGBA32, true);
+            Texture2D normal = new Texture2D(size, size, TextureFormat.RGBA32, true);
+            float[,] heightMap = new float[size, size];
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    // Baldosas cuadradas clásicas marfil envejecido con juntas oscurecidas por la humedad
+                    float tileSize = 64f;
+                    float uTile = (x % tileSize) / tileSize;
+                    float vTile = (y % tileSize) / tileSize;
+
+                    float groutX = Mathf.SmoothStep(0f, 0.09f, uTile) * Mathf.SmoothStep(0f, 0.09f, 1f - uTile);
+                    float groutY = Mathf.SmoothStep(0f, 0.09f, vTile) * Mathf.SmoothStep(0f, 0.09f, 1f - vTile);
+                    float tileMask = groutX * groutY;
+
+                    float dampNoise = Mathf.PerlinNoise(x * 0.025f, y * 0.025f);
+                    float fineCrack = Mathf.PerlinNoise(x * 0.12f, y * 0.12f) * 0.12f;
+
+                    heightMap[x, y] = tileMask * 0.85f + fineCrack;
+
+                    Color ivoryTile = new Color(0.84f, 0.81f, 0.74f);
+                    Color dampStain = new Color(0.58f, 0.56f, 0.50f);
+                    Color darkGrout = new Color(0.22f, 0.21f, 0.19f);
+
+                    Color surface = Color.Lerp(ivoryTile, dampStain, dampNoise * 0.55f);
+                    Color pixelColor = Color.Lerp(darkGrout, surface, tileMask);
+                    albedo.SetPixel(x, y, pixelColor);
+                }
+            }
+
+            GenerateNormalMapFromHeights(heightMap, normal, 2.2f);
+            SaveTexture(albedo, "Tex_CeramicTile_Albedo.png", false);
+            SaveTexture(normal, "Tex_CeramicTile_Normal.png", true);
+        }
+
+        private static void GenerateRustedMetalTextures()
+        {
+            int size = 512;
+            Texture2D albedo = new Texture2D(size, size, TextureFormat.RGBA32, true);
+            Texture2D normal = new Texture2D(size, size, TextureFormat.RGBA32, true);
+            float[,] heightMap = new float[size, size];
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float u = (float)x / size;
+                    float v = (float)y / size;
+
+                    float rustNoise = Mathf.PerlinNoise(u * 9f, v * 9f);
+                    float scratch = Mathf.PerlinNoise(u * 40f, v * 6f) * 0.2f;
+                    float rustPatch = Mathf.SmoothStep(0.52f, 0.75f, rustNoise);
+
+                    heightMap[x, y] = (1f - rustPatch * 0.4f) + scratch;
+
+                    Color paintedSteel = new Color(0.24f, 0.27f, 0.28f);
+                    Color oxidizedRust = new Color(0.36f, 0.20f, 0.13f);
+                    Color darkWear = new Color(0.14f, 0.15f, 0.16f);
+
+                    Color baseCol = Color.Lerp(paintedSteel, darkWear, scratch * 2f);
+                    Color pixelColor = Color.Lerp(baseCol, oxidizedRust, rustPatch * 0.75f);
+                    albedo.SetPixel(x, y, pixelColor);
+                }
+            }
+
+            GenerateNormalMapFromHeights(heightMap, normal, 1.8f);
+            SaveTexture(albedo, "Tex_LockerMetal_Albedo.png", false);
+            SaveTexture(normal, "Tex_LockerMetal_Normal.png", true);
         }
 
         private static void GenerateNormalMapFromHeights(float[,] heights, Texture2D normalTex, float strength)

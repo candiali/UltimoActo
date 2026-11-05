@@ -33,6 +33,13 @@ namespace UltimoActo.Editor
     /// 8. Archivo de expedientes (estanterías altas, cajas caídas, mesa de examen, expedientes confidenciales de Elena Vesper y Mara Bell)
     /// 9. Sala de espera (sillones de terciopelo verde y borgoña, mesa baja con folletos de 1923, foto del elenco con hueco fantasmal)
     /// 10. Pasillo de los retratos (galería de 8 primeras bailarinas, cuadro de 'El Lago de las Sombras', conexión circular con el pasillo principal)
+    ///
+    /// --- SECCIÓN 3: VESTUARIOS Y HABITACIONES DE ALUMNAS ---
+    /// 11. Vestuario femenino (bancos de madera, percheros metálicos con tutús, armarios, zapatillas con nombres, lista de alumnas, reloj detenido)
+    /// 12. Tocadores con espejos (tocadores de caoba con espejos ovalados, bombillas antiguas, anomalía psicológica de silueta en reflejo, nota tras espejo)
+    /// 13. Taquillas personales (filas de taquillas metálicas oxidadas bajo luz fría fluorescente, taquilla Nº 14 de Elena Vesper con llave de su habitación)
+    /// 14. Habitación de Elena (cama marfil, escritorio con cajón de fondo falso, joyero, carta del 16 de octubre, foto sin retocar que contradice el retrato)
+    /// 15. Lavabos y duchas antiguas (lavabos de porcelana, espejos, tuberías vistas, cabinas de ducha con anomalía acústica de goteo al alejarse)
     /// </summary>
     [InitializeOnLoad]
     public static class Section1SceneBuilder
@@ -43,7 +50,7 @@ namespace UltimoActo.Editor
         private const string ElenaPortraitPath = "Assets/_Project/Textures/Portraits/Elena_Vesper_Portrait.jpg";
         private const string IsadoraPortraitPath = "Assets/_Project/Textures/Portraits/Isadora_Vale_Portrait.jpg";
         private const string TroupePhotoPath = "Assets/_Project/Textures/Portraits/Troupe_1923_Photo.jpg";
-        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1And2_V11";
+        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1_2_3_V12";
 
         static Section1SceneBuilder()
         {
@@ -75,12 +82,12 @@ namespace UltimoActo.Editor
             if (!SessionState.GetBool(AutoBuildSessionKey, false))
             {
                 SessionState.SetBool(AutoBuildSessionKey, true);
-                Debug.Log("<color=cyan>[Último Acto]</color> Construyendo automáticamente Mapa Completo (Sección 1 + Sección 2)...");
+                Debug.Log("<color=cyan>[Último Acto]</color> Construyendo automáticamente Mapa Completo (Secciones 1, 2 y 3)...");
                 BuildFullAcademyMap();
             }
         }
 
-        [MenuItem("Tools/Último Acto/1. Construir Mapa Completo (Sección 1 + Sección 2 en SampleScene)")]
+        [MenuItem("Tools/Último Acto/1. Construir Mapa Completo (Sección 1 + Sección 2 + Sección 3 en SampleScene)")]
         public static void BuildFullAcademyMap()
         {
             try
@@ -106,6 +113,8 @@ namespace UltimoActo.Editor
                 Material matMahogany = CreatePBRMaterial("Mat_S1_Mahogany", "Tex_Mahogany_Albedo.png", "Tex_Mahogany_Normal.png", new Vector2(2f, 4f), 0.75f, 0.05f);
                 Material matGreenVelvet = CreatePBRMaterial("Mat_S2_GreenVelvet", "Tex_GreenVelvet_Albedo.png", "Tex_GreenVelvet_Normal.png", new Vector2(4f, 4f), 0.25f, 0.02f);
                 Material matLeather = CreatePBRMaterial("Mat_S2_LeatherDark", "Tex_Leather_Albedo.png", "Tex_Leather_Normal.png", new Vector2(3f, 3f), 0.45f, 0.05f);
+                Material matCeramicTile = CreatePBRMaterial("Mat_S3_CeramicTile", "Tex_CeramicTile_Albedo.png", "Tex_CeramicTile_Normal.png", new Vector2(6f, 6f), 0.78f, 0.05f);
+                Material matRustedLocker = CreatePBRMaterial("Mat_S3_RustedLocker", "Tex_LockerMetal_Albedo.png", "Tex_LockerMetal_Normal.png", new Vector2(2f, 3f), 0.48f, 0.72f);
 
                 Material matStoneWall = GetOrCreateBasicMaterial("Mat_S1_StoneWall", new Color(0.35f, 0.33f, 0.31f), 0.30f, 0.0f);
                 Material matDarkMarbleBorder = GetOrCreateBasicMaterial("Mat_S1_DarkMarbleBorder", new Color(0.08f, 0.08f, 0.10f), 0.85f, 0.1f);
@@ -117,10 +126,17 @@ namespace UltimoActo.Editor
                 Material matClothCover = GetOrCreateBasicMaterial("Mat_S1_ClothCover", new Color(0.72f, 0.70f, 0.65f), 0.15f, 0.0f);
                 Material matVelvetDrapes = GetOrCreateBasicMaterial("Mat_S1_VelvetDrapes", new Color(0.38f, 0.06f, 0.12f), 0.20f, 0.02f);
                 Material matLanternGlow = GetOrCreateEmissiveMaterial("Mat_S1_LanternGlow", new Color(1f, 0.85f, 0.50f));
+                Material matColdFluorescent = GetOrCreateEmissiveMaterial("Mat_S3_ColdFluorescent", new Color(0.72f, 0.88f, 1.0f));
                 Material matGreenGlass = GetOrCreateBasicMaterial("Mat_S1_BankerGlass", new Color(0.05f, 0.35f, 0.15f), 0.90f, 0.1f);
                 Material matMetalArchive = GetOrCreateBasicMaterial("Mat_S2_MetalArchive", new Color(0.20f, 0.24f, 0.22f), 0.55f, 0.65f);
                 Material matWoodArchive = GetOrCreateBasicMaterial("Mat_S2_WoodArchive", new Color(0.28f, 0.18f, 0.12f), 0.35f, 0.05f);
                 Material matCardboard = GetOrCreateBasicMaterial("Mat_S2_CardboardBox", new Color(0.55f, 0.45f, 0.35f), 0.15f, 0.0f);
+                Material matMirrorGlass = GetOrCreateBasicMaterial("Mat_S3_MirrorGlass", new Color(0.74f, 0.78f, 0.82f), 0.96f, 0.88f);
+                Material matPorcelain = GetOrCreateBasicMaterial("Mat_S3_Porcelain", new Color(0.88f, 0.86f, 0.81f), 0.85f, 0.05f);
+                Material matTutuWhite = GetOrCreateBasicMaterial("Mat_S3_TutuWhite", new Color(0.85f, 0.82f, 0.76f), 0.22f, 0.0f);
+                Material matTutuBlack = GetOrCreateBasicMaterial("Mat_S3_TutuBlack", new Color(0.09f, 0.08f, 0.11f), 0.25f, 0.05f);
+                Material matSatinRibbon = GetOrCreateBasicMaterial("Mat_S3_SatinPink", new Color(0.76f, 0.58f, 0.56f), 0.60f, 0.05f);
+                Material matShadowFigure = GetOrCreateBasicMaterial("Mat_S3_ShadowFigure", new Color(0.04f, 0.04f, 0.06f), 0.15f, 0.0f);
 
                 // Cuadros artísticos al óleo y fotografías históricas
                 Material matPortraitElena = CreatePortraitMaterial("Mat_S1_Portrait_Elena", ElenaPortraitPath, matMahogany);
@@ -150,14 +166,14 @@ namespace UltimoActo.Editor
 
                 CreatePostProcessVolume();
 
-                GameObject rootEnv = new GameObject("Section1_And_Section2_Academy");
+                GameObject rootEnv = new GameObject("Section1_2_3_Complete_Academy");
 
                 // ====================================================================
                 // 0. CIMENTACIÓN ANTICAÍDAS (PROTECCIÓN ABSOLUTA PARA TODA LA ACADEMIA)
                 // ====================================================================
-                // Cubre desde X = -55m hasta X = +30m, y Z = -55m hasta +120m
+                // Cubre desde X = -60m hasta X = +60m, y Z = -60m hasta +130m
                 CreatePrimitive("Bedrock_Safety_Ground", PrimitiveType.Cube, rootEnv.transform,
-                    new Vector3(-12f, -0.7f, 32f), new Vector3(85f, 1.0f, 175f), matCobble);
+                    new Vector3(0f, -0.7f, 35f), new Vector3(120f, 1.0f, 190f), matCobble);
 
                 // ====================================================================
                 // ZONA 1: PORTÓN EXTERIOR (Z: -38 a -26, Ancho: 28m)
@@ -344,10 +360,10 @@ namespace UltimoActo.Editor
                 CreateWall("Vest_Wall_West_2", zone4.transform, new Vector3(-11f, vestY + (vestHeight * 0.5f), 27f), new Vector3(0.6f, vestHeight, 10f), matWallIvory);
                 CreateArchitecturalDoubleDoor("Doors_Administration", zone4.transform, new Vector3(-11f, vestY, 20f), Quaternion.Euler(0f, 90f, 0f), 3.7f, 4.2f, vestHeight, 0.6f, false, "", "ADMINISTRACIÓN Y ARCHIVO", "", matMahogany, matGold, matWallIvory);
 
-                // Pared este hacia futuros vestuarios: bloqueada con grandes puertas dobles de piso a techo
+                // Pared este: grandes puertas dobles hacia la SECCIÓN 3 (Vestuario Femenino y Habitaciones de Alumnas)
                 CreateWall("Vest_Wall_East_1", zone4.transform, new Vector3(11f, vestY + (vestHeight * 0.5f), 13f), new Vector3(0.6f, vestHeight, 10f), matWallIvory);
                 CreateWall("Vest_Wall_East_2", zone4.transform, new Vector3(11f, vestY + (vestHeight * 0.5f), 27f), new Vector3(0.6f, vestHeight, 10f), matWallIvory);
-                CreateArchitecturalDoubleDoor("Doors_DressingRooms", zone4.transform, new Vector3(11f, vestY, 20f), Quaternion.Euler(0f, 90f, 0f), 3.7f, 4.2f, vestHeight, 0.6f, true, "", "VESTUARIOS Y SALONES", "Puertas de los Vestuarios — Cerradas con llave", matMahogany, matGold, matWallIvory);
+                CreateArchitecturalDoubleDoor("Doors_DressingRooms", zone4.transform, new Vector3(11f, vestY, 20f), Quaternion.Euler(0f, 90f, 0f), 3.7f, 4.2f, vestHeight, 0.6f, false, "", "VESTUARIOS Y HABITACIONES", "", matMahogany, matGold, matWallIvory);
 
                 CreateBoiseriePanelSet("Boiserie_Vest_W1", zone4.transform, new Vector3(-10.65f, vestY + 2.6f, 13f), 8f, matWallIvory, matMahogany);
                 CreateBoiseriePanelSet("Boiserie_Vest_W2", zone4.transform, new Vector3(-10.65f, vestY + 2.6f, 27f), 8f, matWallIvory, matMahogany);
@@ -408,11 +424,14 @@ namespace UltimoActo.Editor
                 // Puerta doble hacia el Pasillo de los Retratos (hueco Z 46..50)
                 CreateArchitecturalDoubleDoor("Doors_To_PortraitGallery", zone5.transform, new Vector3(-4f, hallY, 48f), Quaternion.Euler(0f, 90f, 0f), 3.7f, 3.6f, hallHeight, 0.5f, false, "", "PASILLO DE LOS RETRATOS", "", matMahogany, matGold, matWallIvory);
 
-                CreateWall("Pasillo_Wall_East", zone5.transform, new Vector3(4f, hallY + (hallHeight * 0.5f), 55f), new Vector3(0.5f, hallHeight, 46f), matWallIvory);
+                // Muro este del pasillo principal: con puerta funcional en Z = 44m hacia la Sección 3 (Tocadores y Vestuarios)
+                CreateWall("Pasillo_Wall_East_South", zone5.transform, new Vector3(4f, hallY + (hallHeight * 0.5f), 37.475f), new Vector3(0.5f, hallHeight, 10.95f), matWallIvory);
+                CreateWall("Pasillo_Wall_East_North", zone5.transform, new Vector3(4f, hallY + (hallHeight * 0.5f), 61.525f), new Vector3(0.5f, hallHeight, 32.95f), matWallIvory);
 
                 CreatePrimitive("Zocalo_Hall_W1", PrimitiveType.Cube, zone5.transform, new Vector3(-3.72f, hallY + 0.35f, 39f), new Vector3(0.1f, 0.7f, 14f), matMahogany);
                 CreatePrimitive("Zocalo_Hall_W2", PrimitiveType.Cube, zone5.transform, new Vector3(-3.72f, hallY + 0.35f, 64f), new Vector3(0.1f, 0.7f, 28f), matMahogany);
-                CreatePrimitive("Zocalo_Hall_E", PrimitiveType.Cube, zone5.transform, new Vector3(3.72f, hallY + 0.35f, 55f), new Vector3(0.1f, 0.7f, 46f), matMahogany);
+                CreatePrimitive("Zocalo_Hall_E1", PrimitiveType.Cube, zone5.transform, new Vector3(3.72f, hallY + 0.35f, 37.4f), new Vector3(0.1f, 0.7f, 10.8f), matMahogany);
+                CreatePrimitive("Zocalo_Hall_E2", PrimitiveType.Cube, zone5.transform, new Vector3(3.72f, hallY + 0.35f, 61.5f), new Vector3(0.1f, 0.7f, 32.8f), matMahogany);
 
                 // Posiciones de las puertas de las salas (para no superponer paneles ni apliques)
                 float[] hallDoorsW = { 40f, 48f, 56f };
@@ -431,9 +450,9 @@ namespace UltimoActo.Editor
                         CreateBoiseriePanelSet($"Boiserie_Hall_E_{pz}", zone5.transform, new Vector3(3.73f, hallY + 2.2f, pz), 4.5f, matWallIvory, matMahogany);
                 }
 
-                // Puertas de las salas (adosadas al muro macizo, cerradas con llave: zonas de secciones futuras)
+                // Puerta real hacia Sección 3 (Tocadores y Vestuarios) en Z = 44m, y puertas futuras adosadas al muro
                 CreateArchitecturalDoor("Door_Rehearsal_1", zone5.transform, new Vector3(-3.69f, hallY, 40f), Quaternion.Euler(0f, 90f, 0f), 1.6f, 3.0f, 0f, 0.12f, true, "", "SALA 1: ENSAYO PRINCIPAL", "Sala 1: Ensayo Principal — Cerrada con llave", matMahogany, matGold, matWallIvory, true);
-                CreateArchitecturalDoor("Door_Costumes", zone5.transform, new Vector3(3.69f, hallY, 44f), Quaternion.Euler(0f, -90f, 0f), 1.6f, 3.0f, 0f, 0.12f, true, "", "SALA DE VESTUARIO", "Sala de Vestuario — Cerrada con llave", matMahogany, matGold, matWallIvory, true);
+                CreateArchitecturalDoor("Door_Costumes", zone5.transform, new Vector3(4f, hallY, 44f), Quaternion.Euler(0f, -90f, 0f), 1.8f, 3.2f, hallHeight, 0.5f, false, "", "TOCADORES Y VESTUARIOS", "", matMahogany, matGold, matWallIvory, false);
                 CreateArchitecturalDoor("Door_Rehearsal_2", zone5.transform, new Vector3(-3.69f, hallY, 56f), Quaternion.Euler(0f, 90f, 0f), 1.6f, 3.0f, 0f, 0.12f, true, "", "SALA 2: COREOGRAFÍA", "Sala 2: Coreografía — Cerrada con llave", matMahogany, matGold, matWallIvory, true);
                 CreateArchitecturalDoor("Door_Music_Archive", zone5.transform, new Vector3(3.69f, hallY, 62f), Quaternion.Euler(0f, -90f, 0f), 1.6f, 3.0f, 0f, 0.12f, true, "", "ARCHIVO MUSICAL", "Archivo Musical — Cerrado con llave", matMahogany, matGold, matWallIvory, true);
 
@@ -798,8 +817,28 @@ namespace UltimoActo.Editor
                     new Vector3(-11f, vestY + 2.6f, 49.7f), new Vector3(2.6f, 1.8f, 0.12f), matGold, matPortraitElena,
                     "Óleo Representativo: El Lago de las Sombras (1924)");
 
+                // Evidencia de reinterpretación tras visitar la Habitación de Elena (Sección 3 -> regreso a Sección 2)
+                CreateInteractiveWorldDoc("Inscripcion_Reverso_Lago_Sombras", zone10.transform,
+                    new Vector3(-11f, vestY + 1.45f, 49.68f), new Vector3(0.45f, 0.18f, 0.05f), matGold, "doc_portrait_reinterpretation",
+                    "Reverso del Bastidor — 'El Lago de las Sombras'",
+                    "Al inspeccionar el borde inferior del lienzo con lo descubierto en la habitación privada de Elena:\n\n" +
+                    "Se distingue una capa gruesa de óleo oscuro aplicada apresuradamente sobre una segunda bailarina que originalmente aparecía detrás de Elena.\n\n" +
+                    "Grabado a punzón en la madera del bastidor:\n" +
+                    "“Retocado por orden de Dirección el 15 de octubre de 1924 — Borrar a la suplente de la escena principal.”");
+
                 CreateOrnateSconce("Sconce_Galeria_EW", zone10.transform,
                     new Vector3(-9.5f, vestY + 3.0f, 46.3f), matGold, matLanternGlow, new Color(1f, 0.82f, 0.50f), 2.2f);
+
+                // ====================================================================
+                // SECCIÓN 3: VESTUARIOS Y HABITACIONES DE ALUMNAS (Ala Este, Y: 2.4m)
+                // ====================================================================
+                BuildSection3DressingAndDormitories(rootEnv.transform, vestY,
+                    matParquet, matCarpet, matWallIvory, matMahogany, matGold, matIron,
+                    matClothCover, matVelvetDrapes, matLanternGlow, matColdFluorescent,
+                    matGreenVelvet, matLeather, matWoodArchive, matMetalArchive, matCardboard,
+                    matCeramicTile, matRustedLocker, matMirrorGlass, matPorcelain,
+                    matTutuWhite, matTutuBlack, matSatinRibbon, matShadowFigure,
+                    matPortraitElena, matPhotoTroupe1923);
 
                 // ====================================================================
                 // JUGADOR EN PRIMERA PERSONA
@@ -925,11 +964,766 @@ namespace UltimoActo.Editor
                 AssetDatabase.Refresh();
                 EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
 
-                Debug.Log($"<color=green>[Último Acto]</color> ¡MAPA COMPLETO (Sección 1 + Sección 2: Recepción y Administración) construido con éxito en {ScenePath}!");
+                Debug.Log($"<color=green>[Último Acto]</color> ¡MAPA COMPLETO (Secciones 1, 2 y 3: Vestuarios y Habitaciones de Alumnas) construido con éxito en {ScenePath}!");
             }
             catch (System.Exception ex)
             {
                 Debug.LogError($"<color=red>[Último Acto]</color> Error crítico al construir el mapa: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
+        // ====================================================================
+        // CONSTRUCCIÓN DE LA SECCIÓN 3: VESTUARIOS Y HABITACIONES DE ALUMNAS
+        // ====================================================================
+        private static void BuildSection3DressingAndDormitories(
+            Transform rootEnv, float vestY,
+            Material matParquet, Material matCarpet, Material matWallIvory, Material matMahogany,
+            Material matGold, Material matIron, Material matClothCover, Material matVelvetDrapes,
+            Material matLanternGlow, Material matColdFluorescent, Material matGreenVelvet,
+            Material matLeather, Material matWoodArchive, Material matMetalArchive, Material matCardboard,
+            Material matCeramicTile, Material matRustedLocker, Material matMirrorGlass, Material matPorcelain,
+            Material matTutuWhite, Material matTutuBlack, Material matSatinRibbon, Material matShadowFigure,
+            Material matPortraitElena, Material matPhotoTroupe1923)
+        {
+            float roomH = 5.0f;
+
+            // ====================================================================
+            // ZONA 11: VESTUARIO FEMENINO (X: 11 a 27, Z: 12 a 32, Y: 2.4m)
+            // ====================================================================
+            GameObject zone11 = new GameObject("11_Female_Dressing_Room");
+            zone11.transform.parent = rootEnv;
+
+            CreatePrimitive("Dressing_Floor", PrimitiveType.Cube, zone11.transform,
+                new Vector3(19f, vestY - 0.25f, 22f), new Vector3(16f, 0.5f, 20f), matParquet);
+            CreatePrimitive("Dressing_Ceiling", PrimitiveType.Cube, zone11.transform,
+                new Vector3(19f, vestY + roomH, 22f), new Vector3(16f, 0.5f, 20f), matWallIvory);
+
+            // Pared sur (Z = 12): puerta hacia Zona 15 (Lavabos y Duchas Antiguas) en X = 19m (hueco X 17.95..20.05)
+            CreateWall("Dressing_Wall_South_W", zone11.transform, new Vector3(14.475f, vestY + 2.5f, 12f), new Vector3(6.95f, roomH, 0.5f), matWallIvory);
+            CreateWall("Dressing_Wall_South_E", zone11.transform, new Vector3(23.525f, vestY + 2.5f, 12f), new Vector3(6.95f, roomH, 0.5f), matWallIvory);
+            CreateArchitecturalDoor("Door_Dressing_To_Showers", zone11.transform, new Vector3(19f, vestY, 12f), Quaternion.identity, 1.8f, 3.2f, roomH, 0.5f, false, "", "LAVABOS Y DUCHAS", "", matMahogany, matGold, matWallIvory);
+
+            // Pared este (X = 27): puerta hacia Zona 13 (Taquillas Personales) en Z = 22m (hueco Z 20.95..23.05)
+            CreateWall("Dressing_Wall_East_S", zone11.transform, new Vector3(27f, vestY + 2.5f, 16.475f), new Vector3(0.5f, roomH, 8.95f), matWallIvory);
+            CreateWall("Dressing_Wall_East_N", zone11.transform, new Vector3(27f, vestY + 2.5f, 27.525f), new Vector3(0.5f, roomH, 8.95f), matWallIvory);
+            CreateArchitecturalDoor("Door_Dressing_To_Lockers", zone11.transform, new Vector3(27f, vestY, 22f), Quaternion.Euler(0f, 90f, 0f), 1.8f, 3.2f, roomH, 0.5f, false, "", "TAQUILLAS PERSONALES", "", matMahogany, matGold, matWallIvory);
+
+            // Pared norte (Z = 32): puertas dobles hacia Zona 12 (Tocadores con Espejos) en X = 19m (hueco X 17..21)
+            CreateWall("Dressing_Wall_North_W", zone11.transform, new Vector3(14.0f, vestY + 2.5f, 32f), new Vector3(6.0f, roomH, 0.5f), matWallIvory);
+            CreateWall("Dressing_Wall_North_E", zone11.transform, new Vector3(24.0f, vestY + 2.5f, 32f), new Vector3(6.0f, roomH, 0.5f), matWallIvory);
+            CreateArchitecturalDoubleDoor("Doors_Dressing_To_Vanity", zone11.transform, new Vector3(19f, vestY, 32f), Quaternion.identity, 3.7f, 3.6f, roomH, 0.5f, false, "", "SALA DE TOCADORES", "", matMahogany, matGold, matWallIvory);
+
+            // Ventanas altas con luz azulada de luna en la parte superior del muro
+            for (int w = 0; w < 2; w++)
+            {
+                float wz = (w == 0) ? 16f : 28f;
+                DecoPiece($"High_Window_Frame_{w}", PrimitiveType.Cube, zone11.transform,
+                    new Vector3(26.7f, vestY + 4.1f, wz), new Vector3(0.12f, 1.1f, 2.4f), matMahogany);
+                DecoPiece($"High_Window_Glass_{w}", PrimitiveType.Cube, zone11.transform,
+                    new Vector3(26.73f, vestY + 4.1f, wz), new Vector3(0.06f, 0.9f, 2.1f), matColdFluorescent);
+                CreatePictureSpotlight($"Moonlight_Dressing_{w}", zone11.transform,
+                    new Vector3(26.2f, vestY + 4.1f, wz), new Vector3(19f, vestY + 0.8f, wz), new Color(0.55f, 0.72f, 0.96f), 2.2f);
+            }
+
+            // Bancos largos de madera con bolsos, cintas de satén y zapatillas abandonadas
+            float[] benchZ = { 17.5f, 26.5f };
+            for (int b = 0; b < benchZ.Length; b++)
+            {
+                float bz = benchZ[b];
+                CreatePrimitive($"Banco_Madera_{b + 1}_Top", PrimitiveType.Cube, zone11.transform,
+                    new Vector3(19f, vestY + 0.46f, bz), new Vector3(5.2f, 0.08f, 0.65f), matMahogany);
+                CreatePrimitive($"Banco_Madera_{b + 1}_LegL", PrimitiveType.Cube, zone11.transform,
+                    new Vector3(16.8f, vestY + 0.22f, bz), new Vector3(0.15f, 0.44f, 0.55f), matMahogany);
+                CreatePrimitive($"Banco_Madera_{b + 1}_LegR", PrimitiveType.Cube, zone11.transform,
+                    new Vector3(21.2f, vestY + 0.22f, bz), new Vector3(0.15f, 0.44f, 0.55f), matMahogany);
+
+                // Bolso de cuero olvidado y cintas de zapatillas sobre el banco
+                CreatePrimitive($"Bolso_Abandonado_{b + 1}", PrimitiveType.Cube, zone11.transform,
+                    new Vector3(17.5f + b * 2.2f, vestY + 0.62f, bz), new Vector3(0.42f, 0.26f, 0.24f), matLeather);
+                DecoPiece($"Cinta_Saten_{b + 1}", PrimitiveType.Cube, zone11.transform,
+                    new Vector3(18.6f, vestY + 0.51f, bz + 0.1f), new Vector3(0.55f, 0.015f, 0.06f), matSatinRibbon);
+            }
+
+            // Percheros metálicos envejecidos con tutús (Cisne Blanco y Cisne Negro) y prendas polvorientas
+            float[] rackZ = { 15.5f, 28.5f };
+            for (int r = 0; r < rackZ.Length; r++)
+            {
+                float rz = rackZ[r];
+                CreateGarmentRackWithTutus($"Perchero_Vestuario_{r + 1}", zone11.transform,
+                    new Vector3(24.2f, vestY, rz), matIron, matGold, matTutuWhite, matTutuBlack, matClothCover);
+            }
+
+            // Cestas de mimbre/madera olvidadas con ropa de ensayo
+            CreatePrimitive("Cesta_Olvidada_1", PrimitiveType.Cylinder, zone11.transform,
+                new Vector3(24.5f, vestY + 0.35f, 19.5f), new Vector3(0.75f, 0.35f, 0.75f), matCardboard);
+            CreatePrimitive("Cesta_Olvidada_2", PrimitiveType.Cylinder, zone11.transform,
+                new Vector3(13.2f, vestY + 0.30f, 28.8f), new Vector3(0.65f, 0.30f, 0.65f), matCardboard);
+
+            // Armarios de madera en el muro oeste (con uno interactivo abrible)
+            CreateInteractiveWardrobe("Armario_Alumnas_1", zone11.transform, new Vector3(12.2f, vestY, 15.2f), Quaternion.Euler(0f, 90f, 0f), matMahogany, matGold, matTutuWhite, true);
+            CreateInteractiveWardrobe("Armario_Alumnas_2", zone11.transform, new Vector3(12.2f, vestY, 25.5f), Quaternion.Euler(0f, 90f, 0f), matMahogany, matGold, matClothCover, false);
+
+            // Carteles antiguos con ilustraciones de posiciones de ballet
+            CreateFramedArtPortrait("Cartel_Posiciones_Ballet_1", zone11.transform,
+                new Vector3(14.5f, vestY + 2.6f, 12.32f), new Vector3(1.6f, 1.9f, 0.08f), matGold, matPhotoTroupe1923,
+                "Cartel Didáctico: Las Cinco Posiciones Clásicas del Ballet (1912)");
+            CreateFramedArtPortrait("Cartel_Posiciones_Ballet_2", zone11.transform,
+                new Vector3(23.5f, vestY + 2.6f, 31.68f), new Vector3(1.6f, 1.9f, 0.08f), matGold, matPortraitElena,
+                "Cartel de Ensayo: Técnica de Puntas y Port de Bras");
+
+            // Reloj detenido y calendario antiguo
+            CreateWallClock("Reloj_Detenido_Vestuario", zone11.transform, new Vector3(14.5f, vestY + 3.6f, 31.7f), matMahogany, matGold);
+            CreateHistoricalPlaque("Calendario_Vestuario_1924", zone11.transform, new Vector3(16.0f, vestY + 2.8f, 31.7f), matGold);
+
+            // Lámparas de techo cálidas muy tenues
+            CreateOrnateLantern("Lampara_Vestuario_Sur", zone11.transform, new Vector3(19f, vestY + 4.3f, 17.5f), matGold, matLanternGlow, new Color(1f, 0.80f, 0.48f), 1.9f);
+            CreateOrnateLantern("Lampara_Vestuario_Norte", zone11.transform, new Vector3(19f, vestY + 4.3f, 26.5f), matGold, matLanternGlow, new Color(1f, 0.80f, 0.48f), 1.9f);
+
+            // ELEMENTOS NARRATIVOS DE LA ZONA 11 (VESTUARIO FEMENINO)
+            CreateInteractiveWorldDoc("Doc_Zapatillas_Elena", zone11.transform,
+                new Vector3(19.2f, vestY + 0.54f, 17.5f), new Vector3(0.32f, 0.08f, 0.22f), matSatinRibbon,
+                "doc_s3_ballet_slippers",
+                "Zapatillas de Punta con Nombre Escrito a Mano",
+                "Un par de zapatillas de satén rosa desgastadas por el uso intenso. En la suela de cuero aparece escrito a mano con tinta negra:\n" +
+                "«Elena Vesper — Solista Principal».\n\n" +
+                "Las cintas de sujeción no se desataron: fueron cortadas limpiamente con tijeras.\n" +
+                "Dentro de la puntera izquierda hay un trozo de papel doblado: «Mara volvió a registrar mi bolso durante el descanso. He tenido que esconder mis cosas importantes bajo llave.»");
+
+            CreateInteractiveWorldDoc("Doc_Lista_Alumnas_Vestuario", zone11.transform,
+                new Vector3(12.25f, vestY + 1.15f, 15.2f), new Vector3(0.35f, 0.04f, 0.28f), matGold,
+                "doc_s3_student_list",
+                "Lista Oficial de Alumnas y Taquillas (Octubre de 1924)",
+                "REGISTRO INTERNO DE VESTUARIO — ACADEMIA VESPER\n\n" +
+                "• Taquilla Nº 03 — Sofía Lindqvist (Cuerpo de baile)\n" +
+                "• Taquilla Nº 07 — Mara Bell (Primera Suplente)\n" +
+                "• Taquilla Nº 11 — Clara Valmont (Corifeo)\n" +
+                "• Taquilla Nº 14 — Elena Vesper (Primera Bailarina — Cisne Negro)\n\n" +
+                "Nota de la Gobernanta:\n" +
+                "“Se recuerda a las alumnas que las llaves de las habitaciones privadas del ala norte son responsabilidad exclusiva de cada solista.”");
+
+            CreateInteractiveWorldDoc("Doc_Nota_Olvidada_Vestuario", zone11.transform,
+                new Vector3(20.1f, vestY + 0.54f, 26.5f), new Vector3(0.34f, 0.04f, 0.26f), matGold,
+                "doc_s3_forgotten_bench_note",
+                "Nota Olvidada entre las Pertenencias del Banco",
+                "“Clara, ¿has visto cómo miraba Mara a Elena frente a los espejos del tocador antes del ensayo?\n\n" +
+                "Cuando apagaron las lámparas del vestuario a las nueve, juraría que vi a alguien entrar con una linterna hacia los lavabos del fondo. El reloj de la pared se detuvo esa misma noche y nadie ha venido a recoger sus abrigos.”");
+
+            // ====================================================================
+            // ZONA 12: TOCADORES CON ESPEJOS (X: 11 a 27, Z: 32 a 46, Y: 2.4m)
+            // + Corredor conector hacia el Pasillo Principal (X: 4 a 11, Z: 42 a 46)
+            // ====================================================================
+            GameObject zone12 = new GameObject("12_Vanity_Mirror_Room");
+            zone12.transform.parent = rootEnv;
+
+            CreatePrimitive("Vanity_Floor", PrimitiveType.Cube, zone12.transform,
+                new Vector3(19f, vestY - 0.25f, 39f), new Vector3(16f, 0.5f, 14f), matParquet);
+            CreatePrimitive("Vanity_Ceiling", PrimitiveType.Cube, zone12.transform,
+                new Vector3(19f, vestY + roomH, 39f), new Vector3(16f, 0.5f, 14f), matWallIvory);
+            CreatePrimitive("Vanity_Rug", PrimitiveType.Cube, zone12.transform,
+                new Vector3(19f, vestY + 0.02f, 39f), new Vector3(7.5f, 0.04f, 10.5f), matCarpet);
+
+            // Corredor de conexión oeste con el Pasillo Principal (Z: 42..46, X: 4..11)
+            CreatePrimitive("Vanity_Conn_Floor", PrimitiveType.Cube, zone12.transform,
+                new Vector3(7.5f, vestY - 0.25f, 44f), new Vector3(7f, 0.5f, 4f), matParquet);
+            CreatePrimitive("Vanity_Conn_Carpet", PrimitiveType.Cube, zone12.transform,
+                new Vector3(7.5f, vestY + 0.02f, 44f), new Vector3(7f, 0.04f, 2.2f), matCarpet);
+            CreatePrimitive("Vanity_Conn_Ceiling", PrimitiveType.Cube, zone12.transform,
+                new Vector3(7.5f, vestY + roomH, 44f), new Vector3(7f, 0.5f, 4f), matWallIvory);
+            CreateWall("Vanity_Conn_Wall_South", zone12.transform, new Vector3(7.5f, vestY + 2.5f, 42f), new Vector3(7f, roomH, 0.5f), matWallIvory);
+            CreateWall("Vanity_Conn_Wall_North", zone12.transform, new Vector3(7.5f, vestY + 2.5f, 46f), new Vector3(7f, roomH, 0.5f), matWallIvory);
+
+            // Muro oeste de Tocadores (de Z = 32 a Z = 42, dejando abierto Z 42..46 hacia el corredor del pasillo)
+            CreateWall("Vanity_Wall_West_S", zone12.transform, new Vector3(11f, vestY + 2.5f, 37f), new Vector3(0.5f, roomH, 10f), matWallIvory);
+            // Muro este de Tocadores (Z = 32 a 46)
+            CreateWall("Vanity_Wall_East", zone12.transform, new Vector3(27f, vestY + 2.5f, 39f), new Vector3(0.5f, roomH, 14f), matWallIvory);
+
+            // Muro norte (Z = 46): puerta hacia el corredor privado de la Habitación de Elena en X = 19m (hueco X 17.95..20.05)
+            CreateWall("Vanity_Wall_North_W", zone12.transform, new Vector3(14.475f, vestY + 2.5f, 46f), new Vector3(6.95f, roomH, 0.5f), matWallIvory);
+            CreateWall("Vanity_Wall_North_E", zone12.transform, new Vector3(23.525f, vestY + 2.5f, 46f), new Vector3(6.95f, roomH, 0.5f), matWallIvory);
+            CreateArchitecturalDoor("Door_Vanity_To_ElenaCorridor", zone12.transform, new Vector3(19f, vestY, 46f), Quaternion.identity, 1.8f, 3.2f, roomH, 0.5f, false, "", "CORREDOR PRIVADO — SOLISTA", "", matMahogany, matGold, matWallIvory);
+
+            // Cortinas borgoña descoloridas en los rincones de la sala de tocadores
+            DecoPiece("Vanity_Curtain_NW", PrimitiveType.Cube, zone12.transform, new Vector3(11.4f, vestY + 2.5f, 41.3f), new Vector3(0.35f, 4.4f, 0.9f), matVelvetDrapes);
+            DecoPiece("Vanity_Curtain_NE", PrimitiveType.Cube, zone12.transform, new Vector3(26.6f, vestY + 2.5f, 45.2f), new Vector3(0.35f, 4.4f, 0.9f), matVelvetDrapes);
+
+            // Tocadores con espejos ovalados, bombillas antiguas, frascos de perfume y sillas borgoña
+            CreateVanityStation("Tocador_1_Oeste", zone12.transform, new Vector3(12.2f, vestY, 35.0f), Quaternion.Euler(0f, 90f, 0f),
+                matMahogany, matGold, matMirrorGlass, matVelvetDrapes, matLanternGlow, matPorcelain, matShadowFigure, true, false);
+            CreateVanityStation("Tocador_2_Oeste_Mara", zone12.transform, new Vector3(12.2f, vestY, 39.2f), Quaternion.Euler(0f, 90f, 0f),
+                matMahogany, matGold, matMirrorGlass, matVelvetDrapes, matLanternGlow, matPorcelain, matShadowFigure, true, false);
+
+            // Tocador 3 (Este): Tocador de Elena Vesper CON ANOMALÍA PSICOLÓGICA DE REFLEJO Y DISCREPANCIA DE OBJETO
+            CreateVanityStation("Tocador_3_Este_Elena_Anomalia", zone12.transform, new Vector3(25.8f, vestY, 35.0f), Quaternion.Euler(0f, -90f, 0f),
+                matMahogany, matGold, matMirrorGlass, matVelvetDrapes, matLanternGlow, matPorcelain, matShadowFigure, true, true);
+            CreateVanityStation("Tocador_4_Este", zone12.transform, new Vector3(25.8f, vestY, 39.2f), Quaternion.Euler(0f, -90f, 0f),
+                matMahogany, matGold, matMirrorGlass, matVelvetDrapes, matLanternGlow, matPorcelain, matShadowFigure, false, false);
+            CreateVanityStation("Tocador_5_Este", zone12.transform, new Vector3(25.8f, vestY, 43.2f), Quaternion.Euler(0f, -90f, 0f),
+                matMahogany, matGold, matMirrorGlass, matVelvetDrapes, matLanternGlow, matPorcelain, matShadowFigure, true, false);
+
+            // ELEMENTOS NARRATIVOS DE LA ZONA 12 (TOCADORES CON ESPEJOS)
+            CreateInteractiveWorldDoc("Doc_Foto_Elena_Y_Mara", zone12.transform,
+                new Vector3(12.35f, vestY + 0.88f, 39.2f), new Vector3(0.28f, 0.04f, 0.24f), matGold,
+                "doc_s3_elena_mara_photo",
+                "Fotografía Pequeña: Elena Vesper y Mara Bell en los Tocadores",
+                "Una fotografía en blanco y negro tomada frente a estos mismos espejos meses antes del estreno.\n" +
+                "Elena está sentada frente al espejo mientras Mara, de pie detrás de ella, apoya las manos sobre sus hombros.\n\n" +
+                "El rostro de Elena fue rasgado levemente con la punta de una horquilla. En el reverso se lee:\n" +
+                "“Mara ensaya mis gestos frente al espejo cuando cree que nadie la ve. No quiere compartir el papel; quiere ocupar mi lugar.”");
+
+            CreateInteractiveWorldDoc("Doc_Nota_Reverso_Espejo", zone12.transform,
+                new Vector3(25.65f, vestY + 0.88f, 35.0f), new Vector3(0.32f, 0.04f, 0.26f), matGold,
+                "doc_s3_mirror_back_note",
+                "Nota Oculta en el Reverso del Espejo de Elena (Tocador Nº 3)",
+                "Escrito con lápiz de ojos negro en la madera trasera del marco ovalado:\n\n" +
+                "“13 de Octubre — Anoche las bombillas del tocador parpadearon y mi reflejo tardó un segundo más que yo en bajar los brazos.\n\n" +
+                "He cerrado con llave mi habitación privada al fondo del corredor norte. Guardé la llave dentro de mi taquilla personal (Taquilla Nº 14, en la sala de taquillas junto al vestuario) para que ni Mara ni la Directora puedan registrar mis cuadernos.”");
+
+            // ====================================================================
+            // ZONA 13: TAQUILLAS PERSONALES (X: 27 a 39, Z: 12 a 36, Y: 2.4m)
+            // ====================================================================
+            GameObject zone13 = new GameObject("13_Personal_Lockers");
+            zone13.transform.parent = rootEnv;
+
+            CreatePrimitive("Lockers_Floor", PrimitiveType.Cube, zone13.transform,
+                new Vector3(33f, vestY - 0.25f, 24f), new Vector3(12f, 0.5f, 24f), matParquet);
+            CreatePrimitive("Lockers_Ceiling", PrimitiveType.Cube, zone13.transform,
+                new Vector3(33f, vestY + roomH, 24f), new Vector3(12f, 0.5f, 24f), matWallIvory);
+
+            // Muros perimetrales de la sala de taquillas
+            CreateWall("Lockers_Wall_West_N", zone13.transform, new Vector3(27f, vestY + 2.5f, 34f), new Vector3(0.5f, roomH, 4f), matWallIvory);
+            CreateWall("Lockers_Wall_South", zone13.transform, new Vector3(33f, vestY + 2.5f, 12f), new Vector3(12f, roomH, 0.5f), matWallIvory);
+            CreateWall("Lockers_Wall_East", zone13.transform, new Vector3(39f, vestY + 2.5f, 24f), new Vector3(0.5f, roomH, 24f), matWallIvory);
+            CreateWall("Lockers_Wall_North", zone13.transform, new Vector3(33f, vestY + 2.5f, 36f), new Vector3(12f, roomH, 0.5f), matWallIvory);
+
+            // Iluminación fluorescente fría e irregular (contraste con los tonos cálidos del vestuario)
+            CreateColdFluorescentFixture("Fluorescente_Taquillas_Sur", zone13.transform, new Vector3(33f, vestY + 4.75f, 18f), matIron, matColdFluorescent, 2.2f);
+            CreateColdFluorescentFixture("Fluorescente_Taquillas_Norte", zone13.transform, new Vector3(33f, vestY + 4.75f, 30f), matIron, matColdFluorescent, 1.8f);
+
+            // Filas de taquillas metálicas antiguas con amplio espacio para dos jugadores
+            string[] lockerNamesW = { "Nº 01 - A. Rousseau", "Nº 03 - S. Lindqvist", "Nº 05 - V. Morozova", "Nº 07 - M. Bell", "Nº 09 - L. Chevalier", "Nº 11 - C. Valmont" };
+            for (int i = 0; i < lockerNamesW.Length; i++)
+            {
+                float lz = 14.5f + i * 3.4f;
+                if (Mathf.Abs(lz - 22f) < 1.8f) lz += 2.2f; // Respetar la puerta de entrada en Z = 22m
+                bool openDoor = (i == 1 || i == 3 || i == 5);
+                CreateMetalLockerUnit($"Taquilla_Oeste_{i + 1}", zone13.transform, new Vector3(28.0f, vestY, lz), Quaternion.Euler(0f, 90f, 0f),
+                    lockerNamesW[i], openDoor, false, matRustedLocker, matGold, matCardboard);
+            }
+
+            string[] lockerNamesE = { "Nº 12 - H. Berg", "Nº 13 - I. Kovacs", "Nº 14 - E. Vesper", "Nº 15 - N. Volkova", "Nº 16 - M. Laurent", "Nº 18 - E. Novak" };
+            for (int i = 0; i < lockerNamesE.Length; i++)
+            {
+                float lz = 15.0f + i * 3.6f;
+                bool isElenaLocker = (i == 2); // Taquilla Nº 14 - Elena Vesper (Z = 22.2m, justo frente a la entrada)
+                CreateMetalLockerUnit($"Taquilla_Este_{i + 1}", zone13.transform, new Vector3(38.0f, vestY, lz), Quaternion.Euler(0f, -90f, 0f),
+                    lockerNamesE[i], true, isElenaLocker, matRustedLocker, matGold, matCardboard);
+
+                if (isElenaLocker)
+                {
+                    // Marcas recientes en el polvo frente a la Taquilla Nº 14
+                    DecoPiece("Marcas_Polvo_Taquilla14", PrimitiveType.Cube, zone13.transform,
+                        new Vector3(36.6f, vestY + 0.015f, lz), new Vector3(1.4f, 0.01f, 1.2f), matClothCover);
+
+                    // LLAVE DE LA HABITACIÓN PRIVADA DE ELENA dentro de la Taquilla Nº 14
+                    GameObject keyElena = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    keyElena.name = "Key_Elena_Room";
+                    keyElena.transform.parent = zone13.transform;
+                    keyElena.transform.position = new Vector3(37.75f, vestY + 1.08f, lz - 0.15f);
+                    keyElena.transform.localScale = new Vector3(0.12f, 0.03f, 0.26f);
+                    keyElena.transform.rotation = Quaternion.Euler(0f, 45f, 90f);
+                    keyElena.GetComponent<Renderer>().sharedMaterial = matGold;
+                    WorldItem keyElenaComp = keyElena.AddComponent<WorldItem>();
+                    keyElenaComp.Configure("key_elena_room", "Llave de la Habitación de Elena (Nº 14)", ItemType.Key);
+                    EditorUtility.SetDirty(keyElenaComp);
+
+                    // Documento en la Taquilla Nº 14 de Elena
+                    CreateInteractiveWorldDoc("Doc_Taquilla_14_Elena", zone13.transform,
+                        new Vector3(37.75f, vestY + 1.42f, lz + 0.12f), new Vector3(0.26f, 0.04f, 0.24f), matGold,
+                        "doc_s3_locker14_elena",
+                        "Taquilla Nº 14 (Elena Vesper) — Fotografía Colocada al Revés",
+                        "A diferencia de las taquillas vacías, en el suelo frente a la Taquilla Nº 14 hay huellas recientes sobre el polvo.\n\n" +
+                        "En el estante superior hay una fotografía colocada deliberadamente boca abajo y una nota escrita de puño y letra de Elena:\n" +
+                        "“Si encuentras esta llave, entra en mi habitación al final del corredor norte y abre el compartimento del fondo de mi escritorio. Allí dejé la prueba de que la fotografía del pasillo fue alterada.”");
+                }
+            }
+
+            // Documentos adicionales en otras taquillas abiertas (Mara Bell y Clara Valmont)
+            CreateInteractiveWorldDoc("Doc_Taquilla_07_Mara", zone13.transform,
+                new Vector3(28.25f, vestY + 1.08f, 26.9f), new Vector3(0.26f, 0.04f, 0.22f), matGold,
+                "doc_s3_locker07_mara",
+                "Taquilla Nº 07 (Mara Bell) — Carta entre Alumnas",
+                "Una carta doblada escondida bajo unas cintas de ballet:\n\n" +
+                "“12 de Octubre de 1924\n" +
+                "Mara: La Directora Vale me confirmó hoy en su despacho que tú bailarás el acto final el día 14. Dijo que Elena ‘no estará en condiciones de subir al escenario’.\n" +
+                "¿Cómo puede estar tan segura dos días antes del estreno? Ten cuidado, lo que planean en dirección no es una simple sustitución.”");
+
+            CreateInteractiveWorldDoc("Doc_Taquilla_11_Recorte", zone13.transform,
+                new Vector3(28.25f, vestY + 1.08f, 33.7f), new Vector3(0.26f, 0.04f, 0.22f), matGold,
+                "doc_s3_locker11_clipping",
+                "Taquilla Nº 11 (Clara Valmont) — Recorte de Periódico",
+                "Un recorte amarillento de la crónica cultural local:\n\n" +
+                "«CRISIS EN LA ACADEMIA VESPER: Rumores de clausura tras la misteriosa cancelación de 'El Lago de las Sombras'. Los inspectores encontraron las taquillas de varias alumnas completamente vaciadas durante la madrugada del 17 de octubre.»");
+
+            // Restos de papel y polvo en el suelo del corredor de taquillas
+            DecoPiece("Papel_Suelo_1", PrimitiveType.Cube, zone13.transform, new Vector3(31.5f, vestY + 0.02f, 19.2f), new Vector3(0.28f, 0.01f, 0.22f), matClothCover);
+            DecoPiece("Papel_Suelo_2", PrimitiveType.Cube, zone13.transform, new Vector3(34.2f, vestY + 0.02f, 28.4f), new Vector3(0.25f, 0.01f, 0.30f), matClothCover);
+
+            // ====================================================================
+            // ZONA 14: HABITACIÓN DE ELENA (Corredor Z: 46..52, Habitación X: 12..26, Z: 52..66)
+            // ====================================================================
+            GameObject zone14 = new GameObject("14_Elena_Private_Room");
+            zone14.transform.parent = rootEnv;
+
+            // Pequeño corredor privado de acceso (X: 17 a 21, Z: 46 a 52)
+            CreatePrimitive("Elena_Corr_Floor", PrimitiveType.Cube, zone14.transform,
+                new Vector3(19f, vestY - 0.25f, 49f), new Vector3(4f, 0.5f, 6f), matParquet);
+            CreatePrimitive("Elena_Corr_Carpet", PrimitiveType.Cube, zone14.transform,
+                new Vector3(19f, vestY + 0.02f, 49f), new Vector3(2.0f, 0.04f, 6f), matCarpet);
+            CreatePrimitive("Elena_Corr_Ceiling", PrimitiveType.Cube, zone14.transform,
+                new Vector3(19f, vestY + roomH, 49f), new Vector3(4f, 0.5f, 6f), matWallIvory);
+            CreateWall("Elena_Corr_Wall_West", zone14.transform, new Vector3(17f, vestY + 2.5f, 49f), new Vector3(0.5f, roomH, 6f), matWallIvory);
+            CreateWall("Elena_Corr_Wall_East", zone14.transform, new Vector3(21f, vestY + 2.5f, 49f), new Vector3(0.5f, roomH, 6f), matWallIvory);
+            CreateOrnateSconce("Sconce_Elena_Corr", zone14.transform, new Vector3(17.3f, vestY + 2.9f, 49f), matGold, matLanternGlow, new Color(1f, 0.80f, 0.48f), 1.6f);
+
+            // Habitación privada de Elena Vesper (X: 12 a 26, Z: 52 a 66)
+            CreatePrimitive("Elena_Room_Floor", PrimitiveType.Cube, zone14.transform,
+                new Vector3(19f, vestY - 0.25f, 59f), new Vector3(14f, 0.5f, 14f), matParquet);
+            CreatePrimitive("Elena_Room_Ceiling", PrimitiveType.Cube, zone14.transform,
+                new Vector3(19f, vestY + roomH, 59f), new Vector3(14f, 0.5f, 14f), matWallIvory);
+            CreatePrimitive("Elena_Room_Rug", PrimitiveType.Cube, zone14.transform,
+                new Vector3(19f, vestY + 0.02f, 59f), new Vector3(7.5f, 0.04f, 7.5f), matCarpet);
+
+            // Muro sur de la habitación (Z = 52) con Puerta Cerrada con Llave (key_elena_room) en X = 19m
+            CreateWall("Elena_Wall_South_W", zone14.transform, new Vector3(14.975f, vestY + 2.5f, 52f), new Vector3(5.95f, roomH, 0.5f), matWallIvory);
+            CreateWall("Elena_Wall_South_E", zone14.transform, new Vector3(23.025f, vestY + 2.5f, 52f), new Vector3(5.95f, roomH, 0.5f), matWallIvory);
+            CreateArchitecturalDoor("Door_To_Elena_Room", zone14.transform, new Vector3(19f, vestY, 52f), Quaternion.identity,
+                1.8f, 3.2f, roomH, 0.5f, true, "key_elena_room", "HABITACIÓN DE ELENA VESPER",
+                "Habitación Privada de Elena Vesper — Cerrada con llave (Buscar en Taquilla Nº 14)", matMahogany, matGold, matWallIvory);
+
+            // Muros oeste, este y norte de la habitación de Elena
+            CreateWall("Elena_Wall_West", zone14.transform, new Vector3(12f, vestY + 2.5f, 59f), new Vector3(0.5f, roomH, 14f), matWallIvory);
+            CreateWall("Elena_Wall_East", zone14.transform, new Vector3(26f, vestY + 2.5f, 59f), new Vector3(0.5f, roomH, 14f), matWallIvory);
+            CreateWall("Elena_Wall_North", zone14.transform, new Vector3(19f, vestY + 2.5f, 66f), new Vector3(14f, roomH, 0.5f), matWallIvory);
+
+            // Ventana norte con cortinas borgoña parcialmente abiertas y luz lunar fría
+            DecoPiece("Elena_Window_Frame", PrimitiveType.Cube, zone14.transform, new Vector3(19f, vestY + 2.7f, 65.72f), new Vector3(3.2f, 2.8f, 0.12f), matMahogany);
+            DecoPiece("Elena_Window_Glass", PrimitiveType.Cube, zone14.transform, new Vector3(19f, vestY + 2.7f, 65.74f), new Vector3(2.8f, 2.4f, 0.06f), matColdFluorescent);
+            DecoPiece("Elena_Curtain_L", PrimitiveType.Cube, zone14.transform, new Vector3(17.3f, vestY + 2.6f, 65.55f), new Vector3(0.85f, 3.6f, 0.25f), matVelvetDrapes);
+            DecoPiece("Elena_Curtain_R", PrimitiveType.Cube, zone14.transform, new Vector3(20.7f, vestY + 2.6f, 65.55f), new Vector3(0.85f, 3.6f, 0.25f), matVelvetDrapes);
+            CreatePictureSpotlight("Spotlight_Moon_ElenaRoom", zone14.transform,
+                new Vector3(19f, vestY + 3.8f, 65.0f), new Vector3(19f, vestY + 0.8f, 58.5f), new Color(0.62f, 0.78f, 0.98f), 2.8f);
+
+            // Cama individual con ropa de cama marfil envejecida y mesita de noche
+            CreatePrimitive("Elena_Bed_Frame", PrimitiveType.Cube, zone14.transform, new Vector3(14.2f, vestY + 0.35f, 62.5f), new Vector3(2.6f, 0.5f, 1.5f), matMahogany);
+            CreatePrimitive("Elena_Bed_Headboard", PrimitiveType.Cube, zone14.transform, new Vector3(13.0f, vestY + 0.85f, 62.5f), new Vector3(0.2f, 1.3f, 1.5f), matMahogany);
+            CreatePrimitive("Elena_Bed_Mattress", PrimitiveType.Cube, zone14.transform, new Vector3(14.3f, vestY + 0.62f, 62.5f), new Vector3(2.3f, 0.22f, 1.35f), matClothCover);
+            CreatePrimitive("Elena_Bed_Pillow", PrimitiveType.Cube, zone14.transform, new Vector3(13.45f, vestY + 0.78f, 62.5f), new Vector3(0.45f, 0.14f, 0.85f), matTutuWhite);
+            CreatePrimitive("Elena_Nightstand", PrimitiveType.Cube, zone14.transform, new Vector3(13.2f, vestY + 0.45f, 60.5f), new Vector3(0.7f, 0.9f, 0.7f), matMahogany);
+
+            // Armario personal y pequeña estantería con libros de Elena
+            CreateInteractiveWardrobe("Armario_Personal_Elena", zone14.transform, new Vector3(13.2f, vestY, 55.5f), Quaternion.Euler(0f, 90f, 0f), matMahogany, matGold, matTutuBlack, true);
+            CreatePrimitive("Estanteria_Libros_Elena", PrimitiveType.Cube, zone14.transform, new Vector3(24.8f, vestY + 1.4f, 55.5f), new Vector3(0.7f, 2.8f, 2.8f), matWoodArchive);
+
+            // Escritorio de madera oscura de Elena, silla, joyero abierto y compartimento de fondo falso
+            CreatePrimitive("Elena_Desk_Main", PrimitiveType.Cube, zone14.transform, new Vector3(23.8f, vestY + 0.6f, 61.5f), new Vector3(1.5f, 1.2f, 2.8f), matMahogany);
+            CreatePrimitive("Elena_Desk_Chair", PrimitiveType.Cube, zone14.transform, new Vector3(22.3f, vestY + 0.55f, 61.5f), new Vector3(0.8f, 1.1f, 0.8f), matVelvetDrapes);
+
+            // Pequeño joyero abierto sobre el escritorio
+            CreatePrimitive("Joyero_Abierto_Base", PrimitiveType.Cube, zone14.transform, new Vector3(23.6f, vestY + 1.25f, 60.6f), new Vector3(0.32f, 0.12f, 0.24f), matMahogany);
+            DecoPiece("Joyero_Interior_Terciopelo", PrimitiveType.Cube, zone14.transform, new Vector3(23.6f, vestY + 1.32f, 60.6f), new Vector3(0.28f, 0.03f, 0.20f), matVelvetDrapes);
+
+            // Compartimento oculto / cajón de fondo falso interactivo junto al escritorio
+            GameObject secretDrawer = new GameObject("Cajon_Fondo_Falso_Elena");
+            secretDrawer.transform.parent = zone14.transform;
+            secretDrawer.transform.position = new Vector3(23.0f, vestY + 0.95f, 62.4f);
+            GameObject drawerHinge = new GameObject("Drawer_Hinge");
+            drawerHinge.transform.parent = secretDrawer.transform;
+            drawerHinge.transform.localPosition = Vector3.zero;
+            CreatePrimitive("Drawer_Front", PrimitiveType.Cube, drawerHinge.transform, new Vector3(0f, 0f, 0.25f), new Vector3(0.45f, 0.22f, 0.55f), matMahogany);
+            WorldDoor drawerDoor = secretDrawer.AddComponent<WorldDoor>();
+            drawerDoor.Configure(drawerHinge.transform, 75f, 0.7f, false, false, "", "Cajon_Fondo_Falso_Elena", "");
+            EditorUtility.SetDirty(drawerDoor);
+
+            // Fotografías de ensayos e imagen de Elena con el vestuario de Cisne Negro en la pared
+            CreateFramedArtPortrait("Retrato_Elena_CisneNegro_Hab", zone14.transform,
+                new Vector3(25.68f, vestY + 2.6f, 61.5f), new Vector3(0.12f, 2.1f, 1.6f), matGold, matPortraitElena,
+                "Retrato Personal: Elena Vesper con el Traje del Cisne Negro");
+            CreateFramedArtPortrait("Foto_Ensayo_Hab_Elena", zone14.transform,
+                new Vector3(19f, vestY + 2.5f, 52.32f), new Vector3(1.5f, 1.2f, 0.10f), matGold, matPhotoTroupe1923,
+                "Fotografía de Ensayos Privados (Otoño de 1924)");
+
+            CreateOrnateSconce("Sconce_Elena_Room", zone14.transform, new Vector3(12.35f, vestY + 2.9f, 59f), matGold, matLanternGlow, new Color(1f, 0.82f, 0.52f), 1.8f);
+
+            // ELEMENTOS NARRATIVOS Y REVELACIÓN PRINCIPAL EN LA HABITACIÓN DE ELENA (ZONA 14)
+            CreateInteractiveWorldDoc("Doc_Carta_Incompleta_Elena", zone14.transform,
+                new Vector3(23.5f, vestY + 1.24f, 61.5f), new Vector3(0.38f, 0.04f, 0.30f), matGold,
+                "doc_s3_elena_incomplete_letter",
+                "Carta Incompleta de Elena Vesper — [REVELACIÓN PRINCIPAL]",
+                "Manuscrito con fecha del 16 DE OCTUBRE DE 1924 (dos días DESPUÉS de su supuesta desaparición oficial el 14 de octubre):\n\n" +
+                "“Querida hermana:\n" +
+                "Si algún día logras leer esto, no creas ni una palabra de lo que Isadora Vale escribió en el libro de recepción. Anotaron que desaparecí durante el ensayo general de la noche del 14 de octubre, pero hoy es 16 de octubre y sigo aquí.\n\n" +
+                "Me encerraron en el ala privada después de que descubriera lo que ocurrió realmente tras el telón del teatro. La cronología oficial es una farsa para encubrir lo que pasó la noche del estreno.”");
+
+            CreateInteractiveWorldDoc("Doc_Foto_Contradictoria_Elena", zone14.transform,
+                new Vector3(23.15f, vestY + 1.12f, 62.45f), new Vector3(0.34f, 0.04f, 0.28f), matSatinRibbon,
+                "doc_s3_contradictory_photo",
+                "Fotografía Original sin Retocar — Contradicción del Pasillo de los Retratos",
+                "Oculta en el doble fondo del escritorio de Elena:\n\n" +
+                "Es la fotografía original que sirvió de modelo para el cuadro de 'El Lago de las Sombras' expuesto en el Pasillo de los Retratos (Sección 2).\n\n" +
+                "¡CONTRADICCIÓN CLAVE!: En el cuadro del pasillo, Elena aparece completamente sola sobre el escenario. Sin embargo, en esta fotografía original sin retocar, otra figura vestida con un traje idéntico de Cisne Negro está de pie justo detrás de ella en la penumbra.\n\n" +
+                "Anotación al dorso: «Regresa al Pasillo de los Retratos y examina el reverso del lienzo de 'El Lago de las Sombras'. Pintaron encima el 15 de octubre para borrarla.»");
+
+            CreateInteractiveWorldDoc("Doc_Partitura_Incompleta_Elena", zone14.transform,
+                new Vector3(13.2f, vestY + 0.94f, 60.5f), new Vector3(0.35f, 0.04f, 0.26f), matGold,
+                "doc_s3_incomplete_score",
+                "Partitura Incompleta — Fragmento del Archivo Musical",
+                "Una hoja de pentagrama arrancada con varias notas tachadas violentamente:\n\n" +
+                "«Coda en Mi Menor — Variación del Espejo: Mi - Sol - Si - Do# - Re»\n\n" +
+                "Nota al margen de Elena:\n" +
+                "“El maestro de orquesta arrancó la segunda mitad de esta partitura y la encerró en el Archivo Musical del pasillo principal. Cuando tocan esos compases en el piano del ensayo, las luces del teatro responden.”");
+
+            // ====================================================================
+            // ZONA 15: LAVABOS Y DUCHAS ANTIGUAS (X: 11 a 27, Z: 0 a 12, Y: 2.4m)
+            // ====================================================================
+            GameObject zone15 = new GameObject("15_Vintage_Washrooms_And_Showers");
+            zone15.transform.parent = rootEnv;
+
+            CreatePrimitive("Wash_Floor", PrimitiveType.Cube, zone15.transform,
+                new Vector3(19f, vestY - 0.25f, 6f), new Vector3(16f, 0.5f, 12f), matCeramicTile);
+            CreatePrimitive("Wash_Ceiling", PrimitiveType.Cube, zone15.transform,
+                new Vector3(19f, vestY + roomH, 6f), new Vector3(16f, 0.5f, 12f), matWallIvory);
+
+            // Muros perimetrales de lavabos y duchas
+            CreateWall("Wash_Wall_West", zone15.transform, new Vector3(11f, vestY + 2.5f, 6f), new Vector3(0.5f, roomH, 12f), matWallIvory);
+            CreateWall("Wash_Wall_South", zone15.transform, new Vector3(19f, vestY + 2.5f, 0f), new Vector3(16f, roomH, 0.5f), matWallIvory);
+            CreateWall("Wash_Wall_East", zone15.transform, new Vector3(27f, vestY + 2.5f, 6f), new Vector3(0.5f, roomH, 12f), matWallIvory);
+
+            // Revestimiento parcial de azulejos marfil con juntas oscurecidas por la humedad
+            DecoPiece("Wash_Tile_Wainscot_W", PrimitiveType.Cube, zone15.transform, new Vector3(11.28f, vestY + 1.2f, 6f), new Vector3(0.06f, 2.4f, 11.4f), matCeramicTile);
+            DecoPiece("Wash_Tile_Wainscot_E", PrimitiveType.Cube, zone15.transform, new Vector3(26.72f, vestY + 1.2f, 6f), new Vector3(0.06f, 2.4f, 11.4f), matCeramicTile);
+            DecoPiece("Wash_Tile_Wainscot_S", PrimitiveType.Cube, zone15.transform, new Vector3(19f, vestY + 1.2f, 0.28f), new Vector3(15.4f, 2.4f, 0.06f), matCeramicTile);
+
+            // Tuberías antiguas oxidadas recorriendo paredes y techo
+            DecoPiece("Pipe_Ceiling_Main", PrimitiveType.Cylinder, zone15.transform,
+                new Vector3(19f, vestY + 4.65f, 6f), new Vector3(0.14f, 5.8f, 0.14f), matRustedLocker).transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            DecoPiece("Pipe_Wall_West", PrimitiveType.Cylinder, zone15.transform,
+                new Vector3(11.38f, vestY + 3.8f, 6f), new Vector3(0.11f, 5.8f, 0.11f), matRustedLocker).transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            DecoPiece("Pipe_Vertical_Corner", PrimitiveType.Cylinder, zone15.transform,
+                new Vector3(11.4f, vestY + 2.4f, 1.2f), new Vector3(0.12f, 2.4f, 0.12f), matRustedLocker);
+
+            // Ventana pequeña alta en el muro sur con tenue luz azulada lunar
+            DecoPiece("Wash_Small_Window", PrimitiveType.Cube, zone15.transform, new Vector3(19f, vestY + 3.9f, 0.28f), new Vector3(1.8f, 0.9f, 0.10f), matColdFluorescent);
+            CreatePictureSpotlight("Spotlight_Moon_Washroom", zone15.transform,
+                new Vector3(19f, vestY + 3.8f, 0.8f), new Vector3(19f, vestY + 0.5f, 6.5f), new Color(0.52f, 0.70f, 0.95f), 2.1f);
+
+            // Fila de 4 lavabos de porcelana envejecida, grifos metálicos y espejos rectangulares en el muro oeste
+            for (int s = 0; s < 4; s++)
+            {
+                float sz = 2.2f + s * 2.4f;
+                bool hasDripAnomaly = (s == 0); // El último lavabo del fondo gotea cuando te alejas
+                CreatePorcelainWashbasin($"Lavabo_Porcelana_{s + 1}", zone15.transform,
+                    new Vector3(11.75f, vestY, sz), matPorcelain, matIron, matMirrorGlass, matColdFluorescent, hasDripAnomaly);
+            }
+
+            // 4 Cabinas de ducha en el lado este con tabiques, cortinas descoloridas y puertas entreabiertas
+            for (int c = 0; c < 4; c++)
+            {
+                float cz = 2.0f + c * 2.5f;
+                bool hasShowerAnomaly = (c == 2); // Cabina 3 con anomalía acústica de agua/goteo cuando los jugadores se alejan
+                CreateShowerStall($"Cabina_Ducha_{c + 1}", zone15.transform,
+                    new Vector3(24.8f, vestY, cz), matCeramicTile, matRustedLocker, matClothCover, matColdFluorescent, hasShowerAnomaly);
+            }
+
+            // Luz tenue húmeda en el techo
+            CreateOrnateSconce("Sconce_Washroom", zone15.transform, new Vector3(15.5f, vestY + 3.4f, 11.65f), matGold, matLanternGlow, new Color(0.95f, 0.82f, 0.58f), 1.4f);
+
+            // ELEMENTOS NARRATIVOS DE LA ZONA 15 (LAVABOS Y DUCHAS ANTIGUAS)
+            CreateInteractiveWorldDoc("Doc_Inscripcion_Lavabo", zone15.transform,
+                new Vector3(11.8f, vestY + 0.95f, 2.2f), new Vector3(0.32f, 0.04f, 0.24f), matPorcelain,
+                "doc_s3_washbasin_inscription",
+                "Inscripción Parcialmente Borrada en el Azulejo del Lavabo",
+                "Grabado con un objeto punzante en la junta húmeda bajo el espejo del último lavabo:\n\n" +
+                "«18 de Octubre — El agua helada no quita el olor a humo ni la pintura negra de las manos.\n" +
+                "Cerraron las verjas de la calle creyendo que ya no quedaba nadie adentro, pero alguien sigue abriendo las duchas cada madrugada.»");
+
+            CreateInteractiveWorldDoc("Doc_Objeto_Olvidado_Ducha", zone15.transform,
+                new Vector3(24.6f, vestY + 0.12f, 7.0f), new Vector3(0.28f, 0.06f, 0.22f), matGold,
+                "doc_s3_shower_forgotten_item",
+                "Medallón Oxidado y Rastro Reciente en la Cabina de Ducha Nº 3",
+                "Junto al desagüe de la tercera cabina de ducha hay un medallón de latón empañado por la humedad y restos de barro seco que no pertenecen al suelo de parquet del vestuario.\n\n" +
+                "Dentro del medallón se conserva una miniatura borrosa de Elena y una inscripción:\n" +
+                "«Quien estuvo aquí después de la clausura venía desde los niveles inferiores buscando agua limpia.»");
+        }
+
+        private static void CreateGarmentRackWithTutus(string name, Transform parent, Vector3 pos, Material ironMat, Material goldMat, Material whiteTutuMat, Material blackTutuMat, Material clothMat)
+        {
+            GameObject rack = new GameObject(name);
+            rack.transform.parent = parent;
+            rack.transform.position = pos;
+
+            CreatePrimitive("Rack_Base_L", PrimitiveType.Cube, rack.transform, new Vector3(0f, 0.05f, -1.4f), new Vector3(0.7f, 0.08f, 0.12f), ironMat);
+            CreatePrimitive("Rack_Base_R", PrimitiveType.Cube, rack.transform, new Vector3(0f, 0.05f, 1.4f), new Vector3(0.7f, 0.08f, 0.12f), ironMat);
+            CreatePrimitive("Rack_Pole_L", PrimitiveType.Cylinder, rack.transform, new Vector3(0f, 1.0f, -1.4f), new Vector3(0.06f, 0.95f, 0.06f), ironMat);
+            CreatePrimitive("Rack_Pole_R", PrimitiveType.Cylinder, rack.transform, new Vector3(0f, 1.0f, 1.4f), new Vector3(0.06f, 0.95f, 0.06f), ironMat);
+            DecoPiece("Rack_Top_Bar", PrimitiveType.Cylinder, rack.transform, new Vector3(0f, 1.92f, 0f), new Vector3(0.05f, 1.45f, 0.05f), goldMat).transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+
+            // Tutús colgados y prendas cubiertas de polvo
+            float[] zOffsets = { -0.9f, -0.25f, 0.4f, 1.0f };
+            for (int i = 0; i < zOffsets.Length; i++)
+            {
+                Material tutuMat = (i == 1) ? blackTutuMat : ((i % 2 == 0) ? whiteTutuMat : clothMat);
+                DecoPiece($"Hanger_{i}", PrimitiveType.Cube, rack.transform, new Vector3(0f, 1.82f, zOffsets[i]), new Vector3(0.35f, 0.04f, 0.03f), goldMat);
+                DecoPiece($"Bodice_{i}", PrimitiveType.Cylinder, rack.transform, new Vector3(0f, 1.48f, zOffsets[i]), new Vector3(0.26f, 0.28f, 0.18f), tutuMat);
+                DecoPiece($"Tutu_Skirt_{i}", PrimitiveType.Cylinder, rack.transform, new Vector3(0f, 1.18f, zOffsets[i]), new Vector3(0.78f, 0.09f, 0.78f), tutuMat);
+            }
+        }
+
+        private static void CreateInteractiveWardrobe(string name, Transform parent, Vector3 pos, Quaternion rot, Material woodMat, Material goldMat, Material insideClothMat, bool interactiveDoor)
+        {
+            GameObject w = new GameObject(name);
+            w.transform.parent = parent;
+            w.transform.position = pos;
+            w.transform.rotation = rot;
+
+            // Cuerpo hueco del armario (trasera, laterales, techo y base)
+            CreatePrimitive("Wardrobe_Back", PrimitiveType.Cube, w.transform, new Vector3(0f, 1.25f, -0.36f), new Vector3(1.5f, 2.5f, 0.08f), woodMat);
+            CreatePrimitive("Wardrobe_Side_L", PrimitiveType.Cube, w.transform, new Vector3(-0.71f, 1.25f, 0f), new Vector3(0.08f, 2.5f, 0.8f), woodMat);
+            CreatePrimitive("Wardrobe_Side_R", PrimitiveType.Cube, w.transform, new Vector3(0.71f, 1.25f, 0f), new Vector3(0.08f, 2.5f, 0.8f), woodMat);
+            CreatePrimitive("Wardrobe_Top", PrimitiveType.Cube, w.transform, new Vector3(0f, 2.46f, 0f), new Vector3(1.58f, 0.12f, 0.86f), woodMat);
+            CreatePrimitive("Wardrobe_Bottom", PrimitiveType.Cube, w.transform, new Vector3(0f, 0.08f, 0f), new Vector3(1.5f, 0.16f, 0.8f), woodMat);
+            DecoPiece("Wardrobe_Inside_Garment", PrimitiveType.Cylinder, w.transform, new Vector3(-0.25f, 1.35f, -0.05f), new Vector3(0.52f, 0.45f, 0.42f), insideClothMat);
+
+            // Puerta derecha fija entreabierta y puerta izquierda interactiva
+            CreatePrimitive("Wardrobe_Door_R", PrimitiveType.Cube, w.transform, new Vector3(0.35f, 1.25f, 0.38f), new Vector3(0.66f, 2.26f, 0.05f), woodMat);
+
+            GameObject doorHinge = new GameObject("Wardrobe_Door_L_Hinge");
+            doorHinge.transform.parent = w.transform;
+            doorHinge.transform.localPosition = new Vector3(-0.68f, 0f, 0.38f);
+            doorHinge.transform.localRotation = Quaternion.identity;
+
+            CreatePrimitive("Wardrobe_Door_L_Leaf", PrimitiveType.Cube, doorHinge.transform, new Vector3(0.33f, 1.25f, 0f), new Vector3(0.66f, 2.26f, 0.05f), woodMat);
+            DecoPiece("Wardrobe_Handle_L", PrimitiveType.Sphere, doorHinge.transform, new Vector3(0.58f, 1.20f, 0.05f), new Vector3(0.06f, 0.06f, 0.06f), goldMat);
+
+            if (interactiveDoor)
+            {
+                WorldDoor wd = w.AddComponent<WorldDoor>();
+                wd.Configure(doorHinge.transform, -95f, 0.8f, false, false, "", name, "");
+                EditorUtility.SetDirty(wd);
+            }
+        }
+
+        private static void CreateVanityStation(string name, Transform parent, Vector3 pos, Quaternion rot,
+            Material woodMat, Material goldMat, Material mirrorMat, Material velvetMat, Material glowMat,
+            Material porcelainMat, Material shadowMat, bool bulbLit, bool isAnomalyStation)
+        {
+            GameObject station = new GameObject(name);
+            station.transform.parent = parent;
+            station.transform.position = pos;
+            station.transform.rotation = rot;
+
+            // Mesa de tocador de madera oscura
+            CreatePrimitive("Vanity_Table_Top", PrimitiveType.Cube, station.transform, new Vector3(0f, 0.80f, 0f), new Vector3(1.7f, 0.10f, 0.75f), woodMat);
+            CreatePrimitive("Vanity_Leg_L", PrimitiveType.Cube, station.transform, new Vector3(-0.75f, 0.38f, 0f), new Vector3(0.12f, 0.76f, 0.65f), woodMat);
+            CreatePrimitive("Vanity_Leg_R", PrimitiveType.Cube, station.transform, new Vector3(0.75f, 0.38f, 0f), new Vector3(0.12f, 0.76f, 0.65f), woodMat);
+
+            // Silla tapizada en terciopelo borgoña
+            CreatePrimitive("Vanity_Stool_Seat", PrimitiveType.Cylinder, station.transform, new Vector3(0f, 0.46f, 0.68f), new Vector3(0.52f, 0.08f, 0.52f), velvetMat);
+            CreatePrimitive("Vanity_Stool_Base", PrimitiveType.Cylinder, station.transform, new Vector3(0f, 0.22f, 0.68f), new Vector3(0.14f, 0.22f, 0.14f), woodMat);
+
+            // Marco ovalado ornamentado y espejo antiguo
+            DecoPiece("Mirror_Frame_Oval", PrimitiveType.Cylinder, station.transform,
+                new Vector3(0f, 1.62f, -0.30f), new Vector3(1.15f, 0.04f, 1.48f), goldMat).transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            DecoPiece("Mirror_Glass_Surface", PrimitiveType.Cylinder, station.transform,
+                new Vector3(0f, 1.62f, -0.27f), new Vector3(1.02f, 0.03f, 1.34f), mirrorMat).transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+
+            // Bombillas antiguas alrededor del espejo (algunas encendidas, otras apagadas/rotas)
+            for (int b = -2; b <= 2; b++)
+            {
+                float angle = b * 0.48f;
+                float bx = Mathf.Sin(angle) * 0.56f;
+                float by = 1.62f + Mathf.Cos(angle) * 0.65f;
+                bool broken = (!bulbLit && b % 2 == 0) || (b == 1);
+                DecoPiece($"Vanity_Bulb_{b}", PrimitiveType.Sphere, station.transform,
+                    new Vector3(bx, by, -0.22f), new Vector3(0.07f, 0.07f, 0.07f), broken ? woodMat : glowMat);
+            }
+
+            Light vanityPointLight = null;
+            if (bulbLit)
+            {
+                GameObject lObj = new GameObject("Vanity_Warm_Light");
+                lObj.transform.parent = station.transform;
+                lObj.transform.localPosition = new Vector3(0f, 1.85f, 0.15f);
+                vanityPointLight = lObj.AddComponent<Light>();
+                vanityPointLight.type = LightType.Point;
+                vanityPointLight.color = new Color(1.0f, 0.82f, 0.52f);
+                vanityPointLight.range = 6.5f;
+                vanityPointLight.intensity = 1.45f;
+            }
+
+            // Frascos de perfume, polveras y cepillos sobre la mesa
+            DecoPiece("Perfume_Bottle_Real", PrimitiveType.Cylinder, station.transform,
+                new Vector3(-0.48f, 0.90f, 0.05f), new Vector3(0.10f, 0.09f, 0.10f), goldMat);
+            DecoPiece("Powder_Compact", PrimitiveType.Cylinder, station.transform,
+                new Vector3(0.42f, 0.87f, 0.08f), new Vector3(0.16f, 0.03f, 0.16f), porcelainMat);
+
+            if (isAnomalyStation)
+            {
+                // Discrepancia sutil de objeto: un frasco caído a la izquierda en la mesa real, pero erguido al lado opuesto tras el cristal
+                GameObject fallenBottle = DecoPiece("Fallen_Perfume_Discrepancy", PrimitiveType.Cylinder, station.transform,
+                    new Vector3(-0.25f, 0.88f, -0.08f), new Vector3(0.08f, 0.11f, 0.08f), porcelainMat);
+                fallenBottle.transform.localRotation = Quaternion.Euler(0f, 0f, 82f);
+
+                // Silueta fantasmal de bailarina vestida de Cisne Negro que aparece un instante en el reflejo
+                GameObject silhouette = new GameObject("Mirror_Anomaly_Silhouette");
+                silhouette.transform.parent = station.transform;
+                silhouette.transform.localPosition = new Vector3(0f, 0f, -0.21f);
+                silhouette.transform.localRotation = Quaternion.identity;
+
+                DecoPiece("Silhouette_Head", PrimitiveType.Sphere, silhouette.transform, new Vector3(0f, 1.88f, 0f), new Vector3(0.22f, 0.26f, 0.04f), shadowMat);
+                DecoPiece("Silhouette_Torso", PrimitiveType.Capsule, silhouette.transform, new Vector3(0f, 1.50f, 0f), new Vector3(0.28f, 0.34f, 0.04f), shadowMat);
+                DecoPiece("Silhouette_BlackTutu", PrimitiveType.Cylinder, silhouette.transform, new Vector3(0f, 1.32f, 0f), new Vector3(0.75f, 0.06f, 0.08f), shadowMat);
+
+                MirrorAnomalyController anomaly = station.AddComponent<MirrorAnomalyController>();
+                anomaly.Configure(silhouette, vanityPointLight);
+                SerializedObject serAnom = new SerializedObject(anomaly);
+                SerializedProperty pSil = serAnom.FindProperty("silhouetteRoot");
+                if (pSil != null) pSil.objectReferenceValue = silhouette;
+                SerializedProperty pLit = serAnom.FindProperty("vanityLight");
+                if (pLit != null) pLit.objectReferenceValue = vanityPointLight;
+                serAnom.ApplyModifiedProperties();
+                EditorUtility.SetDirty(anomaly);
+            }
+        }
+
+        private static void CreateColdFluorescentFixture(string name, Transform parent, Vector3 pos, Material housingMat, Material tubeGlowMat, float intensity)
+        {
+            GameObject fix = new GameObject(name);
+            fix.transform.parent = parent;
+            fix.transform.position = pos;
+
+            DecoPiece("Fluorescent_Housing", PrimitiveType.Cube, fix.transform, new Vector3(0f, 0.08f, 0f), new Vector3(0.45f, 0.08f, 2.8f), housingMat);
+            DecoPiece("Fluorescent_Tube", PrimitiveType.Cylinder, fix.transform, Vector3.zero, new Vector3(0.10f, 1.3f, 0.10f), tubeGlowMat).transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+
+            GameObject lObj = new GameObject("Cold_Light");
+            lObj.transform.parent = fix.transform;
+            lObj.transform.localPosition = new Vector3(0f, -0.15f, 0f);
+            Light l = lObj.AddComponent<Light>();
+            l.type = LightType.Point;
+            l.color = new Color(0.72f, 0.88f, 1.0f);
+            l.range = 14f;
+            l.intensity = intensity;
+        }
+
+        private static void CreateMetalLockerUnit(string name, Transform parent, Vector3 pos, Quaternion rot, string plateLabel, bool openable, bool startSlightlyOpen, Material metalMat, Material goldMat, Material insideMat)
+        {
+            GameObject locker = new GameObject(name);
+            locker.transform.parent = parent;
+            locker.transform.position = pos;
+            locker.transform.rotation = rot;
+
+            // Caja metálica con estantes interiores visibles
+            CreatePrimitive("Locker_Back", PrimitiveType.Cube, locker.transform, new Vector3(0f, 1.15f, -0.32f), new Vector3(0.95f, 2.3f, 0.05f), metalMat);
+            CreatePrimitive("Locker_Side_L", PrimitiveType.Cube, locker.transform, new Vector3(-0.45f, 1.15f, 0f), new Vector3(0.05f, 2.3f, 0.68f), metalMat);
+            CreatePrimitive("Locker_Side_R", PrimitiveType.Cube, locker.transform, new Vector3(0.45f, 1.15f, 0f), new Vector3(0.05f, 2.3f, 0.68f), metalMat);
+            CreatePrimitive("Locker_Top", PrimitiveType.Cube, locker.transform, new Vector3(0f, 2.27f, 0f), new Vector3(0.95f, 0.06f, 0.68f), metalMat);
+            CreatePrimitive("Locker_Bottom", PrimitiveType.Cube, locker.transform, new Vector3(0f, 0.05f, 0f), new Vector3(0.95f, 0.10f, 0.68f), metalMat);
+            CreatePrimitive("Locker_Shelf_Mid", PrimitiveType.Cube, locker.transform, new Vector3(0f, 1.02f, 0f), new Vector3(0.86f, 0.03f, 0.60f), metalMat);
+            CreatePrimitive("Locker_Shelf_Upper", PrimitiveType.Cube, locker.transform, new Vector3(0f, 1.38f, 0f), new Vector3(0.86f, 0.03f, 0.60f), metalMat);
+
+            // Bisagra y puerta metálica con placa de identificación
+            GameObject hinge = new GameObject("Locker_Door_Hinge");
+            hinge.transform.parent = locker.transform;
+            hinge.transform.localPosition = new Vector3(-0.43f, 0f, 0.32f);
+            hinge.transform.localRotation = startSlightlyOpen ? Quaternion.Euler(0f, -65f, 0f) : Quaternion.identity;
+
+            CreatePrimitive("Locker_Door_Panel", PrimitiveType.Cube, hinge.transform, new Vector3(0.43f, 1.15f, 0f), new Vector3(0.86f, 2.18f, 0.04f), metalMat);
+            DecoPiece("Locker_NamePlate", PrimitiveType.Cube, hinge.transform, new Vector3(0.43f, 1.85f, 0.03f), new Vector3(0.42f, 0.11f, 0.015f), goldMat);
+            DecoPiece("Locker_Handle", PrimitiveType.Cube, hinge.transform, new Vector3(0.76f, 1.15f, 0.04f), new Vector3(0.04f, 0.18f, 0.04f), goldMat);
+
+            if (openable)
+            {
+                WorldDoor doorComp = locker.AddComponent<WorldDoor>();
+                doorComp.Configure(hinge.transform, startSlightlyOpen ? 65f : -85f, 0.65f, startSlightlyOpen, false, "", $"Taquilla_{plateLabel}", "");
+                SerializedObject serDoor = new SerializedObject(doorComp);
+                SerializedProperty pH = serDoor.FindProperty("doorHinge");
+                if (pH != null) pH.objectReferenceValue = hinge.transform;
+                SerializedProperty pO = serDoor.FindProperty("isOpen");
+                if (pO != null) pO.boolValue = startSlightlyOpen;
+                SerializedProperty pId = serDoor.FindProperty("id");
+                if (pId != null) pId.stringValue = $"Taquilla ({plateLabel})";
+                serDoor.ApplyModifiedProperties();
+                EditorUtility.SetDirty(doorComp);
+            }
+        }
+
+        private static void CreatePorcelainWashbasin(string name, Transform parent, Vector3 pos, Material porcelainMat, Material metalMat, Material mirrorMat, Material waterMat, bool addDripAnomaly)
+        {
+            GameObject sink = new GameObject(name);
+            sink.transform.parent = parent;
+            sink.transform.position = pos;
+
+            // Pedestal y lavabo de porcelana envejecida
+            CreatePrimitive("Sink_Pedestal", PrimitiveType.Cylinder, sink.transform, new Vector3(0f, 0.42f, 0f), new Vector3(0.24f, 0.42f, 0.24f), porcelainMat);
+            CreatePrimitive("Sink_Basin", PrimitiveType.Cube, sink.transform, new Vector3(0f, 0.88f, 0f), new Vector3(0.62f, 0.16f, 0.78f), porcelainMat);
+            DecoPiece("Sink_Faucet", PrimitiveType.Cylinder, sink.transform, new Vector3(-0.18f, 1.04f, 0f), new Vector3(0.06f, 0.10f, 0.06f), metalMat);
+            DecoPiece("Sink_Spout", PrimitiveType.Cube, sink.transform, new Vector3(-0.08f, 1.10f, 0f), new Vector3(0.18f, 0.04f, 0.04f), metalMat);
+
+            // Espejo rectangular sobre el lavabo
+            DecoPiece("Sink_Mirror_Frame", PrimitiveType.Cube, sink.transform, new Vector3(-0.42f, 1.62f, 0f), new Vector3(0.05f, 1.05f, 0.72f), metalMat);
+            DecoPiece("Sink_Mirror_Glass", PrimitiveType.Cube, sink.transform, new Vector3(-0.39f, 1.62f, 0f), new Vector3(0.02f, 0.94f, 0.62f), mirrorMat);
+
+            if (addDripAnomaly)
+            {
+                GameObject droplet = DecoPiece("Water_Droplet_Anomaly", PrimitiveType.Sphere, sink.transform,
+                    new Vector3(0.0f, 1.05f, 0f), new Vector3(0.045f, 0.065f, 0.045f), waterMat);
+                WashroomAnomalyController anom = sink.AddComponent<WashroomAnomalyController>();
+                anom.Configure(droplet.transform);
+                SerializedObject ser = new SerializedObject(anom);
+                SerializedProperty pDrop = ser.FindProperty("dropletVisual");
+                if (pDrop != null) pDrop.objectReferenceValue = droplet.transform;
+                ser.ApplyModifiedProperties();
+                EditorUtility.SetDirty(anom);
+            }
+        }
+
+        private static void CreateShowerStall(string name, Transform parent, Vector3 pos, Material tileMat, Material pipeMat, Material curtainMat, Material waterMat, bool addAnomaly)
+        {
+            GameObject stall = new GameObject(name);
+            stall.transform.parent = parent;
+            stall.transform.position = pos;
+
+            // Tabiques divisorios de azulejo
+            CreatePrimitive("Shower_Partition_S", PrimitiveType.Cube, stall.transform, new Vector3(0f, 1.25f, -1.15f), new Vector3(2.2f, 2.5f, 0.12f), tileMat);
+            CreatePrimitive("Shower_Partition_N", PrimitiveType.Cube, stall.transform, new Vector3(0f, 1.25f, 1.15f), new Vector3(2.2f, 2.5f, 0.12f), tileMat);
+
+            // Tubería vertical y cabezal de ducha antiguo
+            DecoPiece("Shower_Pipe", PrimitiveType.Cylinder, stall.transform, new Vector3(1.65f, 1.45f, 0f), new Vector3(0.06f, 1.25f, 0.06f), pipeMat);
+            DecoPiece("Shower_Head", PrimitiveType.Cylinder, stall.transform, new Vector3(1.42f, 2.35f, 0f), new Vector3(0.22f, 0.05f, 0.22f), pipeMat).transform.localRotation = Quaternion.Euler(0f, 0f, 25f);
+
+            // Cortina descolorida y puerta de cabina entreabierta
+            DecoPiece("Shower_Curtain_Faded", PrimitiveType.Cube, stall.transform, new Vector3(-0.95f, 1.20f, -0.55f), new Vector3(0.06f, 2.1f, 0.95f), curtainMat);
+
+            GameObject doorHinge = new GameObject("Shower_Door_Hinge");
+            doorHinge.transform.parent = stall.transform;
+            doorHinge.transform.localPosition = new Vector3(-1.05f, 0f, 1.05f);
+            doorHinge.transform.localRotation = Quaternion.Euler(0f, 38f, 0f);
+            CreatePrimitive("Shower_Cabin_Door", PrimitiveType.Cube, doorHinge.transform, new Vector3(0f, 1.15f, -0.48f), new Vector3(0.06f, 2.0f, 0.96f), pipeMat);
+
+            WorldDoor cabinDoor = stall.AddComponent<WorldDoor>();
+            cabinDoor.Configure(doorHinge.transform, -75f, 0.8f, false, false, "", name, "");
+            EditorUtility.SetDirty(cabinDoor);
+
+            if (addAnomaly)
+            {
+                GameObject drop = DecoPiece("Shower_Drip_Visual", PrimitiveType.Sphere, stall.transform,
+                    new Vector3(1.38f, 2.25f, 0f), new Vector3(0.05f, 0.08f, 0.05f), waterMat);
+                WashroomAnomalyController anom = stall.AddComponent<WashroomAnomalyController>();
+                anom.Configure(drop.transform);
+                SerializedObject ser = new SerializedObject(anom);
+                SerializedProperty pDrop = ser.FindProperty("dropletVisual");
+                if (pDrop != null) pDrop.objectReferenceValue = drop.transform;
+                ser.ApplyModifiedProperties();
+                EditorUtility.SetDirty(anom);
             }
         }
 
