@@ -48,11 +48,11 @@ namespace UltimoActo.UI
         private bool isExpanded = false;
         private bool isGuideVisible = true;
 
-        // Límites del mundo representados en el plano (X: -42 a +42, Z: -38 a +95)
+        // Límites del mundo representados en el plano (X: -42 a +48, Z: -38 a +154)
         private const float WorldMinX = -42f;
-        private const float WorldMaxX = 42f;
+        private const float WorldMaxX = 48f;
         private const float WorldMinZ = -38f;
-        private const float WorldMaxZ = 95f;
+        private const float WorldMaxZ = 154f;
 
         private readonly Vector2 compactSize = new Vector2(390f, 360f);
         private readonly Vector2 expandedSize = new Vector2(720f, 660f);
@@ -205,6 +205,34 @@ namespace UltimoActo.UI
             AddRoom("z24", "24. Grabaciones", "24. Cabina de Grabaciones Acústica (Sección 5)", 30f, 50f, 9f, 12f, colSec5);
             AddRoom("z25_pass", "", "25. Pasillo al Depósito de Instrumentos", 26f, 50f, 4f, 12f, colSec5);
             AddRoom("z25", "25. Instrumentos", "25. Depósito de Instrumentos (Sección 5)", 27f, 36f, 12f, 14f, colSec5);
+
+            // Sección 6: Camerinos y Backstage — Zona Restringida (Norte y Este)
+            Color colSec6 = new Color(0.45f, 0.24f, 0.18f, 0.88f);
+            AddRoom("z26_hall_e", "Galería Servicio", "Circulación Secundaria a Camerinos y Salida Exterior (Sección 6)", 39f, 36f, 6f, 42f, colSec6);
+            AddRoom("z26_vest", "", "Vestíbulo de Camerinos Principales (Sección 6)", 26f, 78f, 19f, 5f, colSec6);
+            AddRoom("z26", "26. Cam. Mara", "26. Camerino de Mara Bell (Sección 6)", 26f, 83f, 7.5f, 9f, colSec6);
+            AddRoom("z27", "27. Cam. Elena", "27. Camerino de Elena Vesper — Cisne Negro (Sección 6)", 33.5f, 83f, 7.5f, 9f, colSec6);
+            AddRoom("z28_conn_e", "", "Paso Este al Backstage (Sección 6)", 41f, 83f, 4f, 9f, colSec6);
+            AddRoom("z28_link_s", "", "Conector Técnico al Backstage (Sección 6)", -4f, 84f, 12f, 8f, colSec6);
+            AddRoom("z28", "28. Pasillo Backstage", "28. Pasillo Detrás del Escenario (Sección 6)", -12f, 92f, 57f, 6f, colSec6);
+            AddRoom("z29", "29. Almacén Decorados", "29. Almacén de Decorados Escenográficos (Sección 6)", 10.6f, 98f, 27.4f, 16f, colSec6);
+            AddRoom("z30", "30. Poleas [PUZLE]", "30. Sala de Mecanismos y Poleas — Abre el Escenario (Sección 6)", -28f, 84f, 16f, 20f, colSec6);
+
+            // Sección 7: Teatro Principal — Clímax (Zonas 31 a 35)
+            Color colSec7 = new Color(0.54f, 0.16f, 0.22f, 0.90f);
+            Color colSec7Upper = new Color(0.28f, 0.36f, 0.48f, 0.88f);
+            AddRoom("z32", "32. ESCENARIO PRINCIPAL", "32. Escenario Principal y Pasarela Superior (Sección 7)", -22f, 98f, 28f, 18f, colSec7);
+            AddRoom("z33", "33. Foso Orquesta", "33. Foso de Orquesta (Sección 7)", -20f, 116f, 24f, 6f, new Color(0.38f, 0.28f, 0.16f, 0.90f));
+            AddRoom("z31", "31. PATIO DE BUTACAS", "31. Patio de Butacas y Balcones — Gran Teatro (Sección 7)", -26f, 122f, 36f, 28f, colSec7);
+            AddRoom("z34_stairs", "Esc. Cabina", "Escalera Técnica a Cabina y Pasarela (Sección 7)", -34f, 104f, 8f, 14f, colSec7Upper);
+            AddRoom("z34", "34. Cabina Luces", "34. Cabina de Iluminación (Nivel Superior — Sección 7)", -34f, 118f, 12f, 14f, colSec7Upper);
+
+            // Sección 8: Zona Secreta — La Verdad Oculta (Zonas 36 a 39)
+            Color colSec8 = new Color(0.36f, 0.16f, 0.38f, 0.90f);
+            AddRoom("z36", "36. Esc. Oculta", "36. Escalera Oculta (Sección 8 — Zona Secreta)", 10f, 114.2f, 19f, 3.8f, colSec8);
+            AddRoom("z37", "37. Depósito", "37. Depósito Clausurado Subterráneo (Sección 8)", 29f, 114.2f, 13f, 12.3f, colSec8);
+            AddRoom("z38", "38. Arch. Prohibidos", "38. Sala de Archivos Prohibidos (Sección 8)", 16f, 126.5f, 26f, 12f, colSec8);
+            AddRoom("z39", "39. Cám. Escenario", "39. Cámara tras el Escenario — La Verdad Oculta (Sección 8)", 6f, 98.5f, 4.6f, 8.5f, colSec8);
         }
 
         private void AddRoom(string id, string shortLabel, string fullName, float xMin, float zMin, float width, float height, Color color)
@@ -296,7 +324,28 @@ namespace UltimoActo.UI
                 new Vector2(28f, 62f),    // Archivo Partituras -> Pasillo Depósito Instrumentos
                 new Vector2(30f, 56f),    // Cabina Grabaciones -> Pasillo Depósito Instrumentos
                 new Vector2(27f, 41f),    // Depósito Instrumentos -> Sala de Tocadores / Camerinos
-                new Vector2(33f, 36f)     // Depósito Instrumentos -> Taquillas y Vestuarios
+                new Vector2(33f, 36f),    // Depósito Instrumentos -> Taquillas y Vestuarios
+                new Vector2(39f, 43.2f),  // Depósito Instrumentos -> Galería de Camerinos / Backstage (Sección 6)
+                new Vector2(42f, 36f),    // Galería de Camerinos -> Puerta de Servicio Exterior
+                new Vector2(26f, 80.5f),  // Sala del Piano -> Vestíbulo de Camerinos (Mara y Elena)
+                new Vector2(29.75f, 83f), // Vestíbulo -> Camerino de Mara (Zona 26)
+                new Vector2(37.25f, 83f), // Vestíbulo -> Camerino de Elena (Zona 27)
+                new Vector2(43f, 92f),    // Conector Camerinos -> Pasillo Detrás del Escenario (Zona 28)
+                new Vector2(0f, 84f),     // Zona Técnica -> Pasillo Detrás del Escenario (Zona 28)
+                new Vector2(22f, 98f),    // Pasillo Backstage -> Almacén de Decorados (Zona 29)
+                new Vector2(-12f, 95f),   // Pasillo Backstage -> Sala de Mecanismos y Poleas (Zona 30)
+                new Vector2(-12f, 101f),  // Sala de Poleas -> Hombro Oeste del Escenario Principal (Zona 32)
+                new Vector2(-2.5f, 98f),  // Pasillo Backstage -> Escenario Principal (Puertas Dobles)
+                new Vector2(3.5f, 98f),   // Pasillo Backstage -> Acceso Lateral de Cortinas al Escenario
+                new Vector2(-21f, 118.8f),// Escenario -> Escalera al Foso de Orquesta (Zona 33)
+                new Vector2(-24.2f, 121f),// Escenario -> Patio de Butacas Oeste (Zona 31)
+                new Vector2(8f, 121f),    // Escenario -> Patio de Butacas Este (Zona 31)
+                new Vector2(-29.5f, 106f),// Escalera Técnica -> Cabina de Iluminación (34) y Pasarela Superior (35)
+                new Vector2(10f, 116f),   // Panel Móvil (B-00) -> Escalera Oculta (Zona 36)
+                new Vector2(29f, 116f),   // Escalera Oculta -> Depósito Clausurado (Zona 37)
+                new Vector2(35.5f, 126.5f),// Depósito Clausurado -> Archivos Prohibidos (Zona 38)
+                new Vector2(16f, 132.5f), // Archivos Prohibidos -> Pasaje a Cámara tras el Escenario (Zona 39)
+                new Vector2(6f, 105.4f)   // Cámara tras el Escenario -> Escenario Principal
             };
 
             foreach (Vector2 dp in doorPositions)
@@ -323,6 +372,12 @@ namespace UltimoActo.UI
 
             // Marcador LLAVE 2: Taquilla Nº 14 de Elena (37.5, 22.2)
             keyElenaMarker = CreateMapPin("Pin_Key_Elena", new Vector2(35f, 22.2f), "LLAVE 2", new Color(0.98f, 0.78f, 0.18f), out keyElenaBg);
+
+            // Marcador PUZLE DE POLEAS (Zona 30 -> Abre Escenario Principal)
+            CreateMapPin("Pin_Stage_Pulley", new Vector2(-20f, 95f), "POLEAS", new Color(0.95f, 0.55f, 0.25f), out _);
+
+            // Marcador CLÍMAX EN ESCENARIO PRINCIPAL (Zona 32)
+            CreateMapPin("Pin_Stage_Climax", new Vector2(-8f, 109f), "CLÍMAX", new Color(0.95f, 0.32f, 0.38f), out _);
 
             // Marcador del Jugador (Punto brillante + línea de dirección de mirada)
             GameObject pObj = new GameObject("PlayerMapMarker");
@@ -532,10 +587,11 @@ namespace UltimoActo.UI
                 string st2 = hasElenaKey ? "<color=#55EE77>[OBTENIDA]</color>" : "<color=#FFD447>[En 13. Taquillas — Taquilla Nº 14]</color>";
 
                 keyGuideTMP.text =
-                    $"<b>GUÍA DE LLAVES Y CUARTOS:</b>\n" +
+                    $"<b>GUÍA DE LLAVES Y ACCESOS:</b>\n" +
                     $"• <b>Llave 1 (Archivo):</b> {st1} -> Abre <b>8. Archivo</b>\n" +
                     $"• <b>Llave 2 (Hab. Elena):</b> {st2} -> Abre <b>14. Hab. Elena</b>\n" +
-                    $"<color=#B8B09A>[M] Ampliar/Reducir Mapa   |   [H] Ocultar/Mostrar Guía   |   Punto Azul = Tú</color>";
+                    $"• <b>Escenario Principal:</b> <color=#FFA855>[En 30. Sala de Poleas — Palanca III]</color>\n" +
+                    $"<color=#B8B09A>[M] Ampliar/Reducir Mapa   |   [H] Ocultar/Mostrar Guía</color>";
             }
         }
     }

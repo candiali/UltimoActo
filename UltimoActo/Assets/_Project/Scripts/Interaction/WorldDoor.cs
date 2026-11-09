@@ -96,7 +96,7 @@ namespace UltimoActo.Interaction
             ToggleDoor();
         }
 
-        private void ToggleDoor()
+        public void ToggleDoor()
         {
             if (rotateCoroutine != null) StopCoroutine(rotateCoroutine);
             isOpen = !isOpen;
