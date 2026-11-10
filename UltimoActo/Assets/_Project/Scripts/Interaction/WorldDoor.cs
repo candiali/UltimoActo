@@ -124,6 +124,16 @@ namespace UltimoActo.Interaction
             rotateCoroutine = StartCoroutine(AnimateDoor(isOpen ? openRotation : closedRotation));
         }
 
+        public void UnlockDoor(bool openImmediately = false)
+        {
+            isLocked = false;
+            lockedDescription = string.Empty;
+            if (openImmediately && !isOpen)
+            {
+                ToggleDoor();
+            }
+        }
+
         private IEnumerator AnimateDoor(Quaternion targetRotation)
         {
             Quaternion startRotation = doorHinge.localRotation;

@@ -87,7 +87,7 @@ namespace UltimoActo.Editor
         private const string ElenaPortraitPath = "Assets/_Project/Textures/Portraits/Elena_Vesper_Portrait.jpg";
         private const string IsadoraPortraitPath = "Assets/_Project/Textures/Portraits/Isadora_Vale_Portrait.jpg";
         private const string TroupePhotoPath = "Assets/_Project/Textures/Portraits/Troupe_1923_Photo.jpg";
-        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1_To_12_V34";
+        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1_To_12_V35";
 
         static Section1SceneBuilder()
         {
@@ -179,6 +179,8 @@ namespace UltimoActo.Editor
                 Material matPortraitElena = CreatePortraitMaterial("Mat_S1_Portrait_Elena", ElenaPortraitPath, matMahogany);
                 Material matPortraitIsadora = CreatePortraitMaterial("Mat_S2_Portrait_Isadora", IsadoraPortraitPath, matMahogany);
                 Material matPhotoTroupe1923 = CreatePortraitMaterial("Mat_S2_Photo_Troupe1923", TroupePhotoPath, matMahogany);
+                Material matSecretPaper = GetOrCreateBasicMaterial("Mat_S8_ArchivalPaper", new Color(0.84f, 0.77f, 0.60f), 0.16f, 0.0f);
+                Material matDarkCement = GetOrCreateBasicMaterial("Mat_S8_SubterraneanCement", new Color(0.17f, 0.18f, 0.19f), 0.22f, 0.04f);
 
                 // ==========================================
                 // 2. ILUMINACIÓN, NIEBLA Y POST-PROCESO
@@ -612,6 +614,55 @@ namespace UltimoActo.Editor
                 CreateOrnateSconce("Sconce_Rec_1", zone6.transform, new Vector3(-21.5f, vestY + 3.2f, 23.7f), matGold, matLanternGlow, new Color(1f, 0.82f, 0.50f), 2.5f);
                 CreateOrnateSconce("Sconce_Rec_2", zone6.transform, new Vector3(-23.7f, vestY + 3.2f, 15f), matGold, matLanternGlow, new Color(1f, 0.82f, 0.50f), 2.5f);
 
+                // Linterna de latón vintage de 1924 sobre el mostrador de recepción (recogible)
+                GameObject flashlightProp = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                flashlightProp.name = "Flashlight_Brass_Prop";
+                flashlightProp.transform.parent = zone6.transform;
+                flashlightProp.transform.position = new Vector3(-18.5f, vestY + 1.28f, 16f);
+                flashlightProp.transform.localScale = new Vector3(0.12f, 0.28f, 0.12f);
+                flashlightProp.transform.rotation = Quaternion.Euler(90f, 25f, 0f);
+                flashlightProp.GetComponent<Renderer>().sharedMaterial = matGold;
+                WorldItem flashlightItem = flashlightProp.AddComponent<WorldItem>();
+                flashlightItem.Configure("flashlight_brass_1924", "Linterna de Latón (1924)", ItemType.Tool);
+
+                // Cuadro Eléctrico Principal de la Academia (Muro Oeste de Recepción)
+                GameObject fuseBoxRoot = new GameObject("Cuadro_Electrico_Principal");
+                fuseBoxRoot.transform.parent = zone6.transform;
+                fuseBoxRoot.transform.position = new Vector3(-23.85f, vestY + 1.95f, 13.8f);
+
+                CreatePrimitive("FuseBox_Casing", PrimitiveType.Cube, fuseBoxRoot.transform,
+                    Vector3.zero, new Vector3(0.24f, 1.4f, 1.05f), matIron);
+                DecoPiece("FuseBox_BrassBezel", PrimitiveType.Cube, fuseBoxRoot.transform,
+                    new Vector3(0.12f, 0f, 0f), new Vector3(0.04f, 1.32f, 0.96f), matGold);
+
+                Material matPilotRed = GetOrCreateEmissiveMaterial("Mat_S1_PilotLightRed", new Color(0.95f, 0.12f, 0.08f));
+                Material matPilotGreen = GetOrCreateEmissiveMaterial("Mat_S1_PilotLightGreen", new Color(0.12f, 0.95f, 0.22f));
+
+                Renderer[] slotIndicators = new Renderer[3];
+                for (int s = 0; s < 3; s++)
+                {
+                    float sz = -0.32f + s * 0.32f;
+                    DecoPiece($"Fuse_Socket_{s + 1}", PrimitiveType.Cylinder, fuseBoxRoot.transform,
+                        new Vector3(0.13f, 0.22f, sz), new Vector3(0.16f, 0.08f, 0.16f), matPorcelain).transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                    GameObject pilotObj = DecoPiece($"Fuse_Pilot_{s + 1}", PrimitiveType.Sphere, fuseBoxRoot.transform,
+                        new Vector3(0.14f, 0.42f, sz), new Vector3(0.08f, 0.08f, 0.08f), matPilotRed);
+                    slotIndicators[s] = pilotObj.GetComponent<Renderer>();
+                }
+
+                GameObject leverHinge = new GameObject("KnifeSwitch_LeverHinge");
+                leverHinge.transform.parent = fuseBoxRoot.transform;
+                leverHinge.transform.localPosition = new Vector3(0.14f, -0.32f, 0f);
+                DecoPiece("Lever_Bar", PrimitiveType.Cube, leverHinge.transform,
+                    new Vector3(0.12f, 0f, 0f), new Vector3(0.24f, 0.05f, 0.05f), matGold);
+                DecoPiece("Lever_Handle", PrimitiveType.Cylinder, leverHinge.transform,
+                    new Vector3(0.25f, 0f, 0f), new Vector3(0.10f, 0.16f, 0.10f), matMahogany).transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+
+                BoxCollider fbCol = fuseBoxRoot.AddComponent<BoxCollider>();
+                fbCol.center = Vector3.zero;
+                fbCol.size = new Vector3(0.6f, 1.5f, 1.2f);
+
+                AcademyFuseBoxController fuseBoxCtrl = fuseBoxRoot.AddComponent<AcademyFuseBoxController>();
+
                 // ====================================================================
                 // ZONA 7: OFICINA DE ADMINISTRACIÓN (X: -24 a -38, Z: 12 a 26, Y: 2.4m)
                 // ====================================================================
@@ -651,7 +702,10 @@ namespace UltimoActo.Editor
                 // Pared norte: con puerta sellada con llave hacia el archivo de expedientes en X = -31m (muro completo sin rendijas)
                 CreateWall("Office_Wall_North_W", zone7.transform, new Vector3(-35.025f, vestY + 2.5f, 26f), new Vector3(5.95f, 5.0f, 0.5f), matWallIvory);
                 CreateWall("Office_Wall_North_E", zone7.transform, new Vector3(-26.975f, vestY + 2.5f, 26f), new Vector3(5.95f, 5.0f, 0.5f), matWallIvory);
-                CreateArchitecturalDoor("Door_To_Archives", zone7.transform, new Vector3(-31f, vestY, 26f), Quaternion.identity, 1.8f, 3.2f, 5.0f, 0.5f, true, "key_archives", "ARCHIVO DE EXPEDIENTES", "Archivo de Expedientes — Cerrado con llave de la Directora", matMahogany, matGold, matWallIvory);
+                GameObject doorArchObj = CreateArchitecturalDoor("Door_To_Archives", zone7.transform, new Vector3(-31f, vestY, 26f), Quaternion.identity, 1.8f, 3.2f, 5.0f, 0.5f, true, "key_archives", "ARCHIVO DE EXPEDIENTES", "Archivo de Expedientes — Cierre electromagnético y llave de Directora", matMahogany, matGold, matWallIvory);
+                WorldDoor doorArchivesComp = doorArchObj.GetComponent<WorldDoor>();
+
+                fuseBoxCtrl.Configure(leverHinge.transform, slotIndicators, matPilotRed, matPilotGreen, null, doorArchivesComp);
 
                 // Gran escritorio presidencial de la Directora Isadora Vale
                 CreatePrimitive("Desk_Director", PrimitiveType.Cube, zone7.transform,
@@ -713,6 +767,17 @@ namespace UltimoActo.Editor
                     new Vector3(-31f, vestY + 2.0f, 12.4f), new Vector3(6.5f, 3.8f, 0.6f), matWoodArchive);
                 CreatePrimitive("Archivador_Metal_Oficina", PrimitiveType.Cube, zone7.transform,
                     new Vector3(-25f, vestY + 1.4f, 14f), new Vector3(1.2f, 2.6f, 0.8f), matMetalArchive);
+
+                // FUSIBLE CERÁMICO 25A (ZONA 7 - Archivador de Dirección)
+                GameObject fuse25 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                fuse25.name = "Fusible_Ceramico_25A";
+                fuse25.transform.parent = zone7.transform;
+                fuse25.transform.position = new Vector3(-25.2f, vestY + 1.45f, 14f);
+                fuse25.transform.localScale = new Vector3(0.10f, 0.16f, 0.10f);
+                fuse25.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+                fuse25.GetComponent<Renderer>().sharedMaterial = matPorcelain;
+                WorldItem fuse25Item = fuse25.AddComponent<WorldItem>();
+                fuse25Item.Configure("fuse_ceramic_25a", "Fusible Cerámico 25A (Despacho)", ItemType.Fuse);
 
                 // ====================================================================
                 // ZONA 8: ARCHIVO DE EXPEDIENTES (X: -24 a -38, Z: 26 a 44, Y: 2.4m)
@@ -846,6 +911,19 @@ namespace UltimoActo.Editor
 
                 CreateStandingLamp("Farol_Sala_Espera", zone9.transform, new Vector3(-22f, vestY, 26f), matIron, matLanternGlow, new Color(1f, 0.85f, 0.55f), 2.5f);
 
+                // Pista del Enigma de las Cuatro Prima Donnas sobre la mesa baja de la Sala de Espera
+                CreateInteractiveWorldDoc("Doc_Pista_Coronaciones_Estacionales", zone9.transform,
+                    new Vector3(-18.1f, vestY + 0.64f, 30.2f), new Vector3(0.35f, 0.04f, 0.28f), matLeather,
+                    "doc_s1_seasons_portrait_clue",
+                    "Programa Litúrgico de las Cuatro Prima Donnas",
+                    "ANOTACIÓN HISTÓRICA DEL MAESTRO DE BAILE:\n\n" +
+                    "«A cada primera bailarina le corresponde la corona de una estación:\n" +
+                    "• Beatrice Dupont danzó bajo la nieve helada del Invierno [IV].\n" +
+                    "• Clara Henschel floreció con el despertar de la Primavera [I].\n" +
+                    "• Teresa Vane reinó en las hojas caídas del Otoño [III].\n" +
+                    "• Elena Vesper recibió los laureles en la noche estival del Solsticio de Verano [II].\n\n" +
+                    "Los diales del pasillo honran este ciclo antes de que cualquier alumna pueda entrar al Aula de Ensayo.»");
+
                 // ====================================================================
                 // ZONA 10: PASILLO DE LOS RETRATOS (X: -24 a -4, Z: 36 a 52, Y: 2.4m)
                 // ====================================================================
@@ -879,7 +957,7 @@ namespace UltimoActo.Editor
                     "GALERÍA DEL PATRONATO Y COMEDOR ANTIGUO (ZONA 47)", "", matMahogany, matGold, matWallIvory);
                 CreateWall("Portraits_Wall_North_1W", zone10.transform, new Vector3(-19.275f, vestY + 2.5f, 50f), new Vector3(1.45f, 5.0f, 0.5f), matWallIvory);
                 CreateWall("Portraits_Wall_North_1E", zone10.transform, new Vector3(-15.725f, vestY + 2.5f, 50f), new Vector3(1.45f, 5.0f, 0.5f), matWallIvory);
-                CreateArchitecturalDoor("Door_Portraits_To_MainStudio", zone10.transform, new Vector3(-17.5f, vestY, 50f), Quaternion.identity, 1.8f, 3.2f, 5.0f, 0.5f, false, "", "AULA PRINCIPAL DE BALLET (ACCESO SUR)", "", matMahogany, matGold, matWallIvory);
+                CreateArchitecturalDoor("Door_Portraits_To_MainStudio", zone10.transform, new Vector3(-17.5f, vestY, 50f), Quaternion.identity, 1.8f, 3.2f, 5.0f, 0.5f, true, "key_brass_rehearsal", "AULA PRINCIPAL DE BALLET (ACCESO SUR)", "Cerrada con llave de bronce de las aulas de ensayo", matMahogany, matGold, matWallIvory);
 
                 CreateWall("Portraits_Wall_North_2", zone10.transform, new Vector3(-9.5f, vestY + 2.5f, 50f), new Vector3(11f, 5.0f, 0.5f), matWallIvory);
                 CreateWall("Portraits_Wall_South_Connector", zone10.transform, new Vector3(-9.5f, vestY + 2.5f, 46f), new Vector3(11f, 5.0f, 0.5f), matWallIvory);
@@ -887,17 +965,104 @@ namespace UltimoActo.Editor
                 CreateWall("Portraits_Wall_East_S2", zone10.transform, new Vector3(-15f, vestY + 2.5f, 43.525f), new Vector3(0.5f, 5.0f, 4.95f), matWallIvory);
                 CreateArchitecturalDoor("Door_Portraits_To_Shortcut", zone10.transform, new Vector3(-15f, vestY, 40f), Quaternion.Euler(0f, 90f, 0f), 1.8f, 3.2f, 5.0f, 0.5f, false, "", "ATAJO DE SERVICIO — VESTÍBULO", "", matMahogany, matGold, matWallIvory);
 
-                // Galería de retratos de bailarinas y directoras (entre Z = 37.2m y Z = 44.8m para dejar despejada la puerta en Z = 47.0m)
+                // ENIGMA DE LAS CUATRO PRIMA DONNAS (ZONA 10)
+                GameObject portraitPuzzleHost = new GameObject("Enigma_Retratos_PrimaDonnas_Host");
+                portraitPuzzleHost.transform.parent = zone10.transform;
+                portraitPuzzleHost.transform.position = new Vector3(-19.7f, vestY + 2.6f, 40.8f);
+                PortraitGalleryPuzzleController portraitCtrl = portraitPuzzleHost.AddComponent<PortraitGalleryPuzzleController>();
+
+                string[] primaDonnaNames = new string[]
+                {
+                    "Beatrice Dupont (1898)",
+                    "Clara Henschel (1912)",
+                    "Teresa Vane (1920)",
+                    "Elena Vesper (1924)"
+                };
+
+                Transform[] dials = new Transform[4];
+                Transform elenaHingeTransform = null;
+                GameObject secretNicheObj = null;
+
                 for (int p = 0; p < 4; p++)
                 {
                     float pZ = 37.2f + (p * 2.4f);
-                    CreateFramedArtPortrait($"Retrato_Galeria_{p + 1}", zone10.transform,
-                        new Vector3(-19.7f, vestY + 2.6f, pZ), new Vector3(0.12f, 1.8f, 1.3f), matGold, matPortraitElena,
-                        $"Retrato Histórico: Primera Bailarina {1905 + (p * 5)}");
+                    bool isElena = (p == 3);
+
+                    if (isElena)
+                    {
+                        // Nicho secreto en la pared tras el cuadro de Elena Vesper
+                        secretNicheObj = new GameObject("Nicho_Secreto_Retrato_Elena");
+                        secretNicheObj.transform.parent = zone10.transform;
+                        secretNicheObj.transform.position = new Vector3(-19.85f, vestY + 2.6f, pZ);
+
+                        CreatePrimitive("Nicho_Fondo", PrimitiveType.Cube, secretNicheObj.transform,
+                            Vector3.zero, new Vector3(0.24f, 1.4f, 1.1f), matDarkCement);
+
+                        // Llave de Bronce de las Aulas de Ensayo en el nicho secreto
+                        GameObject keyReh = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        keyReh.name = "Key_Brass_Rehearsal";
+                        keyReh.transform.parent = secretNicheObj.transform;
+                        keyReh.transform.localPosition = new Vector3(0.06f, -0.2f, 0f);
+                        keyReh.transform.localScale = new Vector3(0.12f, 0.04f, 0.28f);
+                        keyReh.transform.localRotation = Quaternion.Euler(0f, 45f, 90f);
+                        keyReh.GetComponent<Renderer>().sharedMaterial = matGold;
+                        WorldItem keyRehItem = keyReh.AddComponent<WorldItem>();
+                        keyRehItem.Configure("key_brass_rehearsal", "Llave de las Aulas de Ensayo", ItemType.Key);
+
+                        // Expediente reservado de sustitución de Elena Vesper
+                        CreateInteractiveWorldDoc("Doc_Expediente_Sustitucion_Elena", secretNicheObj.transform,
+                            new Vector3(0.06f, 0.15f, 0f), new Vector3(0.35f, 0.05f, 0.25f), matSecretPaper,
+                            "doc_s1_elena_substitution_record",
+                            "Expediente Reservado — Orden de Sustitución del Acto III",
+                            "DIRECCIÓN DE LA ACADEMIA — 14 DE OCTUBRE DE 1924 (18:30 H)\n\n" +
+                            "«Queda resuelto que Mara Bell bailará el solo del Cisne Negro en sustitución de Elena Vesper.\n" +
+                            "Elena será conducida a la Enfermería Antigua y no se le permitirá abandonar el recinto hasta que concluya la temporada.\n\n" +
+                            "— Isadora Vale»");
+
+                        secretNicheObj.SetActive(false);
+
+                        // Bisagra del cuadro de Elena
+                        GameObject hingeObj = new GameObject("Hinge_Retrato_Elena");
+                        hingeObj.transform.parent = zone10.transform;
+                        hingeObj.transform.position = new Vector3(-19.7f, vestY + 2.6f, pZ - 0.65f);
+                        elenaHingeTransform = hingeObj.transform;
+
+                        CreateFramedArtPortrait("Retrato_Galeria_4_Elena", hingeObj.transform,
+                            new Vector3(0f, 0f, 0.65f), new Vector3(0.12f, 1.8f, 1.3f), matGold, matPortraitElena,
+                            $"Retrato de Honor: {primaDonnaNames[p]}");
+                    }
+                    else
+                    {
+                        CreateFramedArtPortrait($"Retrato_Galeria_{p + 1}", zone10.transform,
+                            new Vector3(-19.7f, vestY + 2.6f, pZ), new Vector3(0.12f, 1.8f, 1.3f), matGold, matPortraitElena,
+                            $"Retrato de Honor: {primaDonnaNames[p]}");
+                    }
+
+                    // Placa con dial estacional de bronce bajo el cuadro
+                    GameObject dialPlaqueObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    dialPlaqueObj.name = $"Placa_Dial_{p + 1}";
+                    dialPlaqueObj.transform.parent = zone10.transform;
+                    dialPlaqueObj.transform.position = new Vector3(-19.7f, vestY + 1.45f, pZ);
+                    dialPlaqueObj.transform.localScale = new Vector3(0.08f, 0.32f, 0.55f);
+                    dialPlaqueObj.GetComponent<Renderer>().sharedMaterial = matGold;
+
+                    // Aguja / manecilla de estación giratoria
+                    GameObject needleObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    needleObj.name = $"Aguja_Dial_{p + 1}";
+                    needleObj.transform.parent = dialPlaqueObj.transform;
+                    needleObj.transform.localPosition = new Vector3(0.55f, 0f, 0f);
+                    needleObj.transform.localScale = new Vector3(0.12f, 0.65f, 0.12f);
+                    needleObj.GetComponent<Renderer>().sharedMaterial = matIron;
+                    dials[p] = needleObj.transform;
+
+                    PortraitPlaqueDial dialComp = dialPlaqueObj.AddComponent<PortraitPlaqueDial>();
+                    dialComp.Configure(portraitCtrl, p, primaDonnaNames[p]);
 
                     CreateOrnateSconce($"Sconce_Galeria_{p + 1}", zone10.transform,
                         new Vector3(-19.7f, vestY + 3.0f, pZ + 0.95f), matGold, matLanternGlow, new Color(1f, 0.82f, 0.50f), 2.2f);
                 }
+
+                portraitCtrl.Configure(dials, elenaHingeTransform, secretNicheObj);
 
                 // Retratos en el muro conector hacia el pasillo principal
                 CreateFramedArtPortrait("Retrato_Lago_Sombras", zone10.transform,
@@ -1065,6 +1230,10 @@ namespace UltimoActo.Editor
                 flashlight.range = 18f;
                 flashlight.spotAngle = 55f;
                 flashlight.intensity = 1.5f;
+                flashlight.shadows = LightShadows.None;
+
+                FlashlightController flashlightCtrl = flashlightObj.AddComponent<FlashlightController>();
+                flashlightCtrl.UnlockFlashlight();
 
                 // ====================================================================
                 // EVENT SYSTEM Y CANVAS DE UI
@@ -1208,6 +1377,20 @@ namespace UltimoActo.Editor
                     new Vector3(17.5f + b * 2.2f, vestY + 0.62f, bz), new Vector3(0.42f, 0.26f, 0.24f), matLeather);
                 DecoPiece($"Cinta_Saten_{b + 1}", PrimitiveType.Cube, zone11.transform,
                     new Vector3(18.6f, vestY + 0.51f, bz + 0.1f), new Vector3(0.55f, 0.015f, 0.06f), matSatinRibbon);
+
+                if (b == 0)
+                {
+                    // FUSIBLE CERÁMICO 10A (ZONA 11 - Banco de Vestuario)
+                    GameObject fuse10 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    fuse10.name = "Fusible_Ceramico_10A";
+                    fuse10.transform.parent = zone11.transform;
+                    fuse10.transform.position = new Vector3(19.8f, vestY + 0.54f, bz);
+                    fuse10.transform.localScale = new Vector3(0.09f, 0.15f, 0.09f);
+                    fuse10.transform.rotation = Quaternion.Euler(90f, 30f, 0f);
+                    fuse10.GetComponent<Renderer>().sharedMaterial = matPorcelain;
+                    WorldItem fuse10Item = fuse10.AddComponent<WorldItem>();
+                    fuse10Item.Configure("fuse_ceramic_10a", "Fusible Cerámico 10A (Vestuarios)", ItemType.Fuse);
+                }
             }
 
             // Percheros metálicos envejecidos con tutús (Cisne Blanco y Cisne Negro) y prendas polvorientas
@@ -1378,6 +1561,20 @@ namespace UltimoActo.Editor
                 bool openDoor = (i == 1 || i == 3 || i == 5);
                 CreateMetalLockerUnit($"Taquilla_Oeste_{i + 1}", zone13.transform, new Vector3(28.0f, vestY, lz), Quaternion.Euler(0f, 90f, 0f),
                     lockerNamesW[i], openDoor, false, matRustedLocker, matGold, matCardboard);
+
+                if (i == 3) // Taquilla Nº 07 - M. Bell
+                {
+                    // FUSIBLE CERÁMICO 15A (ZONA 13 - Taquilla de Mara Bell)
+                    GameObject fuse15 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    fuse15.name = "Fusible_Ceramico_15A";
+                    fuse15.transform.parent = zone13.transform;
+                    fuse15.transform.position = new Vector3(28.35f, vestY + 1.12f, lz);
+                    fuse15.transform.localScale = new Vector3(0.09f, 0.15f, 0.09f);
+                    fuse15.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+                    fuse15.GetComponent<Renderer>().sharedMaterial = matPorcelain;
+                    WorldItem fuse15Item = fuse15.AddComponent<WorldItem>();
+                    fuse15Item.Configure("fuse_ceramic_15a", "Fusible Cerámico 15A (Taquilla Mara)", ItemType.Fuse);
+                }
             }
 
             string[] lockerNamesE = { "Nº 12 - H. Berg", "Nº 13 - I. Kovacs", "Nº 14 - E. Vesper", "Nº 15 - N. Volkova", "Nº 16 - M. Laurent", "Nº 18 - E. Novak" };
@@ -7893,7 +8090,7 @@ namespace UltimoActo.Editor
             l.color = color;
             l.range = 12f;
             l.intensity = intensity;
-            l.shadows = LightShadows.Soft;
+            l.shadows = LightShadows.None;
         }
 
         private static void CreateOrnateLantern(string name, Transform parent, Vector3 pos, Material mat, Material glowMat, Color color, float intensity)
@@ -7915,7 +8112,7 @@ namespace UltimoActo.Editor
             l.color = color;
             l.range = 12f;
             l.intensity = intensity;
-            l.shadows = LightShadows.Soft;
+            l.shadows = LightShadows.None;
         }
 
         private static void CreateVintagePhone(string name, Transform parent, Vector3 pos, Material bodyMat, Material goldMat)

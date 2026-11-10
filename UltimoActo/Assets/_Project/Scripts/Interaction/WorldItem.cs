@@ -1,5 +1,6 @@
 using UnityEngine;
 using UltimoActo.Core;
+using UltimoActo.Player;
 
 namespace UltimoActo.Interaction
 {
@@ -7,7 +8,10 @@ namespace UltimoActo.Interaction
     {
         Key,
         Document,
-        Collectible
+        Collectible,
+        Fuse,
+        Tool,
+        Battery
     }
 
     public class WorldItem : MonoBehaviour, IInteractable
@@ -22,6 +26,8 @@ namespace UltimoActo.Interaction
         [SerializeField] private float rotationSpeed = 45f;
 
         public string Id => id;
+        public string DisplayName => displayName;
+        public ItemType Type => itemType;
         public string Prompt => $"[E] Recoger {displayName}";
 
         private void Update()
@@ -36,12 +42,25 @@ namespace UltimoActo.Interaction
 
         public void Interact(GameObject player)
         {
-            if (itemType == ItemType.Key)
+            var inventory = player.GetComponent<SimpleInventory>();
+            if (inventory != null)
             {
-                var inventory = player.GetComponent<SimpleInventory>();
-                if (inventory != null)
+                inventory.AddKey(id, displayName);
+            }
+
+            if (NightManager.Instance != null)
+            {
+                NightManager.Instance.ShowToast($"+ Objeto recogido: {displayName}", 3.2f);
+            }
+
+            // Si es la linterna, activarla directamente en el controlador del jugador
+            if (id == "flashlight_brass_1924" || itemType == ItemType.Tool)
+            {
+                var flashlight = player.GetComponentInChildren<FlashlightController>();
+                if (flashlight == null) flashlight = FindFirstObjectByType<FlashlightController>();
+                if (flashlight != null)
                 {
-                    inventory.AddKey(id, displayName);
+                    flashlight.UnlockFlashlight();
                 }
             }
 
