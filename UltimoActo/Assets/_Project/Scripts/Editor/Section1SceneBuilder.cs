@@ -74,6 +74,9 @@ namespace UltimoActo.Editor
     /// 37. Depósito clausurado (sala subterránea húmeda, cajas de utilería retiradas, fotos no oficiales, hueco oculto tras panel de madera, anomalías de tela y caja)
     /// 38. Sala de archivos prohibidos (archivo secreto ordenado, 6 expedientes prohibidos sobre Elena, Mara e Isadora, puzle cronológico en la mesa central)
     /// 39. Cámara tras el escenario (cámara íntima oculta tras el muro este del escenario principal, mirilla hacia el escenario, caja abierta con partitura a dos manos y secuencia musical final)
+    ///
+    /// --- SECCIÓN 9: JARDÍN DE INVIERNO (ZONA 40) ---
+    /// 40. Jardín de Invierno (invernadero clásico europeo con bóveda de cristal y hierro oxidado, entrada de madera oscura y cristal desde el edificio principal y corredor de mantenimiento, fuente circular seca con cisnes y murmullo de agua fantasma, senderos ramificados, galería de estatuas que giran al apartar la vista, estatua conmemorativa de Elena Vesper con contradicción de fecha, mesa de piedra con aparición de objeto y rincón oculto tras la vegetación con losa desplazada y caja metálica semienterrada)
     /// </summary>
     [InitializeOnLoad]
     public static class Section1SceneBuilder
@@ -84,7 +87,7 @@ namespace UltimoActo.Editor
         private const string ElenaPortraitPath = "Assets/_Project/Textures/Portraits/Elena_Vesper_Portrait.jpg";
         private const string IsadoraPortraitPath = "Assets/_Project/Textures/Portraits/Isadora_Vale_Portrait.jpg";
         private const string TroupePhotoPath = "Assets/_Project/Textures/Portraits/Troupe_1923_Photo.jpg";
-        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1_To_8_V22";
+        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1_To_12_V34";
 
         static Section1SceneBuilder()
         {
@@ -116,12 +119,12 @@ namespace UltimoActo.Editor
             if (!SessionState.GetBool(AutoBuildSessionKey, false))
             {
                 SessionState.SetBool(AutoBuildSessionKey, true);
-                Debug.Log("<color=cyan>[Último Acto]</color> Construyendo automáticamente Mapa Completo (Secciones 1 a 8 — 39 Zonas)...");
+                Debug.Log("<color=cyan>[Último Acto]</color> Construyendo automáticamente Mapa Completo (Secciones 1 a 9 — 40 Zonas + Jardín de Invierno)...");
                 BuildFullAcademyMap();
             }
         }
 
-        [MenuItem("Tools/Último Acto/1. Construir Mapa Completo (Secciones 1 a 8 en SampleScene)")]
+        [MenuItem("Tools/Último Acto/1. Construir Mapa Completo (Secciones 1 a 9 en SampleScene)")]
         public static void BuildFullAcademyMap()
         {
             try
@@ -205,12 +208,14 @@ namespace UltimoActo.Editor
                 // ====================================================================
                 // 0. CIMENTACIÓN ANTICAÍDAS (PROTECCIÓN ABSOLUTA PARA TODA LA ACADEMIA)
                 // ====================================================================
-                // Cubre desde X = -60m hasta X = +60m, y Z = -60m hasta +96m a nivel superficial,
-                // más cimentación profunda en Y = -4.2m para alojar la Sección 8 subterránea (Y = -3.2m)
-                CreatePrimitive("Bedrock_Safety_Ground", PrimitiveType.Cube, rootEnv.transform,
-                    new Vector3(0f, -0.7f, 18f), new Vector3(120f, 1.0f, 156f), matCobble);
+                // CIMENTACIÓN ANTICAÍDAS Y BASAMENTOS SUBTERRÁNEOS Y EXTERIORES
+                // Cubre el Ala Oeste extendida hasta X = -95m y el Ala Norte hasta Z = 160m
+                CreatePrimitive("Bedrock_Safety_Ground_West", PrimitiveType.Cube, rootEnv.transform,
+                    new Vector3(-45.0f, -0.7f, 30f), new Vector3(120f, 1.0f, 180f), matCobble);
+                CreatePrimitive("Bedrock_Safety_Ground_NorthEast", PrimitiveType.Cube, rootEnv.transform,
+                    new Vector3(62.5f, -0.7f, 48.25f), new Vector3(95f, 1.0f, 95.5f), matCobble);
                 CreatePrimitive("Bedrock_Subterranean_Safety_Ground", PrimitiveType.Cube, rootEnv.transform,
-                    new Vector3(0f, -4.2f, 50f), new Vector3(140f, 1.0f, 220f), matCobble);
+                    new Vector3(0f, -4.2f, 60f), new Vector3(230f, 1.0f, 240f), matCobble);
 
                 // ====================================================================
                 // ZONA 1: PORTÓN EXTERIOR (Z: -38 a -26, Ancho: 28m)
@@ -258,7 +263,13 @@ namespace UltimoActo.Editor
                     new Vector3(3.85f, 0.05f, -15.5f), new Vector3(0.25f, 0.15f, 21f), matFacade);
 
                 CreateWall("Patio_Wall_L", zone2.transform, new Vector3(-14f, 3f, -15.5f), new Vector3(1f, 6f, 21f), matFacade);
-                CreateWall("Patio_Wall_R", zone2.transform, new Vector3(14f, 3f, -15.5f), new Vector3(1f, 6f, 21f), matFacade);
+                // Muro este del Patio de Entrada con puerta de servicio en Z = -10.0m hacia el Callejón Técnico y Sótano de Mantenimiento
+                CreateWall("Patio_Wall_R_S", zone2.transform, new Vector3(14f, 3f, -18.525f), new Vector3(1f, 6f, 14.95f), matFacade);
+                CreateWall("Patio_Wall_R_N", zone2.transform, new Vector3(14f, 3f, -6.975f), new Vector3(1f, 6f, 3.95f), matFacade);
+                CreateArchitecturalDoor("Door_Patio_To_ServiceAlley", zone2.transform,
+                    new Vector3(14f, 0f, -10f), Quaternion.Euler(0f, 90f, 0f),
+                    1.8f, 3.2f, 6.0f, 1.0f, false, "",
+                    "PASO DE SERVICIO — SÓTANO DE MANTENIMIENTO Y JARDÍN DE INVIERNO", "", matIron, matGold, matFacade);
 
                 CreatePrimitive("Jardinera_Border_L", PrimitiveType.Cube, zone2.transform,
                     new Vector3(-8f, 0.4f, -15.5f), new Vector3(4.5f, 0.8f, 14f), matStoneWall);
@@ -546,7 +557,13 @@ namespace UltimoActo.Editor
                 CreatePrimitive("Rec_Ceiling", PrimitiveType.Cube, zone6.transform,
                     new Vector3(-17.5f, vestY + 5.0f, 18f), new Vector3(13f, 0.5f, 12f), matWallIvory);
 
-                CreateWall("Rec_Wall_South", zone6.transform, new Vector3(-17.5f, vestY + 2.5f, 12f), new Vector3(13f, 5.0f, 0.5f), matWallIvory);
+                // Pared sur de Recepción con puerta en X = -22.0m hacia el Ala Suroeste (Terraza y Azotea, Enfermería Antigua y Sala Conmemorativa)
+                CreateWall("Rec_Wall_South_W", zone6.transform, new Vector3(-23.525f, vestY + 2.5f, 12f), new Vector3(0.95f, 5.0f, 0.5f), matWallIvory);
+                CreateWall("Rec_Wall_South_E", zone6.transform, new Vector3(-15.975f, vestY + 2.5f, 12f), new Vector3(9.95f, 5.0f, 0.5f), matWallIvory);
+                CreateArchitecturalDoor("Door_Reception_To_SouthWestWing", zone6.transform,
+                    new Vector3(-22.0f, vestY, 12f), Quaternion.identity,
+                    1.8f, 3.2f, 5.0f, 0.5f, false, "",
+                    "ALA SUROESTE — ENFERMERÍA ANTIGUA, SALA CONMEMORATIVA Y AZOTEA", "", matMahogany, matGold, matWallIvory);
 
                 // Pared oeste: con puerta de madera noble hacia la oficina de administración en Z = 18m
                 CreateWall("Rec_Wall_West_S", zone6.transform, new Vector3(-24f, vestY + 2.5f, 14.475f), new Vector3(0.5f, 5.0f, 4.95f), matWallIvory);
@@ -610,8 +627,13 @@ namespace UltimoActo.Editor
 
                 CreateWall("Office_Wall_South", zone7.transform, new Vector3(-31f, vestY + 2.5f, 12f), new Vector3(14f, 5.0f, 0.5f), matWallIvory);
 
-                // Pared oeste: ventanal monumental con luz de luna y cortinas borgoña
-                CreateWall("Office_Wall_West_S", zone7.transform, new Vector3(-38f, vestY + 2.5f, 14.5f), new Vector3(0.5f, 5.0f, 5f), matWallIvory);
+                // Pared oeste: ventanal monumental con luz de luna y cortinas borgoña + Puerta Privada hacia la Estancia de Isadora Vale (Zona 48) en Z = 14.5m
+                CreateWall("Office_Wall_West_S1", zone7.transform, new Vector3(-38f, vestY + 2.5f, 12.725f), new Vector3(0.5f, 5.0f, 1.45f), matWallIvory);
+                CreateWall("Office_Wall_West_S2", zone7.transform, new Vector3(-38f, vestY + 2.5f, 16.275f), new Vector3(0.5f, 5.0f, 1.45f), matWallIvory);
+                CreateArchitecturalDoor("Door_Office_To_IsadoraSuite", zone7.transform,
+                    new Vector3(-38f, vestY, 14.5f), Quaternion.Euler(0f, 90f, 0f),
+                    1.8f, 3.2f, 5.0f, 0.5f, false, "",
+                    "ESTANCIA PRIVADA DE ISADORA VALE — DIRECCIÓN (ZONA 48)", "", matMahogany, matGold, matWallIvory);
                 CreateWall("Office_Wall_West_N", zone7.transform, new Vector3(-38f, vestY + 2.5f, 23.5f), new Vector3(0.5f, 5.0f, 5f), matWallIvory);
                 CreateWall("Office_Wall_West_Top", zone7.transform, new Vector3(-38f, vestY + 4.3f, 19f), new Vector3(0.5f, 1.4f, 4f), matWallIvory);
                 CreateWall("Office_Wall_West_Bottom", zone7.transform, new Vector3(-38f, vestY + 0.5f, 19f), new Vector3(0.5f, 1.0f, 4f), matWallIvory);
@@ -846,9 +868,15 @@ namespace UltimoActo.Editor
                 CreatePrimitive("Portraits_Ceiling_EW", PrimitiveType.Cube, zone10.transform,
                     new Vector3(-9.5f, vestY + 5.0f, 48f), new Vector3(11f, 0.5f, 4f), matWallIvory);
 
-                // Muros del pasillo de los retratos (con conexión al norte en X = -17.5, Z = 50 hacia Aula Principal de Ballet
+                // Muros del pasillo de los retratos (con conexión al norte en X = -17.5, Z = 50 hacia Aula Principal de Ballet,
+                // al oeste en X = -20, Z = 47 hacia la Galería del Patronato y Comedor Antiguo [Zona 47],
                 // y al este en X = -15, Z = 40 hacia el Atajo Lateral de Servicio al Vestíbulo)
-                CreateWall("Portraits_Wall_West", zone10.transform, new Vector3(-20f, vestY + 2.5f, 43f), new Vector3(0.5f, 5.0f, 14f), matWallIvory);
+                CreateWall("Portraits_Wall_West_S", zone10.transform, new Vector3(-20f, vestY + 2.5f, 40.975f), new Vector3(0.5f, 5.0f, 9.95f), matWallIvory);
+                CreateWall("Portraits_Wall_West_N", zone10.transform, new Vector3(-20f, vestY + 2.5f, 49.025f), new Vector3(0.5f, 5.0f, 1.95f), matWallIvory);
+                CreateArchitecturalDoor("Door_Portraits_To_PatronageGallery", zone10.transform,
+                    new Vector3(-20f, vestY, 47.0f), Quaternion.Euler(0f, 90f, 0f),
+                    1.8f, 3.2f, 5.0f, 0.5f, false, "",
+                    "GALERÍA DEL PATRONATO Y COMEDOR ANTIGUO (ZONA 47)", "", matMahogany, matGold, matWallIvory);
                 CreateWall("Portraits_Wall_North_1W", zone10.transform, new Vector3(-19.275f, vestY + 2.5f, 50f), new Vector3(1.45f, 5.0f, 0.5f), matWallIvory);
                 CreateWall("Portraits_Wall_North_1E", zone10.transform, new Vector3(-15.725f, vestY + 2.5f, 50f), new Vector3(1.45f, 5.0f, 0.5f), matWallIvory);
                 CreateArchitecturalDoor("Door_Portraits_To_MainStudio", zone10.transform, new Vector3(-17.5f, vestY, 50f), Quaternion.identity, 1.8f, 3.2f, 5.0f, 0.5f, false, "", "AULA PRINCIPAL DE BALLET (ACCESO SUR)", "", matMahogany, matGold, matWallIvory);
@@ -859,16 +887,16 @@ namespace UltimoActo.Editor
                 CreateWall("Portraits_Wall_East_S2", zone10.transform, new Vector3(-15f, vestY + 2.5f, 43.525f), new Vector3(0.5f, 5.0f, 4.95f), matWallIvory);
                 CreateArchitecturalDoor("Door_Portraits_To_Shortcut", zone10.transform, new Vector3(-15f, vestY, 40f), Quaternion.Euler(0f, 90f, 0f), 1.8f, 3.2f, 5.0f, 0.5f, false, "", "ATAJO DE SERVICIO — VESTÍBULO", "", matMahogany, matGold, matWallIvory);
 
-                // Galería de retratos de bailarinas y directoras
+                // Galería de retratos de bailarinas y directoras (entre Z = 37.2m y Z = 44.8m para dejar despejada la puerta en Z = 47.0m)
                 for (int p = 0; p < 4; p++)
                 {
-                    float pZ = 38f + (p * 3.5f);
+                    float pZ = 37.2f + (p * 2.4f);
                     CreateFramedArtPortrait($"Retrato_Galeria_{p + 1}", zone10.transform,
                         new Vector3(-19.7f, vestY + 2.6f, pZ), new Vector3(0.12f, 1.8f, 1.3f), matGold, matPortraitElena,
                         $"Retrato Histórico: Primera Bailarina {1905 + (p * 5)}");
 
                     CreateOrnateSconce($"Sconce_Galeria_{p + 1}", zone10.transform,
-                        new Vector3(-19.7f, vestY + 3.0f, pZ + 1.2f), matGold, matLanternGlow, new Color(1f, 0.82f, 0.50f), 2.2f);
+                        new Vector3(-19.7f, vestY + 3.0f, pZ + 0.95f), matGold, matLanternGlow, new Color(1f, 0.82f, 0.50f), 2.2f);
                 }
 
                 // Retratos en el muro conector hacia el pasillo principal
@@ -953,6 +981,29 @@ namespace UltimoActo.Editor
                     matStoneWall, matRustedLocker, matMirrorGlass, matPorcelain,
                     matTutuWhite, matTutuBlack, matSatinRibbon, matShadowFigure,
                     matPortraitElena, matPhotoTroupe1923);
+
+                // ====================================================================
+                // SECCIÓN 9: JARDÍN DE INVIERNO (Zona 40)
+                // ====================================================================
+                BuildSection9WinterGarden(rootEnv.transform, vestY,
+                    matParquet, matCarpet, matWallIvory, matMahogany, matGold, matIron,
+                    matClothCover, matVelvetDrapes, matLanternGlow, matColdFluorescent,
+                    matGreenVelvet, matLeather, matWoodArchive, matMetalArchive, matCardboard,
+                    matStoneWall, matRustedLocker, matMirrorGlass, matPorcelain,
+                    matTutuWhite, matTutuBlack, matSatinRibbon, matShadowFigure,
+                    matPortraitElena, matPhotoTroupe1923, matCobble, matStatue, matHedge);
+
+                // ====================================================================
+                // SECCIÓN 10: SÓTANO DE MANTENIMIENTO, TERRAZA Y AZOTEA, ENFERMERÍA ANTIGUA Y SALA CONMEMORATIVA (Zonas 41 a 44)
+                // ====================================================================
+                BuildSection10ExpansionZones(rootEnv.transform, vestY,
+                    matParquet, matCarpet, matWallIvory, matMahogany, matGold, matIron,
+                    matClothCover, matVelvetDrapes, matLanternGlow, matColdFluorescent,
+                    matGreenVelvet, matLeather, matWoodArchive, matMetalArchive, matCardboard,
+                    matStoneWall, matRustedLocker, matMirrorGlass, matPorcelain,
+                    matTutuWhite, matTutuBlack, matSatinRibbon, matShadowFigure,
+                    matPortraitElena, matPhotoTroupe1923, matCobble, matStatue, matHedge,
+                    matCeramicTile, matFacade, matGreenGlass);
 
                 // ====================================================================
                 // JUGADOR EN PRIMERA PERSONA
@@ -1079,7 +1130,7 @@ namespace UltimoActo.Editor
                 AssetDatabase.Refresh();
                 EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
 
-                Debug.Log($"<color=green>[Último Acto]</color> ¡MAPA COMPLETO (Secciones 1 a 8 — Las 39 Zonas de la Academia y Zona Secreta) construido con éxito en {ScenePath}!");
+                Debug.Log($"<color=green>[Último Acto]</color> ¡MAPA COMPLETO (Secciones 1 a 9 — Las 40 Zonas de la Academia + Jardín de Invierno) construido con éxito en {ScenePath}!");
             }
             catch (System.Exception ex)
             {
@@ -1512,15 +1563,21 @@ namespace UltimoActo.Editor
             CreatePrimitive("Wash_Ceiling", PrimitiveType.Cube, zone15.transform,
                 new Vector3(19f, vestY + roomH, 6f), new Vector3(16f, 0.5f, 12f), matWallIvory);
 
-            // Muros perimetrales de lavabos y duchas
+            // Muros perimetrales de lavabos y duchas (con puerta en el muro sur X = 19.0m, Z = 0.0m hacia el Sótano de Mantenimiento)
             CreateWall("Wash_Wall_West", zone15.transform, new Vector3(11f, vestY + 2.5f, 6f), new Vector3(0.5f, roomH, 12f), matWallIvory);
-            CreateWall("Wash_Wall_South", zone15.transform, new Vector3(19f, vestY + 2.5f, 0f), new Vector3(16f, roomH, 0.5f), matWallIvory);
+            CreateWall("Wash_Wall_South_W", zone15.transform, new Vector3(14.475f, vestY + 2.5f, 0f), new Vector3(6.95f, roomH, 0.5f), matWallIvory);
+            CreateWall("Wash_Wall_South_E", zone15.transform, new Vector3(23.525f, vestY + 2.5f, 0f), new Vector3(6.95f, roomH, 0.5f), matWallIvory);
+            CreateArchitecturalDoor("Door_Washroom_To_MaintenanceBasement", zone15.transform,
+                new Vector3(19f, vestY, 0f), Quaternion.identity,
+                1.8f, 3.2f, roomH, 0.5f, false, "",
+                "SÓTANO DE MANTENIMIENTO — ESCALERA TÉCNICA SUBTERRÁNEA (ZONA 41)", "", matIron, matGold, matWallIvory);
             CreateWall("Wash_Wall_East", zone15.transform, new Vector3(27f, vestY + 2.5f, 6f), new Vector3(0.5f, roomH, 12f), matWallIvory);
 
             // Revestimiento parcial de azulejos marfil con juntas oscurecidas por la humedad
             DecoPiece("Wash_Tile_Wainscot_W", PrimitiveType.Cube, zone15.transform, new Vector3(11.28f, vestY + 1.2f, 6f), new Vector3(0.06f, 2.4f, 11.4f), matCeramicTile);
             DecoPiece("Wash_Tile_Wainscot_E", PrimitiveType.Cube, zone15.transform, new Vector3(26.72f, vestY + 1.2f, 6f), new Vector3(0.06f, 2.4f, 11.4f), matCeramicTile);
-            DecoPiece("Wash_Tile_Wainscot_S", PrimitiveType.Cube, zone15.transform, new Vector3(19f, vestY + 1.2f, 0.28f), new Vector3(15.4f, 2.4f, 0.06f), matCeramicTile);
+            DecoPiece("Wash_Tile_Wainscot_S_W", PrimitiveType.Cube, zone15.transform, new Vector3(14.5f, vestY + 1.2f, 0.28f), new Vector3(6.4f, 2.4f, 0.06f), matCeramicTile);
+            DecoPiece("Wash_Tile_Wainscot_S_E", PrimitiveType.Cube, zone15.transform, new Vector3(23.5f, vestY + 1.2f, 0.28f), new Vector3(6.4f, 2.4f, 0.06f), matCeramicTile);
 
             // Tuberías antiguas oxidadas recorriendo paredes y techo
             DecoPiece("Pipe_Ceiling_Main", PrimitiveType.Cylinder, zone15.transform,
@@ -3067,11 +3124,12 @@ namespace UltimoActo.Editor
             CreatePrimitive("Estanteria_Instrumentos_Este_2", PrimitiveType.Cube, zone25.transform,
                 new Vector3(37.9f, vestY + 1.6f, 47.2f), new Vector3(1.1f, 3.2f, 3.6f), matWoodArchive);
 
-            // Estuches de violines sobre las estanterías y soportes
-            for (int v = 0; v < 4; v++)
+            // Estuches de violines colocados directamente sobre las dos estanterías (sin flotar frente a la puerta de Z = 43.2m)
+            float[] violinShelfZ = { 38.4f, 40.0f, 46.4f, 48.0f };
+            for (int v = 0; v < violinShelfZ.Length; v++)
             {
                 DecoPiece($"Estuche_Violin_{v + 1}", PrimitiveType.Cube, zone25.transform,
-                    new Vector3(37.75f, vestY + 1.05f + (v % 2) * 0.9f, 39.2f + v * 2.2f), new Vector3(0.36f, 0.18f, 0.82f), matLeather);
+                    new Vector3(37.75f, vestY + 1.05f + (v % 2) * 0.9f, violinShelfZ[v]), new Vector3(0.36f, 0.18f, 0.82f), matLeather);
             }
 
             // Cajas de madera de transporte orquestal y timbal sinfónico de percusión
@@ -3266,8 +3324,15 @@ namespace UltimoActo.Editor
             CreatePrimitive("EastServiceHall_Ceiling", PrimitiveType.Cube, dressingHall.transform,
                 new Vector3(42f, vestY + hallH, 57f), new Vector3(6f, 0.5f, 42f), matWallIvory);
 
-            CreateWall("EastServiceHall_Wall_East", dressingHall.transform,
-                new Vector3(45f, vestY + 2.5f, 57f), new Vector3(0.5f, hallH, 42f), matWallIvory);
+            // Muro este del Corredor de Mantenimiento (X = 45, Z: 36 a 78) dividido en Z = 58.0m para conectar con el Jardín de Invierno (Zona 40)
+            CreateWall("EastServiceHall_Wall_East_S", dressingHall.transform,
+                new Vector3(45f, vestY + 2.5f, 46.475f), new Vector3(0.5f, hallH, 20.95f), matWallIvory);
+            CreateWall("EastServiceHall_Wall_East_N", dressingHall.transform,
+                new Vector3(45f, vestY + 2.5f, 68.525f), new Vector3(0.5f, hallH, 18.95f), matWallIvory);
+            CreateArchitecturalDoor("Door_MaintenanceCorridor_To_WinterGarden", dressingHall.transform,
+                new Vector3(45f, vestY, 58f), Quaternion.Euler(0f, 90f, 0f),
+                1.8f, 3.2f, hallH, 0.5f, false, "",
+                "JARDÍN DE INVIERNO — ACCESO DESDE CORREDOR DE MANTENIMIENTO (ZONA 40)", "", matMahogany, matGold, matWallIvory);
 
             // Muro sur (Z = 36, X: 39 a 45) con Puerta de Servicio Exterior hacia el exterior de la academia (X = 42m)
             CreateWall("EastServiceHall_Wall_South_W", dressingHall.transform,
@@ -3282,26 +3347,39 @@ namespace UltimoActo.Editor
             CreatePrimitive("Exterior_Service_Platform", PrimitiveType.Cube, dressingHall.transform,
                 new Vector3(42f, vestY - 0.25f, 33f), new Vector3(6f, 0.5f, 6f), matCobble);
             GameObject extRamp = CreatePrimitive("Exterior_Service_Ramp", PrimitiveType.Cube, dressingHall.transform,
-                new Vector3(42f, 1.15f, 22f), new Vector3(5.6f, 0.3f, 16.5f), matCobble);
-            extRamp.transform.localRotation = Quaternion.Euler(8.5f, 0f, 0f);
+                new Vector3(42f, 1.15f, 22f), new Vector3(5.8f, 0.3f, 16.5f), matCobble);
+            extRamp.transform.localRotation = Quaternion.Euler(-8.5f, 0f, 0f);
             CreatePrimitive("Exterior_Service_Alley_Ground", PrimitiveType.Cube, dressingHall.transform,
                 new Vector3(42f, -0.25f, 1f), new Vector3(6f, 0.5f, 26f), matCobble);
             CreatePrimitive("Exterior_Service_Court_Link", PrimitiveType.Cube, dressingHall.transform,
                 new Vector3(29.5f, -0.25f, -10f), new Vector3(31f, 0.5f, 6f), matCobble);
+
+            // Basamento de piedra bajo el Ala Este (Lavabos y Taquillas, Y: 0 a 2.4m) y muros del callejón exterior para que ningún volumen flote
+            CreateWall("EastWing_Foundation_Plinth_Lockers", dressingHall.transform,
+                new Vector3(33f, 1.2f, 24f), new Vector3(12f, 2.4f, 24f), matStoneWall);
+            CreateWall("EastWing_Foundation_Plinth_Washrooms", dressingHall.transform,
+                new Vector3(19f, 1.2f, 6f), new Vector3(16f, 2.4f, 12f), matStoneWall);
+            CreateWall("Exterior_Service_WestWall_Lower", dressingHall.transform,
+                new Vector3(39f, 2.4f, 2.5f), new Vector3(0.5f, 4.8f, 19f), matStoneWall);
+            CreateWall("Exterior_Service_Court_Wall_South", dressingHall.transform,
+                new Vector3(26.75f, 2.4f, -13f), new Vector3(25.5f, 4.8f, 0.5f), matStoneWall);
+            CreateWall("Exterior_Service_Court_Wall_North", dressingHall.transform,
+                new Vector3(26.75f, 2.4f, -7f), new Vector3(25.5f, 4.8f, 0.5f), matStoneWall);
+
+            // Muro exterior este del callejón (Z: -12 a 22; en Z >= 22 comienza el muro oeste del Jardín de Invierno)
             CreateWall("Exterior_Service_OuterWall_E", dressingHall.transform,
-                new Vector3(45f, 2.2f, 12f), new Vector3(0.5f, 4.8f, 48f), matStoneWall);
+                new Vector3(45f, 2.2f, 5.0f), new Vector3(0.5f, 4.8f, 34f), matStoneWall);
             CreateOrnateLantern("Farol_Salida_Servicio_Exterior", dressingHall.transform,
                 new Vector3(43.8f, vestY + 3.2f, 35.2f), matIron, matLanternGlow, new Color(1f, 0.78f, 0.45f), 2.1f);
 
             // 2. Vestíbulo de Circulación Secundaria frente a los Camerinos de Mara y Elena (X: 26..45, Z: 78..83)
+            // En X = 45.0, Z = 80.5 se abre la Entrada Principal de Madera Oscura con Paneles de Cristal al Jardín de Invierno
             CreatePrimitive("DressingVestibule_Floor", PrimitiveType.Cube, dressingHall.transform,
                 new Vector3(35.5f, vestY - 0.25f, 80.5f), new Vector3(19f, 0.5f, 5f), matParquet);
             CreatePrimitive("DressingVestibule_Carpet", PrimitiveType.Cube, dressingHall.transform,
                 new Vector3(35.5f, vestY + 0.02f, 80.5f), new Vector3(16f, 0.04f, 2.4f), matCarpet);
             CreatePrimitive("DressingVestibule_Ceiling", PrimitiveType.Cube, dressingHall.transform,
                 new Vector3(35.5f, vestY + hallH, 80.5f), new Vector3(19f, 0.5f, 5f), matWallIvory);
-            CreateWall("DressingVestibule_Wall_East", dressingHall.transform,
-                new Vector3(45f, vestY + 2.5f, 80.5f), new Vector3(0.5f, hallH, 5f), matWallIvory);
 
             // 3. Conector Norte-Sur desde el Vestíbulo de Camerinos hasta el Pasillo Detrás del Escenario (X: 41..45, Z: 83..92)
             CreatePrimitive("DressingToBackstage_Floor", PrimitiveType.Cube, dressingHall.transform,
@@ -3752,7 +3830,13 @@ namespace UltimoActo.Editor
             // Muros perimetrales de la Sala de Mecanismos y Poleas
             CreateWall("PulleyRoom_Wall_South", zone30.transform, new Vector3(-20f, vestY + 3.6f, 84f), new Vector3(16f, pulleyH, 0.5f), matBackstageDarkWall);
             CreateWall("PulleyRoom_Wall_North", zone30.transform, new Vector3(-20f, vestY + 3.6f, 104f), new Vector3(16f, pulleyH, 0.5f), matBackstageDarkWall);
-            CreateWall("PulleyRoom_Wall_West", zone30.transform, new Vector3(-28f, vestY + 3.6f, 94f), new Vector3(0.5f, pulleyH, 20f), matBackstageDarkWall);
+            // Muro Oeste (X = -28m, Z: 84..104) con puerta en Z = 85.5m hacia el Taller de Zapatillas y Tintorería Escénica (Zona 46)
+            CreateWall("PulleyRoom_Wall_West_S", zone30.transform, new Vector3(-28f, vestY + 3.6f, 84.225f), new Vector3(0.5f, pulleyH, 0.45f), matBackstageDarkWall);
+            CreateWall("PulleyRoom_Wall_West_N", zone30.transform, new Vector3(-28f, vestY + 3.6f, 95.275f), new Vector3(0.5f, pulleyH, 17.45f), matBackstageDarkWall);
+            CreateArchitecturalDoor("Door_PulleyRoom_To_Workshop", zone30.transform,
+                new Vector3(-28f, vestY, 85.5f), Quaternion.Euler(0f, 90f, 0f),
+                1.8f, 3.2f, pulleyH, 0.5f, false, "",
+                "TALLER DE ZAPATILLAS Y TINTORERÍA ESCÉNICA (ZONA 46)", "", matMahogany, matGold, matBackstageDarkWall);
             CreateWall("PulleyRoom_Wall_East_S", zone30.transform, new Vector3(-12f, vestY + 3.6f, 88.0f), new Vector3(0.5f, pulleyH, 8.0f), matBackstageDarkWall);
             CreateWall("PulleyRoom_Wall_East_N1", zone30.transform, new Vector3(-12f, vestY + 3.6f, 98.975f), new Vector3(0.5f, pulleyH, 1.95f), matBackstageDarkWall);
             CreateWall("PulleyRoom_Wall_East_N2", zone30.transform, new Vector3(-12f, vestY + 3.6f, 103.025f), new Vector3(0.5f, pulleyH, 1.95f), matBackstageDarkWall);
@@ -4448,33 +4532,33 @@ namespace UltimoActo.Editor
             GameObject distributedCluesGroup = new GameObject("Section8_Distributed_Discovery_Clues");
             distributedCluesGroup.transform.parent = rootEnv;
 
-            // 1. Pista en Administración (Sección 2 — Archivo de Expedientes, Zona 8)
+            // 1. Pista en Administración (Sección 2 — sobre el mostrador de Recepción / mesa de Archivo)
             CreateInteractiveWorldDoc("Doc_Pista_Admin_Ref_B00", distributedCluesGroup.transform,
-                new Vector3(-18.5f, vestY + 0.96f, 18.2f), new Vector3(0.34f, 0.04f, 0.24f), matSecretPaper,
+                new Vector3(-18.6f, vestY + 1.28f, 16.0f), new Vector3(0.34f, 0.04f, 0.24f), matSecretPaper,
                 "doc_s8_clue_admin_b00",
                 "Memorándum Reservado — Traslado al Depósito Subterráneo B-00",
                 "DIRECCIÓN GENERAL — NOTA DE ARCHIVO INTERNO (17 DE OCTUBRE DE 1924)\n\n" +
                 "«Por orden de Isadora Vale, toda la correspondencia privada del Patronato y el acta médica real de la noche del 14 de octubre han sido retiradas de este archivo administrativo y depositadas bajo llave en la **Bóveda Estructural B-00**, cuyo acceso se oculta tras el panel de caoba del hombro este del Escenario Principal».");
 
-            // 2. Pista en Archivo Musical (Sección 5 — Biblioteca Musical, Zona 21)
+            // 2. Pista en Archivo Musical (Sección 5 — sobre la Mesa de Lectura 2 de la Biblioteca Musical, Zona 21)
             CreateInteractiveWorldDoc("Doc_Pista_Musica_Ref_B00", distributedCluesGroup.transform,
-                new Vector3(24.0f, vestY + 0.96f, 71.2f), new Vector3(0.34f, 0.04f, 0.24f), matSecretPaper,
+                new Vector3(19.3f, vestY + 0.91f, 72.0f), new Vector3(0.34f, 0.04f, 0.24f), matSecretPaper,
                 "doc_s8_clue_music_b00",
                 "Ficha de Expurgo Musical — Cámara Oculta tras el Escenario",
                 "ARCHIVO MUSICAL — REGISTRO DE PARTITURAS RETIRADAS\n\n" +
                 "«El manuscrito íntegro a dos manos de *El Lago de las Sombras* (anotado conjuntamente por Elena Vesper y Mara Bell) no fue destruido: fue guardado en la **Cámara tras el Escenario**, accesible únicamente descendiendo por la Escalera Oculta (`Ref. B-00`) situada en el lateral este del proscenio».");
 
-            // 3. Pista en Almacén de Decorados (Sección 6 — Zona 29)
+            // 3. Pista en Almacén de Decorados (Sección 6 — fijada al muro oeste en X = 10.9m, Zona 29)
             CreateInteractiveWorldDoc("Doc_Pista_Decorados_Ref_B00", distributedCluesGroup.transform,
-                new Vector3(11.4f, vestY + 0.95f, 105.0f), new Vector3(0.36f, 0.04f, 0.26f), matSecretPaper,
+                new Vector3(10.90f, vestY + 1.45f, 105.0f), new Vector3(0.05f, 0.28f, 0.36f), matSecretPaper,
                 "doc_s8_clue_scenery_b00",
                 "Marca de los Carpinteros en el Muro Oeste del Almacén",
                 "ALMACÉN DE DECORADOS — ANOTACIÓN TRAS EL BASTIDOR OESTE\n\n" +
                 "«Detrás de este muro oeste (`X = 10.6m`) existe un vano hueco de cuatro metros y medio que nos prohibieron abrir desde el almacén. Su única entrada baja desde el **panel móvil del descansillo este del escenario (`X = 10, Z = 116`)** y vuelve a subir hasta una cámara privada pegada al escenario principal».");
 
-            // 4. Pista en Sala de Mecanismos y Poleas (Sección 6 — Zona 30)
+            // 4. Pista en Sala de Mecanismos y Poleas (Sección 6 — sobre la Mesa de Trabajo en X = -15.5m, Z = 88.5m, Zona 30)
             CreateInteractiveWorldDoc("Doc_Pista_Poleas_Ref_B00", distributedCluesGroup.transform,
-                new Vector3(-19.5f, vestY + 1.05f, 89.2f), new Vector3(0.38f, 0.04f, 0.28f), matSecretPaper,
+                new Vector3(-15.4f, vestY + 0.94f, 88.5f), new Vector3(0.38f, 0.04f, 0.28f), matSecretPaper,
                 "doc_s8_clue_pulleys_b00",
                 "Anexo Estructural — Plano del Muro Este y Escalera Oculta (B-00)",
                 "SALA DE MECANISMOS — PLANO DE CIMIENTOS DEL TEATRO\n\n" +
@@ -4941,6 +5025,2226 @@ namespace UltimoActo.Editor
                 "• **La Verdad sobre Isadora Vale**: Clausuró el teatro el 18 de octubre para ocultar que intentó retener ilegalmente a Elena Vesper tras descubrir que Elena poseía las pruebas de la negligencia que causó la muerte de su hermana en 1922.\n" +
                 "• **La Verdad sobre Elena y Mara**: Nunca fueron enemigas. Simularon su rivalidad para que Mara fuera elegida sustituta en el Acto III y pudiera rescatar a Elena a través de esta cámara oculta.\n\n" +
                 "Pulsa **`[E]` en la Caja de Madera Abierta** en el centro de la mesa para inspeccionar la fotografía original, la carta de despedida y escuchar el último eco musical del escenario.");
+        }
+
+        // ====================================================================
+        // CONSTRUCCIÓN DE LA SECCIÓN 9: JARDÍN DE INVIERNO MONUMENTAL (ZONA 40)
+        // Gran Invernadero Clásico Europeo (48m x 70m -> X: 45.0 a 93.0, Z: 22.0 a 92.0, Y: 2.4m, Altura bóveda: 10.2m)
+        // Conectado físicamente con:
+        // 1. Entrada de madera oscura con paneles de cristal desde el Pasillo de la Academia (X = 45.0, Z = 80.5)
+        // 2. Corredor de Mantenimiento y Servicio Este (X = 45.0, Z = 58.0)
+        // 3. Acceso Sur directo desde la rampa del Patio de Entrada (X = 45.0, Z = 33.5)
+        // ====================================================================
+        private static void BuildSection9WinterGarden(
+            Transform rootEnv, float vestY,
+            Material matParquet, Material matCarpet, Material matWallIvory, Material matMahogany,
+            Material matGold, Material matIron, Material matClothCover, Material matVelvetDrapes,
+            Material matLanternGlow, Material matColdFluorescent, Material matGreenVelvet,
+            Material matLeather, Material matWoodArchive, Material matMetalArchive, Material matCardboard,
+            Material matStoneWall, Material matRustedLocker, Material matMirrorGlass, Material matPorcelain,
+            Material matTutuWhite, Material matTutuBlack, Material matSatinRibbon, Material matShadowFigure,
+            Material matPortraitElena, Material matPhotoTroupe1923, Material matCobble, Material matStatue, Material matHedge)
+        {
+            // Paleta visual específica del Jardín de Invierno:
+            // verde oliva oscuro, musgo, marrón envejecido, piedra gris cálida, hierro negro oxidado, marfil desgastado y latón antiguo
+            Material matOliveDark = GetOrCreateBasicMaterial("Mat_S9_OliveFoliageDark", new Color(0.14f, 0.21f, 0.13f), 0.14f, 0.0f);
+            Material matMossGreen = GetOrCreateBasicMaterial("Mat_S9_MossStone", new Color(0.19f, 0.26f, 0.15f), 0.18f, 0.0f);
+            Material matAgedEarth = GetOrCreateBasicMaterial("Mat_S9_AgedSoilBrown", new Color(0.18f, 0.13f, 0.10f), 0.10f, 0.0f);
+            Material matWarmGreyStone = GetOrCreateBasicMaterial("Mat_S9_WarmGreyStone", new Color(0.46f, 0.44f, 0.40f), 0.32f, 0.04f);
+            Material matOxidizedBlackIron = GetOrCreateBasicMaterial("Mat_S9_OxidizedBlackIron", new Color(0.11f, 0.12f, 0.12f), 0.38f, 0.78f);
+            Material matConservatoryGlass = GetOrCreateBasicMaterial("Mat_S9_ConservatoryGlass", new Color(0.42f, 0.56f, 0.68f), 0.92f, 0.25f);
+            Material matDryLeaves = GetOrCreateBasicMaterial("Mat_S9_DryAutumnLeaves", new Color(0.36f, 0.24f, 0.14f), 0.12f, 0.0f);
+
+            float gardenY = vestY;            // 2.4m (enrasado con el edificio principal y el corredor de mantenimiento)
+            float wallH = 6.8f;               // Altura de cornisa perimetral: 6.8m (Y = 9.2m)
+            float glassApexY = gardenY + 10.2f;// Cumbrera de la gran cubierta de cristal: Y = 12.6m
+
+            GameObject zone40 = new GameObject("40_Winter_Garden_Conservatory");
+            zone40.transform.parent = rootEnv;
+
+            // Suelo base ampliado de tierra marrón envejecida y musgo (48m de ancho x 70m de largo: X: 45 a 93, Z: 22 a 92)
+            CreatePrimitive("WinterGarden_Earth_Base", PrimitiveType.Cube, zone40.transform,
+                new Vector3(69f, gardenY - 0.25f, 57f), new Vector3(48f, 0.50f, 70f), matAgedEarth);
+
+            // ====================================================================
+            // 1. ENTRADAS DE MADERA OSCURA CON PANELES DE CRISTAL Y MUROS PERIMETRALES
+            // ====================================================================
+            // Entrada 1 (Noroeste, X = 45.0, Z = 80.5): Conectada físicamente con el Pasillo de la Academia (Sala del Piano / Camerinos)
+            CreateWall("WG_WestEntry_GlassFrame_S", zone40.transform,
+                new Vector3(45f, gardenY + 2.5f, 78.525f), new Vector3(0.45f, 5.0f, 1.05f), matMahogany);
+            CreateWall("WG_WestEntry_GlassFrame_N", zone40.transform,
+                new Vector3(45f, gardenY + 2.5f, 82.475f), new Vector3(0.45f, 5.0f, 1.05f), matMahogany);
+            DecoPiece("WG_Entry_GlassPane_L", PrimitiveType.Cube, zone40.transform,
+                new Vector3(45.02f, gardenY + 2.1f, 78.55f), new Vector3(0.12f, 2.8f, 0.72f), matConservatoryGlass);
+            DecoPiece("WG_Entry_GlassPane_R", PrimitiveType.Cube, zone40.transform,
+                new Vector3(45.02f, gardenY + 2.1f, 82.45f), new Vector3(0.12f, 2.8f, 0.72f), matConservatoryGlass);
+
+            CreateArchitecturalDoubleDoor(
+                "Doors_MainAcademyHall_To_WinterGarden", zone40.transform,
+                new Vector3(45f, gardenY, 80.5f), Quaternion.Euler(0f, 90f, 0f),
+                2.8f, 3.5f, 5.0f, 0.45f, false, "",
+                "JARDÍN DE INVIERNO — ENTRADA PRINCIPAL DE MADERA OSCURA Y CRISTAL (ZONA 40)", "",
+                matMahogany, matGold, matMahogany);
+
+            // Entrada 2 (Centro-Oeste, X = 45.0, Z = 58.0): Conectada con el Corredor de Mantenimiento
+            DecoPiece("WG_MaintDoor_GlassTransom", PrimitiveType.Cube, zone40.transform,
+                new Vector3(45.26f, gardenY + 3.65f, 58.0f), new Vector3(0.10f, 0.75f, 1.85f), matConservatoryGlass);
+
+            // Entrada 3 (Suroeste, X = 45.0, Z = 33.5): Conectada directamente con la rampa empedrada desde el Patio de Entrada (Sección 1)
+            CreateWall("WG_SouthWestEntry_Wall_S", zone40.transform,
+                new Vector3(45f, gardenY + 2.5f, 26.5f), new Vector3(0.45f, 5.0f, 9.0f), matMahogany);
+            CreateWall("WG_SouthWestEntry_Wall_N", zone40.transform,
+                new Vector3(45f, gardenY + 2.5f, 35.475f), new Vector3(0.45f, 5.0f, 1.05f), matMahogany);
+            DecoPiece("WG_SouthWestEntry_GlassPane_S", PrimitiveType.Cube, zone40.transform,
+                new Vector3(45.02f, gardenY + 2.1f, 31.55f), new Vector3(0.12f, 2.6f, 0.65f), matConservatoryGlass);
+            DecoPiece("WG_SouthWestEntry_GlassPane_N", PrimitiveType.Cube, zone40.transform,
+                new Vector3(45.02f, gardenY + 2.1f, 35.45f), new Vector3(0.12f, 2.6f, 0.65f), matConservatoryGlass);
+            CreateArchitecturalDoor(
+                "Door_CourtyardRamp_To_WinterGarden", zone40.transform,
+                new Vector3(45f, gardenY, 33.5f), Quaternion.Euler(0f, 90f, 0f),
+                1.8f, 3.2f, 5.0f, 0.45f, false, "",
+                "JARDÍN DE INVIERNO — ACCESO SUR DESDE EL PATIO DE ENTRADA (ZONA 40)", "",
+                matMahogany, matGold, matMahogany);
+
+            // Muros perimetrales clásicos de marfil desgastado, piedra gris cálida y ventanales con montantes de hierro oxidado
+            CreateWall("WG_Wall_West_UpperCornice", zone40.transform,
+                new Vector3(45f, gardenY + 5.9f, 57f), new Vector3(0.45f, 1.8f, 70f), matWallIvory);
+            CreateWall("WG_Wall_North", zone40.transform,
+                new Vector3(69f, gardenY + 3.4f, 92f), new Vector3(48f, wallH, 0.5f), matWallIvory);
+            CreateWall("WG_Wall_South", zone40.transform,
+                new Vector3(69f, gardenY + 3.4f, 22f), new Vector3(48f, wallH, 0.5f), matWallIvory);
+            CreateWall("WG_Wall_East", zone40.transform,
+                new Vector3(93f, gardenY + 3.4f, 57f), new Vector3(0.5f, wallH, 70f), matWallIvory);
+
+            // Columnas interiores de hierro negro oxidado que sostienen la gran nave acristalada (X = 56m y X = 82m)
+            for (float cz = 28f; cz <= 86f; cz += 14.5f)
+            {
+                CreateClassicalColumn($"Columna_Hierro_Invernadero_Oeste_{cz:F0}", zone40.transform,
+                    new Vector3(56.0f, gardenY, cz), wallH, 0.34f, matOxidizedBlackIron);
+                CreateClassicalColumn($"Columna_Hierro_Invernadero_Este_{cz:F0}", zone40.transform,
+                    new Vector3(82.0f, gardenY, cz), wallH, 0.34f, matOxidizedBlackIron);
+            }
+
+            // Pilastras de hierro negro oxidado y grandes ventanales de cristal en los muros este, norte y sur
+            for (float pz = 26f; pz <= 88f; pz += 8.8f)
+            {
+                DecoPiece($"Pilastra_Hierro_Este_{pz:F0}", PrimitiveType.Cube, zone40.transform,
+                    new Vector3(92.65f, gardenY + 3.4f, pz), new Vector3(0.28f, wallH, 0.34f), matOxidizedBlackIron);
+                DecoPiece($"Ventanal_Cristal_Este_{pz:F0}", PrimitiveType.Cube, zone40.transform,
+                    new Vector3(92.70f, gardenY + 3.5f, pz), new Vector3(0.08f, 4.8f, 6.2f), matConservatoryGlass);
+                DecoPiece($"Pilastra_Hierro_Oeste_{pz:F0}", PrimitiveType.Cube, zone40.transform,
+                    new Vector3(45.35f, gardenY + 3.4f, pz), new Vector3(0.28f, wallH, 0.34f), matOxidizedBlackIron);
+            }
+
+            // ====================================================================
+            // 2. GRAN CUBIERTA DE CRISTAL CON ESTRUCTURA METÁLICA Y PANELES AGRIETADOS/AUSENTES
+            // ====================================================================
+            GameObject roofStructure = new GameObject("WinterGarden_Glass_And_Iron_Roof");
+            roofStructure.transform.parent = zone40.transform;
+
+            // Cerchas transversales monumentales de hierro negro oxidado (48m de luz)
+            for (float rz = 24.0f; rz <= 90.0f; rz += 7.3f)
+            {
+                DecoPiece($"Cercha_Hierro_Horizontal_{rz:F1}", PrimitiveType.Cube, roofStructure.transform,
+                    new Vector3(69f, gardenY + wallH, rz), new Vector3(48f, 0.28f, 0.28f), matOxidizedBlackIron);
+                DecoPiece($"Arco_Inclinado_Oeste_{rz:F1}", PrimitiveType.Cube, roofStructure.transform,
+                    new Vector3(57f, gardenY + wallH + 1.6f, rz), new Vector3(24.5f, 0.22f, 0.24f), matOxidizedBlackIron).transform.localRotation = Quaternion.Euler(0f, 0f, 15.8f);
+                DecoPiece($"Arco_Inclinado_Este_{rz:F1}", PrimitiveType.Cube, roofStructure.transform,
+                    new Vector3(81f, gardenY + wallH + 1.6f, rz), new Vector3(24.5f, 0.22f, 0.24f), matOxidizedBlackIron).transform.localRotation = Quaternion.Euler(0f, 0f, -15.8f);
+            }
+
+            // Viga de cumbrera longitudinal en Y = 12.6m
+            DecoPiece("Cumbrera_Central_Hierro", PrimitiveType.Cube, roofStructure.transform,
+                new Vector3(69f, glassApexY, 57f), new Vector3(0.36f, 0.36f, 70f), matOxidizedBlackIron);
+
+            // Paneles del techo de cristal (dejando huecos rotos/ausentes sobre la Fuente Central Z=58 y el Pabellón de Elena Z=79)
+            float[] roofBayZ = { 27.5f, 34.8f, 42.1f, 49.4f, 65.5f, 72.2f, 86.5f };
+            for (int b = 0; b < roofBayZ.Length; b++)
+            {
+                float bz = roofBayZ[b];
+                CreatePrimitive($"Panel_Techo_Cristal_Oeste_{b + 1}", PrimitiveType.Cube, roofStructure.transform,
+                    new Vector3(57f, gardenY + wallH + 1.6f, bz), new Vector3(24.4f, 0.12f, 6.4f), matConservatoryGlass).transform.localRotation = Quaternion.Euler(0f, 0f, 15.8f);
+                CreatePrimitive($"Panel_Techo_Cristal_Este_{b + 1}", PrimitiveType.Cube, roofStructure.transform,
+                    new Vector3(81f, gardenY + wallH + 1.6f, bz), new Vector3(24.4f, 0.12f, 6.4f), matConservatoryGlass).transform.localRotation = Quaternion.Euler(0f, 0f, -15.8f);
+            }
+
+            // Cristales rotos colgando y ramas exteriores asomando sobre los huecos abiertos (Z = 58 y Z = 79)
+            DecoPiece("Rama_Exterior_Sombra_Fuente_1", PrimitiveType.Cylinder, roofStructure.transform,
+                new Vector3(68.5f, glassApexY - 0.4f, 58.2f), new Vector3(0.18f, 3.8f, 0.18f), matMahogany).transform.localRotation = Quaternion.Euler(78f, 25f, 12f);
+            DecoPiece("Rama_Exterior_Sombra_Estatua_2", PrimitiveType.Cylinder, roofStructure.transform,
+                new Vector3(81.5f, glassApexY - 0.6f, 79.0f), new Vector3(0.16f, 3.2f, 0.16f), matMahogany).transform.localRotation = Quaternion.Euler(82f, -35f, 0f);
+
+            // Hilos finos de lluvia nocturna cayendo por las aberturas del techo de cristal sobre la fuente y el musgo
+            for (int r = 0; r < 14; r++)
+            {
+                float rx = 66.2f + (r % 7) * 0.95f;
+                float rz = 56.2f + (r / 7) * 3.4f;
+                DecoPiece($"Estela_Lluvia_Techo_Roto_{r + 1}", PrimitiveType.Cylinder, zone40.transform,
+                    new Vector3(rx, gardenY + 5.2f, rz), new Vector3(0.014f, 3.4f, 0.014f), matConservatoryGlass);
+            }
+
+            // ====================================================================
+            // 3. GRAN FUENTE CIRCULAR DE PIEDRA COMPLETAMENTE SECA CON CISNES (X = 69.0, Z = 58.0)
+            // ====================================================================
+            GameObject dryFountain = new GameObject("Fuente_Circular_Seca_Cisnes");
+            dryFountain.transform.parent = zone40.transform;
+            dryFountain.transform.position = new Vector3(69.0f, gardenY, 58.0f);
+
+            // Brocal circular monumental de piedra gris cálida (6.8m de diámetro) y lecho interior seco con musgo y hojas caídas
+            CreatePrimitive("Fuente_Brocal_Exterior", PrimitiveType.Cylinder, dryFountain.transform,
+                new Vector3(0f, 0.42f, 0f), new Vector3(6.8f, 0.42f, 6.8f), matWarmGreyStone);
+            CreatePrimitive("Fuente_Interior_Seco_Musgo", PrimitiveType.Cylinder, dryFountain.transform,
+                new Vector3(0f, 0.44f, 0f), new Vector3(5.8f, 0.41f, 5.8f), matMossGreen);
+            DecoPiece("Fuente_Hojas_Secas_1", PrimitiveType.Cylinder, dryFountain.transform,
+                new Vector3(-1.35f, 0.86f, 0.95f), new Vector3(1.6f, 0.02f, 1.35f), matDryLeaves);
+            DecoPiece("Fuente_Hojas_Secas_2", PrimitiveType.Cylinder, dryFountain.transform,
+                new Vector3(1.45f, 0.86f, -0.85f), new Vector3(1.7f, 0.02f, 1.25f), matDryLeaves);
+
+            // Pedestal central escalonado y ornamentación de dos cisnes tallados en piedra y latón oxidado
+            CreatePrimitive("Fuente_Pedestal_Base", PrimitiveType.Cylinder, dryFountain.transform,
+                new Vector3(0f, 0.95f, 0f), new Vector3(2.2f, 0.45f, 2.2f), matWarmGreyStone);
+            CreatePrimitive("Fuente_Pedestal_Central", PrimitiveType.Cylinder, dryFountain.transform,
+                new Vector3(0f, 1.55f, 0f), new Vector3(1.35f, 0.75f, 1.35f), matWarmGreyStone);
+            DecoPiece("Cisne_Piedra_Cuerpo_1", PrimitiveType.Sphere, dryFountain.transform,
+                new Vector3(-0.34f, 2.45f, 0f), new Vector3(0.62f, 0.46f, 0.88f), matStatue);
+            DecoPiece("Cisne_Piedra_Cuello_1", PrimitiveType.Cylinder, dryFountain.transform,
+                new Vector3(-0.34f, 2.98f, 0.28f), new Vector3(0.14f, 0.42f, 0.14f), matStatue).transform.localRotation = Quaternion.Euler(22f, 0f, 0f);
+            DecoPiece("Cisne_Piedra_Cuerpo_2", PrimitiveType.Sphere, dryFountain.transform,
+                new Vector3(0.34f, 2.45f, 0f), new Vector3(0.62f, 0.46f, 0.88f), matOxidizedBlackIron);
+            DecoPiece("Cisne_Piedra_Cuello_2", PrimitiveType.Cylinder, dryFountain.transform,
+                new Vector3(0.34f, 2.98f, -0.28f), new Vector3(0.14f, 0.42f, 0.14f), matOxidizedBlackIron).transform.localRotation = Quaternion.Euler(-22f, 0f, 0f);
+            DecoPiece("Corona_Laton_Fuente", PrimitiveType.Cylinder, dryFountain.transform,
+                new Vector3(0f, 2.22f, 0f), new Vector3(1.55f, 0.06f, 1.55f), matGold);
+
+            WinterGardenAnomalyController fountainCtrl = dryFountain.AddComponent<WinterGardenAnomalyController>();
+            fountainCtrl.Configure(WinterGardenNodeType.DryFountainWaterEchoAndInspect);
+            EditorUtility.SetDirty(fountainCtrl);
+
+            // ====================================================================
+            // 4. SENDEROS DE PIEDRA QUE SE RAMIFICAN DESDE LA FUENTE Y SE RECONECTAN ENTRE SÍ
+            // ====================================================================
+            GameObject stonePaths = new GameObject("WinterGarden_Interconnected_Stone_Paths");
+            stonePaths.transform.parent = zone40.transform;
+
+            // Gran rotonda de piedra alrededor de la fuente seca (16.5m de diámetro)
+            DecoPiece("Sendero_Anillo_Central_Fuente", PrimitiveType.Cylinder, stonePaths.transform,
+                new Vector3(69.0f, gardenY + 0.015f, 58.0f), new Vector3(16.5f, 0.02f, 16.5f), matWarmGreyStone);
+
+            // Avenida Central Oeste-Este (Desde la puerta del Corredor de Mantenimiento X=45, Z=58 pasando por la Fuente hasta X=86)
+            DecoPiece("Sendero_Avenida_Central_OE", PrimitiveType.Cube, stonePaths.transform,
+                new Vector3(65.5f, gardenY + 0.02f, 58.0f), new Vector3(41.0f, 0.03f, 3.8f), matWarmGreyStone);
+
+            // Gran Paseo Longitudinal Central Norte-Sur (X = 69.0, Z: 27.0 a 86.0)
+            DecoPiece("Sendero_Paseo_Central_NS", PrimitiveType.Cube, stonePaths.transform,
+                new Vector3(69.0f, gardenY + 0.02f, 56.5f), new Vector3(3.8f, 0.03f, 59.0f), matWarmGreyStone);
+
+            // Avenida Noroeste (Desde la Entrada Principal de Madera Oscura y Cristal X=45, Z=80.5 hasta el Circuito Oriental X=83.0)
+            DecoPiece("Sendero_Avenida_Norte_OE", PrimitiveType.Cube, stonePaths.transform,
+                new Vector3(64.0f, gardenY + 0.02f, 80.5f), new Vector3(38.0f, 0.03f, 3.6f), matWarmGreyStone);
+
+            // Avenida Suroeste (Desde el Acceso Sur del Patio X=45, Z=33.5 hasta el Circuito Oriental X=83.0)
+            DecoPiece("Sendero_Avenida_Sur_OE", PrimitiveType.Cube, stonePaths.transform,
+                new Vector3(64.0f, gardenY + 0.02f, 33.5f), new Vector3(38.0f, 0.03f, 3.6f), matWarmGreyStone);
+
+            // Circuito Longitudinal Occidental (X = 56.0, Z: 27.0 a 86.0) y Circuito Longitudinal Oriental (X = 82.0, Z: 27.0 a 86.0)
+            DecoPiece("Sendero_Circuito_Occidental_NS", PrimitiveType.Cube, stonePaths.transform,
+                new Vector3(56.0f, gardenY + 0.02f, 56.5f), new Vector3(3.2f, 0.03f, 59.0f), matWarmGreyStone);
+            DecoPiece("Sendero_Circuito_Oriental_NS", PrimitiveType.Cube, stonePaths.transform,
+                new Vector3(82.0f, gardenY + 0.02f, 56.5f), new Vector3(3.2f, 0.03f, 59.0f), matWarmGreyStone);
+
+            // Senderos Transversales intermedios en Z = 45.5 y Z = 69.5 que conectan los tres paseos longitudinales
+            DecoPiece("Sendero_Transversal_Sur_Intermedio", PrimitiveType.Cube, stonePaths.transform,
+                new Vector3(69.0f, gardenY + 0.02f, 45.5f), new Vector3(29.0f, 0.03f, 2.8f), matWarmGreyStone);
+            DecoPiece("Sendero_Transversal_Norte_Intermedio", PrimitiveType.Cube, stonePaths.transform,
+                new Vector3(69.0f, gardenY + 0.02f, 69.5f), new Vector3(29.0f, 0.03f, 2.8f), matWarmGreyStone);
+
+            // ====================================================================
+            // 5. BANCOS DE HIERRO OXIDADO Y PEQUEÑA MESA DE PIEDRA (CON OBJETO QUE APARECE)
+            // ====================================================================
+            CreateWinterGardenIronBench("Banco_Hierro_Oxidado_Rotonda_NO", zone40.transform,
+                new Vector3(63.2f, gardenY, 63.8f), Quaternion.Euler(0f, 135f, 0f), matOxidizedBlackIron, matMahogany);
+            CreateWinterGardenIronBench("Banco_Hierro_Oxidado_Rotonda_SO", zone40.transform,
+                new Vector3(63.2f, gardenY, 52.2f), Quaternion.Euler(0f, 45f, 0f), matOxidizedBlackIron, matMahogany);
+            CreateWinterGardenIronBench("Banco_Hierro_Oxidado_Rotonda_NE", zone40.transform,
+                new Vector3(74.8f, gardenY, 63.8f), Quaternion.Euler(0f, -135f, 0f), matOxidizedBlackIron, matMahogany);
+            CreateWinterGardenIronBench("Banco_Hierro_Oxidado_Rotonda_SE", zone40.transform,
+                new Vector3(74.8f, gardenY, 52.2f), Quaternion.Euler(0f, -45f, 0f), matOxidizedBlackIron, matMahogany);
+            CreateWinterGardenIronBench("Banco_Hierro_Oxidado_Paseo_Oeste_1", zone40.transform,
+                new Vector3(53.5f, gardenY, 65.5f), Quaternion.Euler(0f, 90f, 0f), matOxidizedBlackIron, matMahogany);
+            CreateWinterGardenIronBench("Banco_Hierro_Oxidado_Paseo_Oeste_2", zone40.transform,
+                new Vector3(53.5f, gardenY, 40.0f), Quaternion.Euler(0f, 90f, 0f), matOxidizedBlackIron, matMahogany);
+            CreateWinterGardenIronBench("Banco_Hierro_Oxidado_Paseo_Este_1", zone40.transform,
+                new Vector3(84.5f, gardenY, 65.5f), Quaternion.Euler(0f, -90f, 0f), matOxidizedBlackIron, matMahogany);
+            CreateWinterGardenIronBench("Banco_Hierro_Oxidado_Paseo_Este_2", zone40.transform,
+                new Vector3(84.5f, gardenY, 40.0f), Quaternion.Euler(0f, -90f, 0f), matOxidizedBlackIron, matMahogany);
+
+            // Pequeña mesa circular de piedra gris cálida junto al banco del paseo oeste (X = 56.0, Z = 65.5)
+            GameObject smallStoneTable = new GameObject("Mesa_Pequena_De_Piedra");
+            smallStoneTable.transform.parent = zone40.transform;
+            smallStoneTable.transform.position = new Vector3(56.0f, gardenY, 65.5f);
+            CreatePrimitive("Mesa_Piedra_Columna", PrimitiveType.Cylinder, smallStoneTable.transform,
+                new Vector3(0f, 0.42f, 0f), new Vector3(0.45f, 0.42f, 0.45f), matWarmGreyStone);
+            CreatePrimitive("Mesa_Piedra_Tablero", PrimitiveType.Cylinder, smallStoneTable.transform,
+                new Vector3(0f, 0.86f, 0f), new Vector3(1.25f, 0.06f, 1.25f), matWarmGreyStone);
+
+            // Objeto que aparece sobre la mesa de piedra donde antes no estaba (tras leer la inscripción de la estatua de Elena)
+            GameObject appearingRelicGroup = new GameObject("Objeto_Aparecido_Sobre_Mesa_Piedra");
+            appearingRelicGroup.transform.parent = smallStoneTable.transform;
+            appearingRelicGroup.transform.localPosition = new Vector3(0f, 0.93f, 0f);
+            DecoPiece("Relicario_Laton_Aparecido", PrimitiveType.Cylinder, appearingRelicGroup.transform,
+                new Vector3(-0.18f, 0.02f, 0.05f), new Vector3(0.18f, 0.02f, 0.18f), matGold);
+            DecoPiece("Cinta_Saten_Aparecida", PrimitiveType.Cube, appearingRelicGroup.transform,
+                new Vector3(0.12f, 0.015f, -0.08f), new Vector3(0.32f, 0.015f, 0.06f), matSatinRibbon);
+
+            CreateInteractiveWorldDoc("Doc_Objeto_Aparecido_Mesa_Piedra", appearingRelicGroup.transform,
+                new Vector3(0f, 0.03f, 0f), new Vector3(0.38f, 0.04f, 0.28f), matGold,
+                "doc_s9_stone_table_appearing_object",
+                "Relicario y Nota Aparecidos en la Mesa de Piedra — Conexión con Archivo Musical y Administración",
+                "MESA DE PIEDRA DEL JARDÍN DE INVIERNO — [ANOMALÍA DE PRESENCIA]\n\n" +
+                "Hace apenas un momento esta mesa de piedra estaba vacía. Ahora reposa sobre ella un relicario de latón con una nota doblada:\n\n" +
+                "«La noche del **17 de octubre de 1924**, tres días después de que Isadora Vale registrara en **Administración (Sección 2)** la supuesta desaparición de Elena, nos reunimos en este Jardín de Invierno.\n" +
+                "Elena tocó por última vez el violonchelo que hoy está oculto bajo una tela negra en el **Depósito de Instrumentos del Archivo Musical (Sección 5, Zona 25)** antes de partir al amanecer.\n" +
+                "La caja con la fotografía de aquella noche está enterrada bajo la **losa desplazada en el rincón sureste de este jardín (`X = 86.5, Z = 27.5`)**, detrás de los helechos».");
+
+            // ====================================================================
+            // 6. GALERÍA DE ESTATUAS DE BAILARINAS Y TEMPLETE CON LA ESTATUA CONMEMORATIVA DE ELENA VESPER
+            // ====================================================================
+            // Dos estatuas cercanas a la rotonda que cambian sutilmente de orientación cuando el jugador aparta la vista
+            GameObject statueNW = new GameObject("Estatua_Bailarina_Jardin_NO");
+            statueNW.transform.parent = zone40.transform;
+            statueNW.transform.position = new Vector3(60.5f, gardenY, 69.5f);
+            CreateBallerinaStatue("Mesh_Estatua_NO", statueNW.transform, Vector3.zero, matStatue, matWarmGreyStone,
+                "Estatua Clásica I — Arabesque en Piedra Gris");
+
+            GameObject statueSW = new GameObject("Estatua_Bailarina_Jardin_SO");
+            statueSW.transform.parent = zone40.transform;
+            statueSW.transform.position = new Vector3(60.5f, gardenY, 45.5f);
+            CreateBallerinaStatue("Mesh_Estatua_SO", statueSW.transform, Vector3.zero, matStatue, matWarmGreyStone,
+                "Estatua Clásica II — Attitude bajo la Hiedra");
+
+            // Otras estatuas de la galería monumental de bailarinas sobre pedestales envejecidos
+            CreateBallerinaStatue("Estatua_Bailarina_Jardin_SE", zone40.transform,
+                new Vector3(77.5f, gardenY, 45.5f), matStatue, matWarmGreyStone,
+                "Estatua Clásica III — Variación de Otoño");
+            CreateBallerinaStatue("Estatua_Bailarina_Jardin_NorteCentro", zone40.transform,
+                new Vector3(69.0f, gardenY, 84.5f), matStatue, matWarmGreyStone,
+                "Estatua Clásica IV — Reverencia del Primer Acto");
+            CreateBallerinaStatue("Estatua_Bailarina_Jardin_SurCentro", zone40.transform,
+                new Vector3(69.0f, gardenY, 28.5f), matStatue, matWarmGreyStone,
+                "Estatua Clásica V — El Cisne en Reposo");
+            CreateBallerinaStatue("Estatua_Bailarina_Jardin_EsteCentro", zone40.transform,
+                new Vector3(86.5f, gardenY, 58.0f), matStatue, matWarmGreyStone,
+                "Estatua Clásica VI — Pas de Deux Nocturno");
+
+            // Controlador de anomalía de estatuas que giran al apartar la vista + melodía de piano distante
+            GameObject statueAnomalyHost = new GameObject("Anomaly_WinterGarden_StatuesAndDistantPiano");
+            statueAnomalyHost.transform.parent = zone40.transform;
+            statueAnomalyHost.transform.position = new Vector3(62.5f, gardenY + 1.5f, 58.0f);
+            WinterGardenAnomalyController statuesAnomCtrl = statueAnomalyHost.AddComponent<WinterGardenAnomalyController>();
+            statuesAnomCtrl.Configure(WinterGardenNodeType.AnomalyWeepingBallerinaStatuesAndPiano, statueNW.transform, statueSW.transform);
+            EditorUtility.SetDirty(statuesAnomCtrl);
+
+            // ESTATUA CONMEMORATIVA DE ELENA VESPER EN EL PABELLÓN NORESTE (X = 82.0, Z = 79.0)
+            GameObject elenaMemorialStatue = new GameObject("Estatua_Conmemorativa_Elena_Vesper");
+            elenaMemorialStatue.transform.parent = zone40.transform;
+            elenaMemorialStatue.transform.position = new Vector3(82.0f, gardenY, 79.0f);
+            CreateBallerinaStatue("Mesh_Estatua_Elena_Vesper", elenaMemorialStatue.transform, Vector3.zero, matStatue, matWarmGreyStone,
+                "Estatua Conmemorativa — Elena Vesper");
+            DecoPiece("Plataforma_Pabellon_Elena", PrimitiveType.Cylinder, elenaMemorialStatue.transform,
+                new Vector3(0f, 0.08f, 0f), new Vector3(4.8f, 0.08f, 4.8f), matWarmGreyStone);
+
+            // Placa conmemorativa de latón antiguo al pie de la estatua de Elena (Interactiva)
+            GameObject memorialPlaqueTrigger = CreatePrimitive("Placa_Conmemorativa_Elena_Jardin", PrimitiveType.Cube, elenaMemorialStatue.transform,
+                new Vector3(-0.92f, 1.05f, 0f), new Vector3(0.18f, 0.56f, 0.84f), matGold);
+            WinterGardenAnomalyController memorialCtrl = memorialPlaqueTrigger.AddComponent<WinterGardenAnomalyController>();
+            memorialCtrl.Configure(WinterGardenNodeType.InteractiveElenaMemorialStatue, null, null, appearingRelicGroup);
+            EditorUtility.SetDirty(memorialCtrl);
+
+            // ====================================================================
+            // 7. RINCÓN OCULTO TRAS LA VEGETACIÓN (X = 86.5, Z = 27.5): LOSA DESPLAZADA Y CAJA METÁLICA SEMIENTERRADA
+            // ====================================================================
+            GameObject hiddenCorner = new GameObject("Rincon_Oculto_Losa_Y_Caja_Enterrada");
+            hiddenCorner.transform.parent = zone40.transform;
+            hiddenCorner.transform.position = new Vector3(86.5f, gardenY, 27.5f);
+
+            // Hueco en la tierra húmeda, losa de piedra desplazada y pequeña caja metálica parcialmente enterrada
+            DecoPiece("Hueco_Tierra_Excavada", PrimitiveType.Cube, hiddenCorner.transform,
+                new Vector3(0f, 0.02f, 0f), new Vector3(1.25f, 0.04f, 1.05f), matShadowFigure);
+            GameObject displacedSlab = CreatePrimitive("Losa_Piedra_Desplazada", PrimitiveType.Cube, hiddenCorner.transform,
+                new Vector3(0.32f, 0.08f, 0.16f), new Vector3(1.18f, 0.15f, 0.94f), matWarmGreyStone);
+            displacedSlab.transform.localRotation = Quaternion.Euler(0f, 18f, 0f);
+
+            GameObject buriedMetalBox = CreatePrimitive("Caja_Metalica_Parcialmente_Enterrada", PrimitiveType.Cube, hiddenCorner.transform,
+                new Vector3(-0.15f, 0.12f, -0.05f), new Vector3(0.52f, 0.24f, 0.38f), matOxidizedBlackIron);
+            buriedMetalBox.transform.localRotation = Quaternion.Euler(8f, -12f, 5f);
+            DecoPiece("Detalle_Laton_Caja_Enterrada", PrimitiveType.Cube, buriedMetalBox.transform,
+                new Vector3(0f, 0.52f, 0f), new Vector3(0.82f, 0.08f, 0.25f), matGold);
+
+            WinterGardenAnomalyController hiddenCornerCtrl = buriedMetalBox.AddComponent<WinterGardenAnomalyController>();
+            hiddenCornerCtrl.Configure(WinterGardenNodeType.InteractiveHiddenSlabAndMetalBox, displacedSlab.transform, buriedMetalBox.transform);
+            EditorUtility.SetDirty(hiddenCornerCtrl);
+
+            CreateInteractiveWorldDoc("Doc_Foto_Y_Carta_Rincon_Oculto", hiddenCorner.transform,
+                new Vector3(-0.15f, 0.28f, 0.38f), new Vector3(0.38f, 0.04f, 0.28f), matGold,
+                "doc_s9_buried_photo_and_letter",
+                "Fotografía del 17 de Octubre y Fragmento de Carta — Contradicción con la Desaparición Oficial",
+                "RINCÓN OCULTO DEL JARDÍN DE INVIERNO — PRUEBA FÍSICA\n\n" +
+                "• **Fotografía Antigua**: Tomada junto a la fuente de los cisnes la noche del **17 de octubre de 1924** (tres días después de la fecha oficial de desaparición). Al dorso figura la referencia del **Archivo Musical (Sección 5)** y de **Administración (Sección 2)**.\n" +
+                "• **Fragmento de Carta**:\n" +
+                "  «Enterramos esta caja aquí antes de que tapiaran las puertas del teatro. La inscripción que Mara grabó al pie de la estatua del noreste dice la verdad: el 17 de octubre Elena seguía con vida dentro de la academia»");
+
+            // ====================================================================
+            // 8. VEGETACIÓN ABUNDANTE PERO CONTROLADA: ÁRBOLES DE INVERNADERO, HIEDRA, HELECHOS, RAÍCES Y ARBUSTOS
+            // ====================================================================
+            GameObject vegetationGroup = new GameObject("WinterGarden_Controlled_Vegetation");
+            vegetationGroup.transform.parent = zone40.transform;
+
+            // Árboles antiguos de invernadero en los cuatro cuadrantes ajardinados
+            Vector3[] gardenTrees =
+            {
+                new Vector3(62.5f, gardenY, 75.0f),
+                new Vector3(75.5f, gardenY, 75.0f),
+                new Vector3(62.5f, gardenY, 39.0f),
+                new Vector3(75.5f, gardenY, 39.0f),
+                new Vector3(88.5f, gardenY, 68.0f),
+                new Vector3(88.5f, gardenY, 46.0f)
+            };
+            for (int gt = 0; gt < gardenTrees.Length; gt++)
+            {
+                CreateStageTreeProp($"Arbol_Invernadero_{gt + 1}", vegetationGroup.transform, gardenTrees[gt], matMahogany, matOliveDark);
+            }
+
+            // Hiedra y plantas trepadoras subiendo por los muros perimetrales
+            float[] ivyZ = { 28f, 40f, 52f, 66f, 78f, 87f };
+            for (int v = 0; v < ivyZ.Length; v++)
+            {
+                DecoPiece($"Hiedra_Muro_Este_{v + 1}", PrimitiveType.Cube, vegetationGroup.transform,
+                    new Vector3(92.55f, gardenY + 2.8f, ivyZ[v]), new Vector3(0.18f, 4.8f, 4.2f), matOliveDark);
+                DecoPiece($"Hiedra_Muro_Oeste_{v + 1}", PrimitiveType.Cube, vegetationGroup.transform,
+                    new Vector3(45.45f, gardenY + 2.6f, ivyZ[v] - 1.5f), new Vector3(0.18f, 4.4f, 3.6f), matMossGreen);
+            }
+
+            // Arbustos, helechos y macizos vegetales que enmarcan los paseos y ocultan el rincón sureste (X = 86.5, Z = 27.5)
+            Vector3[] bushCoords =
+            {
+                new Vector3(83.2f, gardenY + 0.72f, 30.8f),
+                new Vector3(86.2f, gardenY + 0.78f, 31.4f),
+                new Vector3(89.5f, gardenY + 0.74f, 30.2f),
+                new Vector3(89.8f, gardenY + 0.70f, 25.8f),
+                new Vector3(50.2f, gardenY + 0.68f, 27.5f),
+                new Vector3(50.2f, gardenY + 0.68f, 46.5f),
+                new Vector3(50.2f, gardenY + 0.68f, 69.5f),
+                new Vector3(50.2f, gardenY + 0.68f, 86.5f),
+                new Vector3(62.5f, gardenY + 0.65f, 64.0f),
+                new Vector3(75.5f, gardenY + 0.65f, 64.0f),
+                new Vector3(62.5f, gardenY + 0.65f, 51.5f),
+                new Vector3(75.5f, gardenY + 0.65f, 51.5f),
+                new Vector3(88.5f, gardenY + 0.72f, 84.5f),
+                new Vector3(76.0f, gardenY + 0.68f, 86.5f)
+            };
+            for (int b = 0; b < bushCoords.Length; b++)
+            {
+                DecoPiece($"Arbusto_Oliva_{b + 1}", PrimitiveType.Sphere, vegetationGroup.transform,
+                    bushCoords[b], new Vector3(2.6f, 1.55f, 2.4f), (b % 2 == 0) ? matOliveDark : matHedge);
+            }
+
+            // Raíces retorcidas que invaden los bordes de los senderos de piedra
+            float[] rootZ = { 36.5f, 49.0f, 62.5f, 75.0f, 83.0f };
+            for (int rt = 0; rt < rootZ.Length; rt++)
+            {
+                DecoPiece($"Raiz_Sendero_{rt + 1}", PrimitiveType.Cylinder, vegetationGroup.transform,
+                    new Vector3(67.2f + (rt % 2) * 3.6f, gardenY + 0.05f, rootZ[rt]), new Vector3(0.14f, 1.8f, 0.14f), matMahogany).transform.localRotation = Quaternion.Euler(86f, 32f * rt, 0f);
+            }
+
+            // ====================================================================
+            // 9. ILUMINACIÓN PRINCIPALMENTE FRÍA Y LUNAR + LUCES CÁLIDAS DÉBILES DE LA ACADEMIA
+            // ====================================================================
+            CreatePictureSpotlight("Luz_Lunar_Sobre_Fuente_Seca", zone40.transform,
+                new Vector3(69.0f, glassApexY - 0.5f, 58.0f), new Vector3(69.0f, gardenY + 0.5f, 58.0f),
+                new Color(0.60f, 0.78f, 0.98f), 4.2f);
+            CreatePictureSpotlight("Luz_Lunar_Sobre_Estatua_Elena", zone40.transform,
+                new Vector3(82.0f, glassApexY - 0.5f, 79.0f), new Vector3(82.0f, gardenY + 1.0f, 79.0f),
+                new Color(0.62f, 0.80f, 1.0f), 3.6f);
+            CreatePictureSpotlight("Luz_Lunar_Rincon_Oculto_SE", zone40.transform,
+                new Vector3(86.5f, glassApexY - 0.8f, 27.5f), new Vector3(86.5f, gardenY + 0.2f, 27.5f),
+                new Color(0.55f, 0.74f, 0.96f), 2.8f);
+
+            // Luces cálidas débiles provenientes de las entradas de la academia en el muro oeste (X = 45.4)
+            CreateOrnateSconce("Luz_Calida_Debil_Entrada_Academia_N", zone40.transform,
+                new Vector3(45.4f, gardenY + 3.1f, 79.0f), matOxidizedBlackIron, matLanternGlow, new Color(1.0f, 0.78f, 0.44f), 1.45f);
+            CreateOrnateSconce("Luz_Calida_Debil_Entrada_Mantenimiento", zone40.transform,
+                new Vector3(45.4f, gardenY + 3.1f, 59.4f), matOxidizedBlackIron, matLanternGlow, new Color(1.0f, 0.78f, 0.44f), 1.35f);
+            CreateOrnateSconce("Luz_Calida_Debil_Entrada_Sur", zone40.transform,
+                new Vector3(45.4f, gardenY + 3.1f, 34.8f), matOxidizedBlackIron, matLanternGlow, new Color(1.0f, 0.78f, 0.44f), 1.35f);
+        }
+
+        private static void CreateWinterGardenIronBench(string name, Transform parent, Vector3 pos, Quaternion rot, Material ironMat, Material woodMat)
+        {
+            GameObject bench = new GameObject(name);
+            bench.transform.parent = parent;
+            bench.transform.position = pos;
+            bench.transform.rotation = rot;
+
+            CreatePrimitive("Bench_Seat", PrimitiveType.Cube, bench.transform, new Vector3(0f, 0.44f, 0f), new Vector3(1.85f, 0.08f, 0.58f), woodMat);
+            CreatePrimitive("Bench_Backrest", PrimitiveType.Cube, bench.transform, new Vector3(0f, 0.82f, -0.24f), new Vector3(1.85f, 0.48f, 0.08f), ironMat);
+            DecoPiece("Bench_Arm_L", PrimitiveType.Cube, bench.transform, new Vector3(-0.88f, 0.48f, 0f), new Vector3(0.08f, 0.62f, 0.60f), ironMat);
+            DecoPiece("Bench_Arm_R", PrimitiveType.Cube, bench.transform, new Vector3(0.88f, 0.48f, 0f), new Vector3(0.08f, 0.62f, 0.60f), ironMat);
+        }
+
+        // ====================================================================
+        // CONSTRUCCIÓN DE LA SECCIÓN 10: EXPANSIÓN ARQUITECTÓNICA DE LA ACADEMIA (ZONAS 41 A 44)
+        // - 41. Sótano de Mantenimiento (Nivel subterráneo Y = -3.2m, tuberías acústicas, depósitos de agua, ruta alternativa y secreto del consumo del teatro)
+        // - 42. Terraza y Azotea Mirador (Nivel superior Y = 7.70m, balaustradas, macetas secas, vistas a patios/teatro y secreto de la ventana que no figura en planos)
+        // - 43. Enfermería Antigua (Ala Suroeste Y = 2.4m, camillas, biombos, botica médica y secreto del registro clínico de Elena con página arrancada)
+        // - 44. Sala Conmemorativa (Ala Suroeste Y = 2.4m, bancos de madera, flores secas, retratos, placas con nombres y secreto de la placa retirada de la pared)
+        // ====================================================================
+        private static void BuildSection10ExpansionZones(
+            Transform rootEnv, float vestY,
+            Material matParquet, Material matCarpet, Material matWallIvory, Material matMahogany,
+            Material matGold, Material matIron, Material matClothCover, Material matVelvetDrapes,
+            Material matLanternGlow, Material matColdFluorescent, Material matGreenVelvet,
+            Material matLeather, Material matWoodArchive, Material matMetalArchive, Material matCardboard,
+            Material matStoneWall, Material matRustedLocker, Material matMirrorGlass, Material matPorcelain,
+            Material matTutuWhite, Material matTutuBlack, Material matSatinRibbon, Material matShadowFigure,
+            Material matPortraitElena, Material matPhotoTroupe1923, Material matCobble, Material matStatue, Material matHedge,
+            Material matCeramicTile, Material matFacade, Material matGreenGlass)
+        {
+            Material matAgedBrick = GetOrCreateBasicMaterial("Mat_S10_AgedBrick", new Color(0.27f, 0.17f, 0.14f), 0.18f, 0.02f);
+            Material matCopperPipe = GetOrCreateBasicMaterial("Mat_S10_AgedCopperPipe", new Color(0.56f, 0.34f, 0.22f), 0.62f, 0.78f);
+            Material matBoilerTank = GetOrCreateBasicMaterial("Mat_S10_BoilerIronTank", new Color(0.18f, 0.20f, 0.21f), 0.42f, 0.82f);
+            Material matDryFlowers = GetOrCreateBasicMaterial("Mat_S10_DriedRosesAndLaurel", new Color(0.38f, 0.24f, 0.18f), 0.12f, 0.0f);
+            Material matWallScar = GetOrCreateBasicMaterial("Mat_S10_RemovedPlaqueWallScar", new Color(0.13f, 0.08f, 0.05f), 0.12f, 0.0f);
+            Material matAmberBottle = GetOrCreateBasicMaterial("Mat_S10_AmberMedicalBottle", new Color(0.52f, 0.28f, 0.08f), 0.88f, 0.10f);
+            Material matWarmWindowGlow = GetOrCreateEmissiveMaterial("Mat_S10_UnmappedWindowGlow", new Color(1.0f, 0.72f, 0.32f));
+
+            // Materiales adicionales para la Sección 12 (Zonas 49 a 59) — mismos assets que en las secciones 1, 7 y 8
+            Material matSecretPaper = GetOrCreateBasicMaterial("Mat_S8_ArchivalPaper", new Color(0.84f, 0.77f, 0.60f), 0.16f, 0.0f);
+            Material matDarkCement = GetOrCreateBasicMaterial("Mat_S8_SubterraneanCement", new Color(0.17f, 0.18f, 0.19f), 0.22f, 0.04f);
+            Material matCatwalkSteel = GetOrCreateBasicMaterial("Mat_S7_CatwalkSteel", new Color(0.22f, 0.24f, 0.27f), 0.45f, 0.65f);
+            Material matTheatreDarkWood = GetOrCreateBasicMaterial("Mat_S7_TheatreStageWood", new Color(0.18f, 0.12f, 0.09f), 0.42f, 0.04f);
+            Material matPuddle = GetOrCreateBasicMaterial("Mat_S1_Puddle", new Color(0.10f, 0.13f, 0.18f), 0.98f, 0.15f);
+            Material matMarble = GetOrCreateBasicMaterial("Mat_S12_FoundersMarble", new Color(0.78f, 0.76f, 0.70f), 0.70f, 0.10f);
+
+            // ====================================================================
+            // ZONA 41: SÓTANO DE MANTENIMIENTO (NIVEL SUBTERRÁNEO Y = -3.2m)
+            // Tres subáreas interconectadas + Doble ruta vertical (Lavabos Y=2.4m <-> Sótano Y=-3.2m <-> Callejón Servicio/Jardín de Invierno Y=0.0m)
+            // ====================================================================
+            GameObject zone41 = new GameObject("41_Maintenance_Basement_Subterranean");
+            zone41.transform.parent = rootEnv;
+            float baseFloorY = -3.2f;
+            float baseH = 4.4f; // Techo en Y = +1.2m
+
+            // 1. Descansillo Superior Norte (X: 16..22, Z: -6.5..0, Y = 2.4m) conectado a Door_Washroom_To_MaintenanceBasement (19, 2.4, 0)
+            CreatePrimitive("Basement_NorthUpperLanding_Floor", PrimitiveType.Cube, zone41.transform,
+                new Vector3(19.0f, vestY - 0.25f, -3.25f), new Vector3(6.0f, 0.5f, 6.5f), matStoneWall);
+            CreatePrimitive("Basement_NorthUpperLanding_Ceiling", PrimitiveType.Cube, zone41.transform,
+                new Vector3(26.5f, vestY + 4.8f, -3.25f), new Vector3(21.0f, 0.5f, 6.5f), matStoneWall);
+            CreateWall("Basement_NorthStair_Wall_West", zone41.transform,
+                new Vector3(16.0f, vestY + 2.2f, -3.25f), new Vector3(0.5f, 5.2f, 6.5f), matAgedBrick);
+            CreateWall("Basement_NorthStair_Wall_SouthUpper", zone41.transform,
+                new Vector3(26.5f, 2.0f, -6.5f), new Vector3(21.0f, 10.5f, 0.5f), matAgedBrick);
+            CreateWall("Basement_NorthStair_Wall_NorthEastUpper", zone41.transform,
+                new Vector3(31.5f, 2.0f, 0.0f), new Vector3(11.0f, 10.5f, 0.5f), matAgedBrick);
+
+            // Escalera Norte (X: 22.0m a 35.0m, Z = -3.25m): baja de Y = 2.4m a Y = -3.2m (desnivel 5.6m en 13.0m)
+            int nSteps = 24;
+            float nStepLen = 13.0f / nSteps;
+            float nStepDrop = (vestY - baseFloorY) / nSteps;
+            for (int s = 0; s < nSteps; s++)
+            {
+                float sx = 22.0f + (s + 0.5f) * nStepLen;
+                float sy = vestY - (s + 1) * nStepDrop;
+                CreatePrimitive($"Peldaño_Sotano_Norte_{s + 1}", PrimitiveType.Cube, zone41.transform,
+                    new Vector3(sx, sy - 0.12f, -3.25f), new Vector3(nStepLen + 0.06f, 0.25f, 4.8f), matStoneWall);
+            }
+            GameObject northBasementRamp = new GameObject("Basement_NorthStair_SmoothRamp");
+            northBasementRamp.transform.parent = zone41.transform;
+            northBasementRamp.transform.localPosition = new Vector3(28.5f, (vestY + baseFloorY) * 0.5f - 0.1f, -3.25f);
+            northBasementRamp.transform.localRotation = Quaternion.Euler(0f, 0f, -23.3f);
+            BoxCollider nbRampCol = northBasementRamp.AddComponent<BoxCollider>();
+            nbRampCol.size = new Vector3(14.4f, 0.35f, 4.8f);
+
+            // Descansillo inferior de la Escalera Norte (X: 35..40, Z: -14..0, Y = -3.2m)
+            CreatePrimitive("Basement_NorthLowerHall_Floor", PrimitiveType.Cube, zone41.transform,
+                new Vector3(37.0f, baseFloorY - 0.25f, -7.0f), new Vector3(6.0f, 0.5f, 14.0f), matCobble);
+            CreatePrimitive("Basement_NorthLowerHall_Ceiling", PrimitiveType.Cube, zone41.transform,
+                new Vector3(37.0f, baseFloorY + baseH, -10.25f), new Vector3(6.0f, 0.5f, 7.5f), matStoneWall);
+            CreateWall("Basement_NorthLowerHall_Wall_W", zone41.transform,
+                new Vector3(34.0f, baseFloorY + 2.2f, -10.25f), new Vector3(0.5f, baseH, 7.5f), matAgedBrick);
+            CreateWall("Basement_NorthLowerHall_Wall_E", zone41.transform,
+                new Vector3(40.0f, 1.0f, -7.0f), new Vector3(0.5f, 9.0f, 14.0f), matAgedBrick);
+            CreateWall("Basement_NorthLowerHall_Wall_N", zone41.transform,
+                new Vector3(37.0f, 1.0f, 0.0f), new Vector3(6.0f, 9.0f, 0.5f), matAgedBrick);
+
+            // 2. Planta Subterránea Principal del Sótano de Mantenimiento (X: 16.0m a 54.0m, Z: -34.0m a -14.0m, Y = -3.2m)
+            // Dimensiones: 38m de ancho x 20m de fondo = 760 m² divididos en 3 cámaras funcionales conectadas
+            CreatePrimitive("Basement_Main_Floor", PrimitiveType.Cube, zone41.transform,
+                new Vector3(35.0f, baseFloorY - 0.25f, -24.0f), new Vector3(38.0f, 0.5f, 20.0f), matCobble);
+            // El techo cubre todo excepto el hueco de la Escalera Este (X: 39.5..44.5, Z: -22..-14)
+            CreatePrimitive("Basement_Ceiling_WestAndCenter", PrimitiveType.Cube, zone41.transform,
+                new Vector3(27.75f, baseFloorY + baseH, -24.0f), new Vector3(23.5f, 0.5f, 20.0f), matStoneWall);
+            CreatePrimitive("Basement_Ceiling_SouthEast", PrimitiveType.Cube, zone41.transform,
+                new Vector3(46.75f, baseFloorY + baseH, -28.0f), new Vector3(14.5f, 0.5f, 12.0f), matStoneWall);
+            CreatePrimitive("Basement_Ceiling_FarEast", PrimitiveType.Cube, zone41.transform,
+                new Vector3(49.25f, baseFloorY + baseH, -18.0f), new Vector3(9.5f, 0.5f, 8.0f), matStoneWall);
+
+            // Muros perimetrales del Sótano de Mantenimiento
+            // Conexión Este (X = 16.0m, Z: -24..-14) hacia la Red Subterránea (Zonas 53 a 56)
+            CreateWall("Basement_OuterWall_West_S", zone41.transform,
+                new Vector3(16.0f, baseFloorY + 2.2f, -29.0f), new Vector3(0.6f, baseH, 10.0f), matAgedBrick);
+            CreateWall("Basement_OuterWall_West_N", zone41.transform,
+                new Vector3(16.0f, baseFloorY + 2.2f, -16.5f), new Vector3(0.6f, baseH, 5.0f), matAgedBrick);
+            CreateArchitecturalDoor("Door_Basement_To_BoilerAndCrypt", zone41.transform,
+                new Vector3(16.0f, baseFloorY, -21.5f), Quaternion.Euler(0f, 90f, 0f),
+                2.0f, 3.2f, baseH, 0.6f, false, "",
+                "RED SUBTERRÁNEA — SALA DE CALDERAS Y CRIPTA (ZONAS 53 A 56)", "", matIron, matGold, matAgedBrick);
+            CreateWall("Basement_OuterWall_South", zone41.transform,
+                new Vector3(35.0f, baseFloorY + 2.2f, -34.0f), new Vector3(38.0f, baseH, 0.6f), matAgedBrick);
+            CreateWall("Basement_OuterWall_East", zone41.transform,
+                new Vector3(54.0f, baseFloorY + 2.2f, -24.0f), new Vector3(0.6f, baseH, 20.0f), matAgedBrick);
+            // Muro Norte del sótano (Z = -14.0m), dejando abiertos:
+            // - Paso a la Escalera Norte en X: 34.5..39.5
+            // - Paso a la Escalera Este en X: 39.5..44.5
+            CreateWall("Basement_OuterWall_North_W", zone41.transform,
+                new Vector3(25.0f, baseFloorY + 2.2f, -14.0f), new Vector3(18.0f, baseH, 0.6f), matAgedBrick);
+            CreateWall("Basement_OuterWall_North_E", zone41.transform,
+                new Vector3(49.25f, baseFloorY + 2.2f, -14.0f), new Vector3(9.5f, baseH, 0.6f), matAgedBrick);
+
+            // 3. Escalera Este de Ruta Alternativa (X: 39.5..44.5, Z: -22.0m en Y = -3.2m hasta Z = -12.0m en Y = 0.0m)
+            // Conecta el Sótano directamente con el Callejón de Servicio Exterior, el Patio de Entrada y el Jardín de Invierno
+            int eSteps = 16;
+            float eStepLen = 10.0f / eSteps;
+            float eStepRise = (0.0f - baseFloorY) / eSteps;
+            for (int s = 0; s < eSteps; s++)
+            {
+                float sz = -22.0f + (s + 0.5f) * eStepLen;
+                float sy = baseFloorY + (s + 0.5f) * eStepRise;
+                CreatePrimitive($"Peldaño_Sotano_Este_{s + 1}", PrimitiveType.Cube, zone41.transform,
+                    new Vector3(42.0f, sy - 0.1f, sz), new Vector3(4.6f, 0.22f, eStepLen + 0.05f), matStoneWall);
+            }
+            GameObject eastBasementRamp = new GameObject("Basement_EastStair_SmoothRamp");
+            eastBasementRamp.transform.parent = zone41.transform;
+            eastBasementRamp.transform.localPosition = new Vector3(42.0f, baseFloorY * 0.5f, -17.0f);
+            eastBasementRamp.transform.localRotation = Quaternion.Euler(-17.75f, 0f, 0f);
+            BoxCollider ebRampCol = eastBasementRamp.AddComponent<BoxCollider>();
+            ebRampCol.size = new Vector3(4.6f, 0.35f, 10.8f);
+
+            // Muretes de protección alrededor de la boca de la Escalera Este en superficie (Y = 0.0m)
+            CreateWall("Basement_EastStair_Guard_W", zone41.transform,
+                new Vector3(39.5f, -0.4f, -17.0f), new Vector3(0.4f, 3.6f, 10.0f), matAgedBrick);
+            CreateWall("Basement_EastStair_Guard_E", zone41.transform,
+                new Vector3(44.5f, -0.4f, -17.0f), new Vector3(0.4f, 3.6f, 10.0f), matAgedBrick);
+
+            // Tabiques interiores con amplios pasos arqueados entre las 3 subáreas del Sótano:
+            // - Subárea 41A (Galería de Tuberías Acústicas: X 16..29)
+            // - Subárea 41B (Sala de Depósitos de Agua y Estanterías: X 29..43)
+            // - Subárea 41C (Cuarto de Guardia del Ingeniero y Contadores del Teatro: X 43..54)
+            CreateWall("Basement_Partition_41A_41B_N", zone41.transform,
+                new Vector3(29.0f, baseFloorY + 2.2f, -18.0f), new Vector3(0.5f, baseH, 8.0f), matAgedBrick);
+            CreateWall("Basement_Partition_41A_41B_S", zone41.transform,
+                new Vector3(29.0f, baseFloorY + 2.2f, -30.5f), new Vector3(0.5f, baseH, 7.0f), matAgedBrick);
+            CreateWall("Basement_Partition_41B_41C_S", zone41.transform,
+                new Vector3(43.0f, baseFloorY + 2.2f, -30.5f), new Vector3(0.5f, baseH, 7.0f), matAgedBrick);
+
+            // --- SUBÁREA 41A: CORREDOR DE TUBERÍAS ACÚSTICAS Y RESONANCIA DE LA ACADEMIA (X: 16..29, Z: -34..-14) ---
+            for (int p = 0; p < 4; p++)
+            {
+                float pz = -17.0f - p * 4.5f;
+                // Tuberías horizontales en el techo que conducen el sonido de las salas superiores
+                DecoPiece($"Tuberia_Techo_Cobre_{p + 1}", PrimitiveType.Cylinder, zone41.transform,
+                    new Vector3(28.0f, baseFloorY + 3.85f, pz), new Vector3(0.24f, 11.5f, 0.24f), matCopperPipe).transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                DecoPiece($"Tuberia_Techo_Hierro_{p + 1}", PrimitiveType.Cylinder, zone41.transform,
+                    new Vector3(28.0f, baseFloorY + 3.50f, pz + 0.55f), new Vector3(0.32f, 11.5f, 0.32f), matRustedLocker).transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            }
+
+            // Colector vertical acústico en el muro oeste (X = 17.2m, Z = -24.0m) con volante de válvula interactivo
+            GameObject acousticManifold = new GameObject("Colector_Acustico_Paredes_Academia");
+            acousticManifold.transform.parent = zone41.transform;
+            acousticManifold.transform.position = new Vector3(17.2f, baseFloorY, -24.0f);
+
+            for (int c = -2; c <= 2; c++)
+            {
+                DecoPiece($"Conducto_Vertical_Acustico_{c + 3}", PrimitiveType.Cylinder, acousticManifold.transform,
+                    new Vector3(0f, 2.2f, c * 1.1f), new Vector3(0.28f, 2.2f, 0.28f), (c % 2 == 0) ? matCopperPipe : matBoilerTank);
+            }
+            GameObject valveWheel = CreatePrimitive("Volante_Valvula_Resonancia", PrimitiveType.Cylinder, acousticManifold.transform,
+                new Vector3(0.35f, 1.45f, 0f), new Vector3(0.65f, 0.06f, 0.65f), matGold);
+            valveWheel.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+
+            AcademyExpansionAnomalyController pipeAnomalyCtrl = valveWheel.AddComponent<AcademyExpansionAnomalyController>();
+            pipeAnomalyCtrl.Configure(ExpansionNodeType.BasementAcousticPipesAnomaly, valveWheel.transform);
+            EditorUtility.SetDirty(pipeAnomalyCtrl);
+
+            CreateInteractiveWorldDoc("Doc_Cuaderno_Acustica_Sotano", zone41.transform,
+                new Vector3(21.5f, baseFloorY + 0.96f, -16.2f), new Vector3(0.38f, 0.05f, 0.28f), matGold,
+                "doc_s10_basement_pipe_acoustics",
+                "Nota Técnica — Transmisión de Sonidos por los Conductos de Calefacción",
+                "Anotación del operario de calderas:\n\n" +
+                "«Las tuberías de cobre que suben desde este muro oeste atraviesan directamente las aulas de ballet, la sala del piano y el foso del teatro.\n" +
+                "De noche, cuando el edificio queda en silencio, basta con acercarse al colector para oír con total nitidez lo que ocurre arriba: pasos de ensayo sobre la madera, compases del piano y voces apagadas detrás de los muros.»");
+            CreatePrimitive("Mesa_Inspeccion_Tuberias", PrimitiveType.Cube, zone41.transform,
+                new Vector3(21.5f, baseFloorY + 0.46f, -16.2f), new Vector3(1.8f, 0.92f, 0.9f), matWoodArchive);
+
+            // --- SUBÁREA 41B: SALA DE GRANDES DEPÓSITOS DE AGUA, ESTANTERÍAS Y CAJAS (X: 29..43, Z: -34..-14) ---
+            float[] tankZ = { -19.5f, -25.0f, -30.5f };
+            for (int t = 0; t < tankZ.Length; t++)
+            {
+                GameObject waterTank = new GameObject($"Deposito_Agua_Antiguo_{t + 1}");
+                waterTank.transform.parent = zone41.transform;
+                waterTank.transform.position = new Vector3(33.2f, baseFloorY, tankZ[t]);
+
+                CreatePrimitive("Bancada_Piedra_Deposito", PrimitiveType.Cube, waterTank.transform,
+                    new Vector3(0f, 0.25f, 0f), new Vector3(3.4f, 0.5f, 3.4f), matStoneWall);
+                CreatePrimitive("Cilindro_Deposito_Hierro", PrimitiveType.Cylinder, waterTank.transform,
+                    new Vector3(0f, 2.0f, 0f), new Vector3(3.0f, 1.55f, 3.0f), matBoilerTank);
+                DecoPiece("Anillo_Laton_Superior", PrimitiveType.Cylinder, waterTank.transform,
+                    new Vector3(0f, 3.1f, 0f), new Vector3(3.08f, 0.08f, 3.08f), matGold);
+                DecoPiece("Manometro_Presion", PrimitiveType.Cylinder, waterTank.transform,
+                    new Vector3(1.55f, 1.65f, 0f), new Vector3(0.32f, 0.05f, 0.32f), matPorcelain).transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            }
+
+            // Estanterías metálicas y cajas de suministros en la zona central del sótano
+            for (int sh = 0; sh < 3; sh++)
+            {
+                float sz = -18.5f - sh * 5.2f;
+                CreatePrimitive($"Estanteria_Mantenimiento_{sh + 1}", PrimitiveType.Cube, zone41.transform,
+                    new Vector3(39.8f, baseFloorY + 1.35f, sz), new Vector3(1.1f, 2.7f, 3.2f), matMetalArchive);
+                CreatePrimitive($"Caja_Repuestos_Sotano_{sh + 1}", PrimitiveType.Cube, zone41.transform,
+                    new Vector3(38.6f, baseFloorY + 0.42f, sz + 0.8f), new Vector3(0.85f, 0.84f, 0.85f), matCardboard);
+            }
+
+            // --- SUBÁREA 41C: CUARTO DE GUARDIA DEL INGENIERO Y SECRETO DEL REGISTRO DE MANTENIMIENTO (X: 43..54, Z: -34..-14) ---
+            // Panel electromecánico de suministro al Teatro Principal en el muro este (X = 53.3m, Z = -25.0m)
+            CreatePrimitive("Panel_Suministro_Teatro_Base", PrimitiveType.Cube, zone41.transform,
+                new Vector3(53.35f, baseFloorY + 1.65f, -25.0f), new Vector3(0.45f, 2.8f, 4.6f), matBoilerTank);
+            for (int m = 0; m < 4; m++)
+            {
+                DecoPiece($"Contador_Electrico_Sector_{m + 1}", PrimitiveType.Cube, zone41.transform,
+                    new Vector3(53.08f, baseFloorY + 2.1f, -26.8f + m * 1.2f), new Vector3(0.12f, 0.48f, 0.42f), matGold);
+            }
+
+            // Escritorio del Ingeniero Jefe con el SECRETO DEL SÓTANO DE MANTENIMIENTO
+            CreatePrimitive("Mesa_Guardia_Ingeniero", PrimitiveType.Cube, zone41.transform,
+                new Vector3(48.8f, baseFloorY + 0.48f, -25.0f), new Vector3(2.2f, 0.96f, 1.4f), matWoodArchive);
+            CreatePrimitive("Silla_Guardia_Ingeniero", PrimitiveType.Cube, zone41.transform,
+                new Vector3(48.8f, baseFloorY + 0.45f, -26.2f), new Vector3(0.75f, 0.90f, 0.75f), matIron);
+
+            GameObject secretMaintLedger = CreatePrimitive("Registro_Secreto_Mantenimiento_Teatro", PrimitiveType.Cube, zone41.transform,
+                new Vector3(48.8f, baseFloorY + 1.00f, -24.85f), new Vector3(0.58f, 0.08f, 0.44f), matGold);
+            AcademyExpansionAnomalyController secretMaintCtrl = secretMaintLedger.AddComponent<AcademyExpansionAnomalyController>();
+            secretMaintCtrl.Configure(ExpansionNodeType.BasementSecretMaintenanceLog);
+            EditorUtility.SetDirty(secretMaintCtrl);
+
+            // Iluminación funcional cálida e industrial del Sótano de Mantenimiento
+            CreateOrnateLantern("Luz_Sotano_Escalera_Norte", zone41.transform,
+                new Vector3(28.5f, vestY + 3.8f, -3.25f), matIron, matLanternGlow, new Color(1.0f, 0.76f, 0.42f), 2.2f);
+            CreateOrnateLantern("Luz_Sotano_Tuberias_41A", zone41.transform,
+                new Vector3(22.5f, baseFloorY + 3.9f, -24.0f), matIron, matLanternGlow, new Color(1.0f, 0.74f, 0.38f), 2.4f);
+            CreateOrnateLantern("Luz_Sotano_Depositos_41B", zone41.transform,
+                new Vector3(36.0f, baseFloorY + 3.9f, -24.0f), matIron, matLanternGlow, new Color(1.0f, 0.78f, 0.45f), 2.5f);
+            CreateOrnateLantern("Luz_Sotano_Ingeniero_41C", zone41.transform,
+                new Vector3(48.8f, baseFloorY + 3.9f, -25.0f), matGold, matLanternGlow, new Color(1.0f, 0.82f, 0.50f), 2.6f);
+
+            // ====================================================================
+            // TORREÓN Y VESTÍBULO DEL ALA SUROESTE (X: -25.0m a -14.5m, Z: -4.0m a 12.0m, Y = 2.4m)
+            // Conecta 6. Recepción Antigua con:
+            // - 42. Terraza y Azotea Mirador (subiendo por la escalera del torreón a Y = 7.70m)
+            // - 43. Enfermería Antigua (al oeste)
+            // - 44. Sala Conmemorativa (al sur)
+            // ====================================================================
+            GameObject swTower = new GameObject("42_43_44_SouthWest_Wing_Hub_And_StairTower");
+            swTower.transform.parent = rootEnv;
+            float wingH = 5.0f;
+            float roofY = 7.70f;
+
+            CreatePrimitive("SW_Hub_Floor", PrimitiveType.Cube, swTower.transform,
+                new Vector3(-19.75f, vestY - 0.25f, 4.0f), new Vector3(10.5f, 0.5f, 16.0f), matParquet);
+            CreatePrimitive("SW_Hub_Carpet", PrimitiveType.Cube, swTower.transform,
+                new Vector3(-22.2f, vestY + 0.02f, 4.0f), new Vector3(2.8f, 0.04f, 14.5f), matCarpet);
+            // Techo sobre el corredor inferior oeste (X: -25..-19.35) y el rellano sur de entrada a la escalera (Z: -4..-1.2)
+            CreatePrimitive("SW_Hub_Ceiling_West", PrimitiveType.Cube, swTower.transform,
+                new Vector3(-22.175f, vestY + wingH, 4.0f), new Vector3(5.65f, 0.5f, 16.0f), matWallIvory);
+            // Techo alto del Torreón de la Escalera (en Y = 11.2m) cubriendo toda la caja de escalera (X: -19.6..-14.2, Z: -4.2..12.2)
+            CreatePrimitive("SW_Tower_HighCeiling", PrimitiveType.Cube, swTower.transform,
+                new Vector3(-16.9f, roofY + 3.5f, 4.0f), new Vector3(5.4f, 0.5f, 16.5f), matFacade);
+
+            // Muros completos de piso a techo del Torreón de la Escalera (Y = 2.4m a Y = 11.2m) para que no se vea ningún borde de techo ni cielo abierto:
+            // 1. Muro Este del Torreón (X = -14.5m)
+            CreateWall("SW_Tower_Wall_East", swTower.transform,
+                new Vector3(-14.5f, 6.8f, 4.0f), new Vector3(0.5f, 8.8f, 16.0f), matFacade);
+            // 2. Muro Sur del Torreón (Z = -4.0m, X: -19.5m a -14.5m, sube desde Y = 2.4m hasta Y = 11.2m)
+            CreateWall("SW_Tower_Wall_South_Full", swTower.transform,
+                new Vector3(-17.0f, 6.8f, -4.0f), new Vector3(5.2f, 8.8f, 0.5f), matFacade);
+            // 3. Muro Oeste de la Caja de Escalera (X = -19.35m): deja paso de 2.8m en el extremo sur (Z: -4.0 a -1.2) en planta baja y cierra de Z = -1.2 a 12.0 hasta Y = 11.2m
+            CreateWall("SW_Stair_Wall_West_Full", swTower.transform,
+                new Vector3(-19.35f, 6.8f, 5.4f), new Vector3(0.4f, 8.8f, 13.2f), matWallIvory);
+            CreateWall("SW_Stair_Wall_West_SouthLintel", swTower.transform,
+                new Vector3(-19.35f, 8.6f, -2.6f), new Vector3(0.4f, 5.2f, 2.8f), matWallIvory);
+
+            // 4. Muro Norte superior del Torreón (Z = 12.0m, X: -19.35..-14.5) con puerta en Y = 7.70m hacia la Terraza y Azotea
+            CreateWall("SW_Tower_UpperNorth_W", swTower.transform,
+                new Vector3(-18.75f, roofY + 1.75f, 11.5f), new Vector3(1.5f, 3.5f, 0.5f), matFacade);
+            CreateWall("SW_Tower_UpperNorth_E", swTower.transform,
+                new Vector3(-15.25f, roofY + 1.75f, 11.5f), new Vector3(1.5f, 3.5f, 0.5f), matFacade);
+            CreateArchitecturalDoor("Door_Tower_To_RooftopTerrace", swTower.transform,
+                new Vector3(-17.0f, roofY, 11.5f), Quaternion.identity,
+                1.8f, 3.1f, 3.5f, 0.5f, false, "",
+                "TERRAZA Y AZOTEA MIRADOR — VISTA PANORÁMICA (ZONA 42)", "", matMahogany, matGold, matFacade);
+
+            // Escalera Real del Torreón hacia la Terraza y Azotea (X = -16.9m, Z: -1.0m en Y = 2.4m hasta Z = 10.2m en Y = 7.70m)
+            int rSteps = 22;
+            float rStepLen = 11.2f / rSteps;
+            float rStepRise = (roofY - vestY) / rSteps;
+            for (int s = 0; s < rSteps; s++)
+            {
+                float sz = -1.0f + (s + 0.5f) * rStepLen;
+                float sy = vestY + (s + 0.5f) * rStepRise;
+                CreatePrimitive($"Escalon_Azotea_{s + 1}", PrimitiveType.Cube, swTower.transform,
+                    new Vector3(-16.9f, sy - 0.1f, sz), new Vector3(4.2f, 0.24f, rStepLen + 0.05f), matFacade);
+                CreatePrimitive($"Alfombra_Escalon_Azotea_{s + 1}", PrimitiveType.Cube, swTower.transform,
+                    new Vector3(-16.9f, sy + 0.03f, sz), new Vector3(2.2f, 0.02f, rStepLen), matCarpet);
+            }
+            GameObject roofStairRamp = new GameObject("Rooftop_Stair_Smooth_Incline");
+            roofStairRamp.transform.parent = swTower.transform;
+            roofStairRamp.transform.localPosition = new Vector3(-16.9f, (vestY + roofY) * 0.5f, 4.6f);
+            roofStairRamp.transform.localRotation = Quaternion.Euler(-25.3f, 0f, 0f);
+            BoxCollider rRampCol = roofStairRamp.AddComponent<BoxCollider>();
+            rRampCol.size = new Vector3(4.2f, 0.35f, 12.5f);
+
+            // Plataforma superior antes de la puerta de la azotea (Z: 10.2..11.8, Y = 7.70m)
+            CreatePrimitive("Rooftop_UpperLanding_Floor", PrimitiveType.Cube, swTower.transform,
+                new Vector3(-16.9f, roofY - 0.2f, 10.9f), new Vector3(4.6f, 0.4f, 1.8f), matCobble);
+
+            CreateOrnateSconce("Sconce_SW_Hub_1", swTower.transform,
+                new Vector3(-19.65f, vestY + 3.0f, 6.0f), matGold, matLanternGlow, new Color(1.0f, 0.82f, 0.50f), 2.1f);
+            CreateOrnateSconce("Sconce_SW_Stair_Upper", swTower.transform,
+                new Vector3(-14.85f, vestY + 4.8f, 5.5f), matGold, matLanternGlow, new Color(1.0f, 0.82f, 0.50f), 2.1f);
+
+            // ====================================================================
+            // ZONA 42: TERRAZA Y AZOTEA MIRADOR (Y = 7.70m, X: -38.0m a -11.0m, Z: 11.5m a 44.0m)
+            // Tres subáreas: 42A. Pérgola Sur y Mirador al Patio | 42B. Jardín Seco de Balaustradas y Claraboyas | 42C. Mirador Norte y Ventana Secreta
+            // ====================================================================
+            GameObject zone42 = new GameObject("42_Rooftop_Terrace_And_Overlook");
+            zone42.transform.parent = rootEnv;
+
+            // Pavimento de piedra clásica sobre la azotea del Ala Oeste (27m x 32.5m)
+            CreatePrimitive("Rooftop_Stone_Deck", PrimitiveType.Cube, zone42.transform,
+                new Vector3(-24.5f, roofY - 0.15f, 27.75f), new Vector3(27.0f, 0.30f, 32.5f), matCobble);
+
+            // Senderos de losa clara en cruz sobre la azotea
+            CreatePrimitive("Rooftop_Walkway_NS", PrimitiveType.Cube, zone42.transform,
+                new Vector3(-22.0f, roofY + 0.02f, 27.75f), new Vector3(3.6f, 0.04f, 30.5f), matFacade);
+            CreatePrimitive("Rooftop_Walkway_EW", PrimitiveType.Cube, zone42.transform,
+                new Vector3(-24.5f, roofY + 0.02f, 28.0f), new Vector3(24.0f, 0.04f, 3.4f), matFacade);
+
+            // Balaustradas clásicas perimetrales + barrera de seguridad invisible para no caer por accidente mientras se observa el paisaje
+            for (int bz = 0; bz < 3; bz++)
+            {
+                float segZ = 16.5f + bz * 10.0f;
+                CreateArchitecturalBalustrade($"Rooftop_Balustrade_East_{bz + 1}", zone42.transform,
+                    new Vector3(-11.2f, roofY, segZ), 9.5f, matFacade, matStoneWall);
+                CreateArchitecturalBalustrade($"Rooftop_Balustrade_West_{bz + 1}", zone42.transform,
+                    new Vector3(-37.8f, roofY, segZ), 9.5f, matFacade, matStoneWall);
+            }
+            // Muretes de antepecho clásico en el perímetro de la terraza
+            // Muretes de antepecho clásico en el perímetro de la terraza (con vano y puerta en X = -11.0m, Z = 20.0m hacia la Mezzanine / Planta Alta [Zona 49])
+            CreateWall("Rooftop_Parapet_East_S", zone42.transform,
+                new Vector3(-11.0f, roofY + 0.55f, 15.225f), new Vector3(0.45f, 1.1f, 7.45f), matFacade);
+            CreateWall("Rooftop_Parapet_East_N", zone42.transform,
+                new Vector3(-11.0f, roofY + 0.55f, 33.275f), new Vector3(0.45f, 1.1f, 21.45f), matFacade);
+            CreateArchitecturalDoor("Door_Rooftop_To_Mezzanine", zone42.transform,
+                new Vector3(-11.0f, roofY, 20.0f), Quaternion.Euler(0f, 90f, 0f),
+                1.8f, 3.2f, 4.2f, 0.45f, false, "",
+                "GALERÍA SUPERIOR DEL VESTÍBULO — PLANTA ALTA (ZONA 49)", "", matMahogany, matGold, matFacade);
+            CreateWall("Rooftop_Parapet_West", zone42.transform,
+                new Vector3(-38.0f, roofY + 0.55f, 27.75f), new Vector3(0.45f, 1.1f, 32.5f), matFacade);
+            CreateWall("Rooftop_Parapet_North", zone42.transform,
+                new Vector3(-24.5f, roofY + 0.55f, 44.0f), new Vector3(27.0f, 1.1f, 0.45f), matFacade);
+            CreateWall("Rooftop_Parapet_South_W", zone42.transform,
+                new Vector3(-28.75f, roofY + 0.55f, 11.5f), new Vector3(18.5f, 1.1f, 0.45f), matFacade);
+            CreateWall("Rooftop_Parapet_South_E", zone42.transform,
+                new Vector3(-12.75f, roofY + 0.55f, 11.5f), new Vector3(3.5f, 1.1f, 0.45f), matFacade);
+
+            // Pilares esquineros y faroles de hierro forjado en la azotea
+            Vector3[] roofLanterns =
+            {
+                new Vector3(-11.4f, roofY, 13.0f),
+                new Vector3(-11.4f, roofY, 28.0f),
+                new Vector3(-11.4f, roofY, 43.2f),
+                new Vector3(-37.4f, roofY, 13.0f),
+                new Vector3(-37.4f, roofY, 28.0f),
+                new Vector3(-37.4f, roofY, 43.2f),
+                new Vector3(-22.0f, roofY, 43.2f)
+            };
+            for (int rl = 0; rl < roofLanterns.Length; rl++)
+            {
+                CreateStandingLamp($"Farol_Terraza_{rl + 1}", zone42.transform, roofLanterns[rl],
+                    matIron, matLanternGlow, new Color(1.0f, 0.82f, 0.50f), 2.2f);
+            }
+
+            // --- SUBÁREA 42A: MIRADOR ESTE SOBRE EL PATIO DE ENTRADA Y JARDÍN DE INVIERNO (Z: 12..24) ---
+            CreateWinterGardenIronBench("Banco_Terraza_Mirador_Patio_1", zone42.transform,
+                new Vector3(-13.2f, roofY, 17.5f), Quaternion.Euler(0f, -90f, 0f), matIron, matMahogany);
+            CreateWinterGardenIronBench("Banco_Terraza_Mirador_Patio_2", zone42.transform,
+                new Vector3(-13.2f, roofY, 23.5f), Quaternion.Euler(0f, -90f, 0f), matIron, matMahogany);
+
+            CreateInteractiveWorldDoc("Doc_Boceto_Orientacion_Terraza", zone42.transform,
+                new Vector3(-13.1f, roofY + 0.52f, 17.5f), new Vector3(0.38f, 0.04f, 0.28f), matGold,
+                "doc_s10_rooftop_courtyard_sketch",
+                "Cuaderno de Orientación en la Azotea — Vista sobre los Patios",
+                "Un cuaderno de dibujo olvidado sobre el banco que mira hacia el Patio de Entrada:\n\n" +
+                "«Subir a la terraza después de horas de ensayo era nuestra única forma de respirar aire libre.\n" +
+                "Desde esta balaustrada este se domina todo el **Patio de Entrada** y, al fondo a la derecha, brilla la gran bóveda acristalada del **Jardín de Invierno**.\n" +
+                "Pero desde la semana del estreno nadie quiere acercarse a la balaustrada del norte: dicen que de madrugada se enciende una luz en una parte del tejado del teatro donde no debería existir ninguna habitación.»");
+
+            // --- SUBÁREA 42B: JARDINERAS CON MACETAS SECAS, PÉRGOLA Y CLARABOYAS (Z: 22..35) ---
+            Vector3[] dryPlanters =
+            {
+                new Vector3(-16.5f, roofY, 21.0f),
+                new Vector3(-27.5f, roofY, 21.0f),
+                new Vector3(-16.5f, roofY, 34.0f),
+                new Vector3(-27.5f, roofY, 34.0f),
+                new Vector3(-33.5f, roofY, 25.0f),
+                new Vector3(-33.5f, roofY, 31.0f)
+            };
+            for (int dp = 0; dp < dryPlanters.Length; dp++)
+            {
+                CreatePrimitive($"Maceta_Piedra_Terraza_{dp + 1}", PrimitiveType.Cube, zone42.transform,
+                    dryPlanters[dp] + new Vector3(0f, 0.42f, 0f), new Vector3(1.6f, 0.84f, 1.6f), matStoneWall);
+                DecoPiece($"Arbusto_Seco_Maceta_{dp + 1}", PrimitiveType.Sphere, zone42.transform,
+                    dryPlanters[dp] + new Vector3(0f, 1.05f, 0f), new Vector3(1.35f, 1.15f, 1.35f), (dp % 2 == 0) ? matDryFlowers : matHedge);
+            }
+
+            // Dos claraboyas antiguas de hierro y cristal sobre la cubierta de Administración y Archivo
+            float[] skylightZ = { 19.0f, 35.0f };
+            for (int sk = 0; sk < skylightZ.Length; sk++)
+            {
+                CreatePrimitive($"Claraboya_Marco_{sk + 1}", PrimitiveType.Cube, zone42.transform,
+                    new Vector3(-31.0f, roofY + 0.35f, skylightZ[sk]), new Vector3(4.4f, 0.70f, 5.2f), matIron);
+                CreatePrimitive($"Claraboya_Cristal_{sk + 1}", PrimitiveType.Cube, zone42.transform,
+                    new Vector3(-31.0f, roofY + 0.72f, skylightZ[sk]), new Vector3(4.0f, 0.08f, 4.8f), matMirrorGlass);
+            }
+
+            // Mesa circular de piedra y bancos en el centro de la terraza
+            CreatePrimitive("Mesa_Piedra_Terraza_Base", PrimitiveType.Cylinder, zone42.transform,
+                new Vector3(-22.0f, roofY + 0.42f, 28.0f), new Vector3(0.55f, 0.42f, 0.55f), matStoneWall);
+            CreatePrimitive("Mesa_Piedra_Terraza_Tablero", PrimitiveType.Cylinder, zone42.transform,
+                new Vector3(-22.0f, roofY + 0.86f, 28.0f), new Vector3(1.75f, 0.06f, 1.75f), matFacade);
+            CreateWinterGardenIronBench("Banco_Terraza_Centro_Oeste", zone42.transform,
+                new Vector3(-24.8f, roofY, 28.0f), Quaternion.Euler(0f, 90f, 0f), matIron, matMahogany);
+
+            // --- SUBÁREA 42C: MIRADOR NORTE HACIA EL TEJADO DEL TEATRO Y SECRETO DE LA VENTANA NO REGISTRADA (Z: 35..44) ---
+            // Construimos en lo alto del ala trasera noreste del Teatro Principal (X = 18.5, Y = 10.2, Z = 106.0) el Torreón Secreto con la Ventana Iluminada
+            // que se divisa desde este Mirador Norte de la Azotea pero NO aparece en los planos de Administración
+            GameObject unmappedWindowStructure = new GameObject("Torreon_Oculto_Teatro_Ventana_No_Registrada");
+            unmappedWindowStructure.transform.parent = zone42.transform;
+            unmappedWindowStructure.transform.position = new Vector3(18.5f, 10.2f, 106.0f);
+
+            CreatePrimitive("Muro_Alto_Secreto_Teatro", PrimitiveType.Cube, unmappedWindowStructure.transform,
+                Vector3.zero, new Vector3(8.5f, 5.5f, 4.5f), matAgedBrick);
+            DecoPiece("Marco_Ventana_Prohibida_Teatro", PrimitiveType.Cube, unmappedWindowStructure.transform,
+                new Vector3(-1.2f, 0.4f, -2.28f), new Vector3(1.8f, 2.6f, 0.16f), matIron);
+            GameObject secretWindowPane = DecoPiece("Cristal_Iluminado_Ventana_Secreta", PrimitiveType.Cube, unmappedWindowStructure.transform,
+                new Vector3(-1.2f, 0.4f, -2.32f), new Vector3(1.45f, 2.25f, 0.08f), matWarmWindowGlow);
+            Light unmappedWindowLight = CreatePictureSpotlight("Luz_Ventana_Oculta_No_En_Planos", unmappedWindowStructure.transform,
+                new Vector3(-1.2f, 0.4f, -2.6f), new Vector3(-12.0f, 8.5f, 65.0f), new Color(1.0f, 0.72f, 0.30f), 2.6f);
+
+            // Pedestal de observación con catalejo de latón y planos desplegados en el Mirador Norte (X = -22.0, Z = 42.6)
+            GameObject northOverlook = new GameObject("Mirador_Norte_Catalejo_Y_Planos");
+            northOverlook.transform.parent = zone42.transform;
+            northOverlook.transform.position = new Vector3(-22.0f, roofY, 42.6f);
+
+            CreatePrimitive("Pedestal_Mirador_Norte", PrimitiveType.Cube, northOverlook.transform,
+                new Vector3(0f, 0.55f, 0f), new Vector3(1.4f, 1.1f, 0.9f), matFacade);
+            GameObject brassTelescope = CreatePrimitive("Catalejo_Laton_Mirador_Teatro", PrimitiveType.Cylinder, northOverlook.transform,
+                new Vector3(0f, 1.32f, 0f), new Vector3(0.16f, 0.55f, 0.16f), matGold);
+            brassTelescope.transform.localRotation = Quaternion.Euler(82f, 34f, 0f);
+
+            AcademyExpansionAnomalyController rooftopSecretCtrl = brassTelescope.AddComponent<AcademyExpansionAnomalyController>();
+            rooftopSecretCtrl.Configure(ExpansionNodeType.RooftopSecretUnmappedWindow, brassTelescope.transform, null, secretWindowPane, unmappedWindowLight);
+            EditorUtility.SetDirty(rooftopSecretCtrl);
+
+            // ====================================================================
+            // ZONA 43: ENFERMERÍA ANTIGUA (ALA SUROESTE, X: -42.0m a -25.0m, Z: -6.0m a 12.0m, Y = 2.4m)
+            // Tres subáreas: 43A. Camillas y Biombos | 43B. Botica y Armarios Médicos | 43C. Consultorio y Registro de Alumnas con Página Arrancada
+            // ====================================================================
+            GameObject zone43 = new GameObject("43_Old_Infirmary");
+            zone43.transform.parent = rootEnv;
+
+            CreatePrimitive("Infirmary_Floor", PrimitiveType.Cube, zone43.transform,
+                new Vector3(-33.5f, vestY - 0.25f, 3.0f), new Vector3(17.0f, 0.5f, 18.0f), matCeramicTile);
+            CreatePrimitive("Infirmary_Ceiling", PrimitiveType.Cube, zone43.transform,
+                new Vector3(-33.5f, vestY + wingH, 3.0f), new Vector3(17.0f, 0.5f, 18.0f), matWallIvory);
+
+            // Muros perimetrales de la Enfermería Antigua (con puerta reservada en X = -42.0m, Z = 8.5m hacia la Galería de Vigilancia de Isadora Vale [Zona 48])
+            CreateWall("Infirmary_Wall_West_S", zone43.transform,
+                new Vector3(-42.0f, vestY + 2.5f, 0.725f), new Vector3(0.5f, wingH, 13.45f), matWallIvory);
+            CreateWall("Infirmary_Wall_West_N", zone43.transform,
+                new Vector3(-42.0f, vestY + 2.5f, 10.775f), new Vector3(0.5f, wingH, 2.45f), matWallIvory);
+            CreateArchitecturalDoor("Door_Infirmary_To_IsadoraSpyGallery", zone43.transform,
+                new Vector3(-42.0f, vestY, 8.5f), Quaternion.Euler(0f, 90f, 0f),
+                1.8f, 3.2f, wingH, 0.5f, false, "",
+                "PASADIZO DE SERVICIO Y CELOSÍA DE VIGILANCIA — DIRECCIÓN (ZONA 48)", "", matMahogany, matGold, matWallIvory);
+            CreateWall("Infirmary_Wall_North", zone43.transform,
+                new Vector3(-33.5f, vestY + 2.5f, 12.0f), new Vector3(17.0f, wingH, 0.5f), matWallIvory);
+            CreateWall("Infirmary_Wall_South", zone43.transform,
+                new Vector3(-33.5f, vestY + 2.5f, -6.0f), new Vector3(17.0f, wingH, 0.5f), matWallIvory);
+            // Muro Este (X = -25.0m) con puerta hacia el Vestíbulo del Ala Suroeste en Z = 3.0m
+            CreateWall("Infirmary_Wall_East_S", zone43.transform,
+                new Vector3(-25.0f, vestY + 2.5f, -2.025f), new Vector3(0.5f, wingH, 7.95f), matWallIvory);
+            CreateWall("Infirmary_Wall_East_N", zone43.transform,
+                new Vector3(-25.0f, vestY + 2.5f, 8.025f), new Vector3(0.5f, wingH, 7.95f), matWallIvory);
+            CreateArchitecturalDoor("Door_Tower_To_Infirmary", zone43.transform,
+                new Vector3(-25.0f, vestY, 3.0f), Quaternion.Euler(0f, 90f, 0f),
+                1.8f, 3.2f, wingH, 0.5f, false, "",
+                "ENFERMERÍA ANTIGUA — REGISTROS CLÍNICOS DE ALUMNAS (ZONA 43)", "", matMahogany, matGold, matWallIvory);
+
+            // Tabique interior semiabierto que separa el Consultorio y Archivo Clínico (Norte, Z: 5.5..12) del Pabellón de Camillas y Botica (Sur, Z: -6..5.5)
+            CreateWall("Infirmary_Consult_Partition_W", zone43.transform,
+                new Vector3(-38.0f, vestY + 2.5f, 5.5f), new Vector3(8.0f, wingH, 0.4f), matWallIvory);
+            CreateWall("Infirmary_Consult_Partition_E", zone43.transform,
+                new Vector3(-28.0f, vestY + 2.5f, 5.5f), new Vector3(6.0f, wingH, 0.4f), matWallIvory);
+
+            // --- SUBÁREA 43A: SALA DE CAMILLAS Y BIOMBOS DE OBSERVACIÓN (X: -42..-32, Z: -6..5.5) ---
+            float[] cotZ = { -3.8f, -0.2f, 3.2f };
+            for (int c = 0; c < cotZ.Length; c++)
+            {
+                float cz = cotZ[c];
+                GameObject cot = new GameObject($"Camilla_Medica_{c + 1}");
+                cot.transform.parent = zone43.transform;
+                cot.transform.position = new Vector3(-39.2f, vestY, cz);
+
+                CreatePrimitive("Camilla_Bastidor", PrimitiveType.Cube, cot.transform,
+                    new Vector3(0f, 0.55f, 0f), new Vector3(2.3f, 0.10f, 1.05f), matPorcelain);
+                CreatePrimitive("Camilla_Colchon", PrimitiveType.Cube, cot.transform,
+                    new Vector3(0f, 0.66f, 0f), new Vector3(2.2f, 0.14f, 0.96f), matClothCover);
+                CreatePrimitive("Camilla_Almohada", PrimitiveType.Cube, cot.transform,
+                    new Vector3(-0.82f, 0.78f, 0f), new Vector3(0.42f, 0.12f, 0.72f), matTutuWhite);
+                CreatePrimitive("Camilla_Cabecero", PrimitiveType.Cube, cot.transform,
+                    new Vector3(-1.12f, 0.85f, 0f), new Vector3(0.08f, 0.95f, 1.05f), matPorcelain);
+
+                // Mesilla auxiliar con vendas y frascos
+                CreatePrimitive($"Mesilla_Clinica_{c + 1}", PrimitiveType.Cube, cot.transform,
+                    new Vector3(-0.6f, 0.44f, 0.82f), new Vector3(0.55f, 0.88f, 0.45f), matPorcelain);
+                DecoPiece($"Frasco_Medicina_{c + 1}", PrimitiveType.Cylinder, cot.transform,
+                    new Vector3(-0.6f, 0.96f, 0.82f), new Vector3(0.12f, 0.12f, 0.12f), matAmberBottle);
+
+                // Biombo plegable junto a cada camilla
+                GameObject screen = new GameObject($"Biombo_Medico_{c + 1}");
+                screen.transform.parent = zone43.transform;
+                screen.transform.position = new Vector3(-36.8f, vestY, cz);
+
+                CreatePrimitive("Biombo_Panel_Central", PrimitiveType.Cube, screen.transform,
+                    new Vector3(0f, 1.05f, 0f), new Vector3(0.08f, 2.0f, 1.25f), matClothCover);
+                CreatePrimitive("Biombo_Marco_Madera", PrimitiveType.Cube, screen.transform,
+                    new Vector3(0f, 1.05f, 0f), new Vector3(0.10f, 2.08f, 1.32f), matMahogany);
+
+                if (c == 0)
+                {
+                    // Anomalía en la Camilla Nº 1 del fondo (Z = -3.8m): Silueta sentada tras el biombo que desaparece al acercarse o interactuar
+                    GameObject seatedSilhouette = DecoPiece("Silueta_Alumna_Tras_Biombo", PrimitiveType.Capsule, cot.transform,
+                        new Vector3(0.15f, 1.18f, 0f), new Vector3(0.46f, 0.56f, 0.36f), matShadowFigure);
+                    BoxCollider scCol = screen.AddComponent<BoxCollider>();
+                    scCol.center = new Vector3(0f, 1.05f, 0f);
+                    scCol.size = new Vector3(0.35f, 2.1f, 1.35f);
+                    AcademyExpansionAnomalyController screenCtrl = screen.AddComponent<AcademyExpansionAnomalyController>();
+                    screenCtrl.Configure(ExpansionNodeType.InfirmaryScreenShadowAnomaly, screen.transform, null, seatedSilhouette);
+                    EditorUtility.SetDirty(screenCtrl);
+                }
+            }
+
+            // --- SUBÁREA 43B: BOTICA, LAVABO CLÍNICO Y ARMARIOS MÉDICOS ANTIGUOS (X: -32..-25, Z: -6..5.5) ---
+            for (int cab = 0; cab < 2; cab++)
+            {
+                float cx = -30.5f + cab * 3.2f;
+                GameObject medCab = new GameObject($"Armario_Medico_Antiguo_{cab + 1}");
+                medCab.transform.parent = zone43.transform;
+                medCab.transform.position = new Vector3(cx, vestY, -5.2f);
+
+                CreatePrimitive("Vitrina_Cuerpo", PrimitiveType.Cube, medCab.transform,
+                    new Vector3(0f, 1.25f, 0f), new Vector3(2.1f, 2.5f, 0.65f), matPorcelain);
+                DecoPiece("Vitrina_Cristal", PrimitiveType.Cube, medCab.transform,
+                    new Vector3(0f, 1.35f, 0.34f), new Vector3(1.85f, 1.95f, 0.04f), matMirrorGlass);
+                for (int b = -2; b <= 2; b++)
+                {
+                    DecoPiece($"Frasco_Botica_{b + 3}", PrimitiveType.Cylinder, medCab.transform,
+                        new Vector3(b * 0.32f, 1.45f, 0.15f), new Vector3(0.12f, 0.14f, 0.12f), (b % 2 == 0) ? matAmberBottle : matGreenGlass);
+                }
+            }
+
+            CreateInteractiveWorldDoc("Doc_Botica_Sedantes_Direccion", zone43.transform,
+                new Vector3(-28.8f, vestY + 1.02f, -4.5f), new Vector3(0.36f, 0.04f, 0.28f), matGold,
+                "doc_s10_infirmary_sedatives_note",
+                "Nota de Farmacia — Suministro Reservado de Hidrato de Cloral (15 de Octubre de 1924)",
+                "INVENTARIO DE SUSTANCIAS CONTROLADAS — ENFERMERÍA\n\n" +
+                "«Faltan tres frascos de sedante suave y dos rollos de venda quirúrgica del armario nº 2.\n" +
+                "La Directora Isadora Vale retiró personalmente las llaves del botiquín la madrugada del 15 de octubre alegando que debía atender a una persona en las dependencias privadas detrás del escenario.»");
+
+            // --- SUBÁREA 43C: CONSULTORIO Y ARCHIVO DE ALUMNAS CON EL SECRETO DE LA PÁGINA ARRANCADA (X: -42..-25, Z: 5.5..12) ---
+            CreatePrimitive("Escritorio_Doctora_Enfermeria", PrimitiveType.Cube, zone43.transform,
+                new Vector3(-34.0f, vestY + 0.52f, 9.2f), new Vector3(2.8f, 1.04f, 1.5f), matMahogany);
+            CreatePrimitive("Silla_Doctora_Enfermeria", PrimitiveType.Cube, zone43.transform,
+                new Vector3(-34.0f, vestY + 0.50f, 10.4f), new Vector3(0.85f, 1.0f, 0.85f), matLeather);
+
+            // Ficheros de historiales médicos de alumnas en el muro norte
+            for (int f = 0; f < 3; f++)
+            {
+                CreatePrimitive($"Archivador_Clinico_Alumnas_{f + 1}", PrimitiveType.Cube, zone43.transform,
+                    new Vector3(-39.5f + f * 2.2f, vestY + 1.25f, 11.2f), new Vector3(1.6f, 2.5f, 0.75f), matMetalArchive);
+            }
+
+            CreateInteractiveWorldDoc("Doc_Ficha_Medica_Mara_Y_Alumnas", zone43.transform,
+                new Vector3(-35.0f, vestY + 1.06f, 9.1f), new Vector3(0.36f, 0.04f, 0.28f), matPorcelain,
+                "doc_s10_infirmary_student_files",
+                "Fichas Clínicas de Alumnas — Temporada de Otoño de 1924",
+                "EXTRACTO DEL ARCHIVO MÉDICO DE LA ACADEMIA\n\n" +
+                "• **Mara Bell (08 Oct. 1924)**: «Inflamación severa en ambos tendones de Aquiles por exceso de repeticiones de la variación del Cisne Negro. La alumna confiesa entre lágrimas que la Directora la obliga a ensayar a medianoche para sustituir a Elena.»\n" +
+                "• **Clara Valmont (11 Oct. 1924)**: «Insomnio y episodios de pánico; afirma haber oído voces discutidas bajo el suelo del escenario principal.»");
+
+            // SECRETO DE LA ENFERMERÍA: Registro de Ingresos con la Noche Importante de Elena y la Página Siguiente Arrancada
+            GameObject tornMedicalRegister = CreatePrimitive("Registro_Enfermeria_Pagina_Arrancada_Elena", PrimitiveType.Cube, zone43.transform,
+                new Vector3(-33.2f, vestY + 1.08f, 9.1f), new Vector3(0.56f, 0.08f, 0.42f), matGold);
+            DecoPiece("Resto_Pagina_Arrancada_Blanco", PrimitiveType.Cube, tornMedicalRegister.transform,
+                new Vector3(0.55f, 0.1f, 0f), new Vector3(0.22f, 0.35f, 0.85f), matTutuWhite);
+            AcademyExpansionAnomalyController infirmarySecretCtrl = tornMedicalRegister.AddComponent<AcademyExpansionAnomalyController>();
+            infirmarySecretCtrl.Configure(ExpansionNodeType.InfirmarySecretTornMedicalRegister);
+            EditorUtility.SetDirty(infirmarySecretCtrl);
+
+            // Iluminación de la Enfermería (contraste entre fluorescente clínico pálido en camillas y luz cálida en consultorio)
+            CreateColdFluorescentFixture("Luz_Clinica_Camillas", zone43.transform,
+                new Vector3(-36.5f, vestY + 4.75f, -0.2f), matIron, matColdFluorescent, 2.0f);
+            CreateOrnateLantern("Luz_Consultorio_Enfermeria", zone43.transform,
+                new Vector3(-34.0f, vestY + 4.2f, 9.2f), matGold, matLanternGlow, new Color(1.0f, 0.82f, 0.52f), 2.3f);
+
+            // ====================================================================
+            // ZONA 44: SALA CONMEMORATIVA (ALA SUROESTE, X: -38.0m a -14.5m, Z: -22.0m a -4.0m, Y = 2.4m)
+            // Tres subáreas: 44A. Nave de Bancos de Madera y Flores Secas | 44B. Galería de Fotografías | 44C. Muro de Placas y Secreto de la Placa Retirada
+            // ====================================================================
+            GameObject zone44 = new GameObject("44_Memorial_Hall");
+            zone44.transform.parent = rootEnv;
+
+            CreatePrimitive("Memorial_Floor", PrimitiveType.Cube, zone44.transform,
+                new Vector3(-26.25f, vestY - 0.25f, -13.0f), new Vector3(23.5f, 0.5f, 18.0f), matParquet);
+            CreatePrimitive("Memorial_Carpet_Central", PrimitiveType.Cube, zone44.transform,
+                new Vector3(-24.5f, vestY + 0.02f, -13.0f), new Vector3(9.5f, 0.04f, 14.0f), matCarpet);
+            CreatePrimitive("Memorial_Ceiling", PrimitiveType.Cube, zone44.transform,
+                new Vector3(-26.25f, vestY + wingH, -13.0f), new Vector3(23.5f, 0.5f, 18.0f), matWallIvory);
+
+            // Muros perimetrales de la Sala Conmemorativa
+            CreateWall("Memorial_Wall_West", zone44.transform,
+                new Vector3(-38.0f, vestY + 2.5f, -13.0f), new Vector3(0.5f, wingH, 18.0f), matWallIvory);
+            CreateWall("Memorial_Wall_East", zone44.transform,
+                new Vector3(-14.5f, vestY + 2.5f, -13.0f), new Vector3(0.5f, wingH, 18.0f), matWallIvory);
+            CreateWall("Memorial_Wall_South", zone44.transform,
+                new Vector3(-26.25f, vestY + 2.5f, -22.0f), new Vector3(23.5f, wingH, 0.5f), matWallIvory);
+
+            // Muro Norte (Z = -4.0m) con puerta hacia el Vestíbulo del Ala Suroeste centrada en X = -22.2m (lejos del muro de la escalera)
+            CreateWall("Memorial_Wall_North_W", zone44.transform,
+                new Vector3(-30.625f, vestY + 2.5f, -4.0f), new Vector3(14.75f, wingH, 0.5f), matWallIvory);
+            CreateWall("Memorial_Wall_North_E", zone44.transform,
+                new Vector3(-17.825f, vestY + 2.5f, -4.0f), new Vector3(6.65f, wingH, 0.5f), matWallIvory);
+            CreateArchitecturalDoor("Doors_Tower_To_MemorialRoom", zone44.transform,
+                new Vector3(-22.2f, vestY, -4.0f), Quaternion.identity,
+                1.8f, 3.2f, wingH, 0.5f, false, "",
+                "SALA CONMEMORATIVA — MEMORIA PÚBLICA DE LA ACADEMIA (ZONA 44)", "", matMahogany, matGold, matWallIvory);
+
+            // --- SUBÁREA 44A: NAVE CENTRAL DE BANCOS DE MADERA NOBLE Y CORONAS DE FLORES SECAS ---
+            float[] pewZ = { -9.5f, -14.5f };
+            float[] pewX = { -21.5f, -27.5f };
+            for (int r = 0; r < pewZ.Length; r++)
+            {
+                for (int col = 0; col < pewX.Length; col++)
+                {
+                    GameObject pew = new GameObject($"Banco_Conmemorativo_Madera_{r + 1}_{col + 1}");
+                    pew.transform.parent = zone44.transform;
+                    pew.transform.position = new Vector3(pewX[col], vestY, pewZ[r]);
+
+                    CreatePrimitive("Pew_Seat", PrimitiveType.Cube, pew.transform,
+                        new Vector3(0f, 0.45f, 0f), new Vector3(3.8f, 0.08f, 0.65f), matMahogany);
+                    CreatePrimitive("Pew_Backrest", PrimitiveType.Cube, pew.transform,
+                        new Vector3(0f, 0.85f, 0.26f), new Vector3(3.8f, 0.72f, 0.08f), matMahogany);
+                    CreatePrimitive("Pew_Side_L", PrimitiveType.Cube, pew.transform,
+                        new Vector3(-1.82f, 0.52f, 0f), new Vector3(0.12f, 1.04f, 0.72f), matMahogany);
+                    CreatePrimitive("Pew_Side_R", PrimitiveType.Cube, pew.transform,
+                        new Vector3(1.82f, 0.52f, 0f), new Vector3(0.12f, 1.04f, 0.72f), matMahogany);
+                }
+            }
+
+            // Pedestales con jarrones y coronas de flores secas alrededor de la sala
+            Vector3[] dryFlowerPedestals =
+            {
+                new Vector3(-17.2f, vestY, -8.5f),
+                new Vector3(-17.2f, vestY, -16.5f),
+                new Vector3(-31.8f, vestY, -8.5f),
+                new Vector3(-31.8f, vestY, -16.5f),
+                new Vector3(-21.0f, vestY, -20.6f),
+                new Vector3(-28.0f, vestY, -20.6f)
+            };
+            for (int df = 0; df < dryFlowerPedestals.Length; df++)
+            {
+                CreatePrimitive($"Pedestal_Flores_Secas_{df + 1}", PrimitiveType.Cylinder, zone44.transform,
+                    dryFlowerPedestals[df] + new Vector3(0f, 0.55f, 0f), new Vector3(0.56f, 0.55f, 0.56f), matStoneWall);
+                DecoPiece($"Jarron_Bronce_{df + 1}", PrimitiveType.Cylinder, zone44.transform,
+                    dryFlowerPedestals[df] + new Vector3(0f, 1.28f, 0f), new Vector3(0.36f, 0.22f, 0.36f), matGold);
+                DecoPiece($"Ramo_Flores_Secas_{df + 1}", PrimitiveType.Sphere, zone44.transform,
+                    dryFlowerPedestals[df] + new Vector3(0f, 1.62f, 0f), new Vector3(0.78f, 0.58f, 0.78f), matDryFlowers);
+            }
+
+            // --- SUBÁREA 44B: GALERÍA DE FOTOGRAFÍAS DE ALUMNAS Y DISCURSO OFICIAL (OESTE, X: -38..-32) ---
+            for (int fp = 0; fp < 4; fp++)
+            {
+                float fz = -6.8f - fp * 3.6f;
+                CreateFramedArtPortrait($"Foto_Conmemorativa_Alumnas_{fp + 1}", zone44.transform,
+                    new Vector3(-37.65f, vestY + 2.5f, fz), new Vector3(0.12f, 1.65f, 2.1f),
+                    matGold, (fp % 2 == 0) ? matPhotoTroupe1923 : matPortraitElena,
+                    $"Archivo Fotográfico de Honor — Promoción {1918 + fp * 2}");
+            }
+
+            CreateInteractiveWorldDoc("Doc_Libro_Homenaje_Sala_Conmemorativa", zone44.transform,
+                new Vector3(-34.5f, vestY + 1.05f, -12.5f), new Vector3(0.44f, 0.06f, 0.34f), matGold,
+                "doc_s10_memorial_public_tribute",
+                "Libro de Actos Conmemorativos — Cómo la Academia Decidió Recordar a sus Alumnas",
+                "MEMORIA PÚBLICA DE LA ACADEMIA VESPER (NOVIEMBRE DE 1924)\n\n" +
+                "«Esta Sala Conmemorativa fue remodelada apresuradamente por orden de Isadora Vale una semana después de la tragedia.\n" +
+                "En las fotografías oficiales y en los discursos impresos para la prensa, la dirección presentó la noche del 14 de octubre como un fatal accidente fortuito, elogiando el sacrificio artístico de sus solistas.\n" +
+                "Sin embargo, varias exalumnas dejaron flores secas negras junto al banco del fondo y denunciaron que una de las placas recién instaladas fue arrancada a martillazos durante la noche.»");
+            CreatePrimitive("Atril_Libro_Conmemorativo", PrimitiveType.Cube, zone44.transform,
+                new Vector3(-34.5f, vestY + 0.52f, -12.5f), new Vector3(0.9f, 1.04f, 0.7f), matMahogany);
+
+            // --- SUBÁREA 44C: MURO DE HONOR DE LAS PLACAS Y SECRETO DE LA PLACA RETIRADA (SUR, Z = -21.7m) ---
+            // Gran revestimiento de caoba noble en el Muro de Honor Sur
+            CreatePrimitive("Panel_Boiserie_Muro_Honor", PrimitiveType.Cube, zone44.transform,
+                new Vector3(-24.5f, vestY + 2.4f, -21.68f), new Vector3(14.5f, 3.8f, 0.12f), matMahogany);
+
+            // Filas de placas de latón con nombres de alumnas + EL HUECO VACÍO CENTRAL CON LA MARCA EN LA PARED
+            for (int row = 0; row < 2; row++)
+            {
+                for (int col = -2; col <= 2; col++)
+                {
+                    float px = -24.5f + col * 2.2f;
+                    float py = vestY + 1.95f + row * 0.95f;
+
+                    if (row == 1 && col == 0)
+                    {
+                        // SECRETO DE LA SALA CONMEMORATIVA: La placa fue retirada y su marca oscura + 4 agujeros de tornillos permanece en la pared
+                        GameObject wallScar = CreatePrimitive("Marca_Pared_Placa_Retirada_Elena", PrimitiveType.Cube, zone44.transform,
+                            new Vector3(px, py, -21.58f), new Vector3(1.38f, 0.62f, 0.04f), matWallScar);
+                        DecoPiece("Cerco_Oxido_Placa_Retirada", PrimitiveType.Cube, wallScar.transform,
+                            new Vector3(0f, 0f, 0.35f), new Vector3(0.92f, 0.84f, 0.25f), matAgedBrick);
+
+                        // La placa arrancada escondida en el suelo tras el banco inferior (se revela/destaca al inspeccionar la huella)
+                        GameObject hiddenRemovedPlaque = CreatePrimitive("Placa_Laton_Arrancada_Oculta_Tras_Banco", PrimitiveType.Cube, zone44.transform,
+                            new Vector3(px, vestY + 0.06f, -19.85f), new Vector3(1.32f, 0.04f, 0.58f), matGold);
+                        hiddenRemovedPlaque.transform.localRotation = Quaternion.Euler(0f, 14f, 0f);
+
+                        AcademyExpansionAnomalyController plaqueSecretCtrl = wallScar.AddComponent<AcademyExpansionAnomalyController>();
+                        plaqueSecretCtrl.Configure(ExpansionNodeType.MemorialRemovedPlaqueSecret, wallScar.transform, null, hiddenRemovedPlaque);
+                        EditorUtility.SetDirty(plaqueSecretCtrl);
+                    }
+                    else
+                    {
+                        DecoPiece($"Placa_Honor_Alumna_{row}_{col + 3}", PrimitiveType.Cube, zone44.transform,
+                            new Vector3(px, py, -21.58f), new Vector3(1.32f, 0.56f, 0.05f), matGold);
+                    }
+                }
+            }
+
+            // Banco de madera justo frente al Muro de Honor donde está la marca de la placa retirada
+            CreateWinterGardenIronBench("Banco_Frente_Muro_De_Placas", zone44.transform,
+                new Vector3(-24.5f, vestY, -19.4f), Quaternion.Euler(0f, 180f, 0f), matIron, matMahogany);
+
+            // Iluminación solemne y silenciosa de la Sala Conmemorativa
+            CreatePictureSpotlight("Foco_Muro_De_Honor_Y_Placa_Retirada", zone44.transform,
+                new Vector3(-24.5f, vestY + 4.4f, -17.5f), new Vector3(-24.5f, vestY + 2.4f, -21.6f),
+                new Color(1.0f, 0.84f, 0.55f), 3.2f);
+            CreateOrnateLantern("Lampara_Sala_Conmemorativa_N", zone44.transform,
+                new Vector3(-24.5f, vestY + 4.3f, -8.5f), matGold, matLanternGlow, new Color(1.0f, 0.80f, 0.46f), 1.9f);
+            CreateOrnateLantern("Lampara_Sala_Conmemorativa_S", zone44.transform,
+                new Vector3(-24.5f, vestY + 4.3f, -16.0f), matGold, matLanternGlow, new Color(1.0f, 0.80f, 0.46f), 1.9f);
+
+            // ====================================================================
+            // SECCIÓN 11: GRAN ALA OCCIDENTAL DE RESIDENCIA Y TALLERES (ZONAS 45 A 48)
+            // ZONA 48: ESTANCIA PRIVADA DE ISADORA VALE Y CELOSÍA DE VIGILANCIA
+            // ZONA 47: COMEDOR ANTIGUO Y SALÓN DEL PATRONATO (+ GALERÍA DE ENLACE)
+            // ZONA 45: DORMITORIO COMÚN DE INTERNAS
+            // ZONA 46: TALLER DE ZAPATILLAS Y TINTORERÍA ESCÉNICA
+            // ====================================================================
+
+            // Basamento exterior de sillería bajo toda la Gran Ala Occidental (X: -62.5m a -27.5m, Z: 5.5m a 98.5m, Y: 0m a 2.4m)
+            CreatePrimitive("WestWing_Foundation_Plinth_Main", PrimitiveType.Cube, rootEnv,
+                new Vector3(-50.0f, 1.1f, 52.0f), new Vector3(24.5f, 2.2f, 92.5f), matStoneWall);
+            CreatePrimitive("WestWing_Foundation_Plinth_EastGallery", PrimitiveType.Cube, rootEnv,
+                new Vector3(-29.0f, 1.1f, 47.0f), new Vector3(18.0f, 2.2f, 6.5f), matStoneWall);
+            CreatePrimitive("WestWing_Foundation_Plinth_WorkshopEast", PrimitiveType.Cube, rootEnv,
+                new Vector3(-33.0f, 1.1f, 89.0f), new Vector3(10.5f, 2.2f, 18.5f), matStoneWall);
+
+            // --------------------------------------------------------------------
+            // ZONA 48: ESTANCIA PRIVADA DE ISADORA VALE Y CELOSÍA DE VIGILANCIA
+            // Tramo Norte (Salón y Alcoba de la Directora): X: -62.0m a -38.0m, Z: 12.0m a 28.0m, Y = 2.4m
+            // Tramo Sur (Galería Oculta de la Celosía tras Enfermería): X: -62.0m a -42.0m, Z: 6.0m a 12.0m, Y = 2.4m
+            // --------------------------------------------------------------------
+            GameObject zone48 = new GameObject("48_Isadora_Private_Suite_And_Spy_Lattice");
+            zone48.transform.parent = rootEnv;
+
+            // Suelos, alfombras y techos de la Zona 48
+            CreatePrimitive("IsadoraSuite_Floor_Main", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-50.0f, vestY - 0.25f, 20.0f), new Vector3(24.0f, 0.5f, 16.0f), matParquet);
+            CreatePrimitive("IsadoraSuite_Ceiling_Main", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-50.0f, vestY + wingH, 20.0f), new Vector3(24.0f, 0.5f, 16.0f), matWallIvory);
+            CreatePrimitive("IsadoraSuite_Carpet_Salon", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-44.5f, vestY + 0.02f, 20.0f), new Vector3(9.5f, 0.04f, 12.0f), matCarpet);
+            CreatePrimitive("IsadoraSuite_Carpet_Bedroom", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-56.0f, vestY + 0.02f, 20.5f), new Vector3(8.5f, 0.04f, 11.0f), matCarpet);
+
+            CreatePrimitive("IsadoraSpyGallery_Floor_South", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-52.0f, vestY - 0.25f, 9.0f), new Vector3(20.0f, 0.5f, 6.0f), matParquet);
+            CreatePrimitive("IsadoraSpyGallery_Ceiling_South", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-52.0f, vestY + wingH, 9.0f), new Vector3(20.0f, 0.5f, 6.0f), matWallIvory);
+            CreatePrimitive("IsadoraSpyGallery_Runner", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-50.0f, vestY + 0.02f, 8.8f), new Vector3(14.5f, 0.04f, 2.2f), matCarpet);
+
+            // Muros perimetrales de la Zona 48
+            // Muro Oeste continuo (X = -62.0m, Z: 6.0m a 28.0m)
+            CreateWall("IsadoraSuite_Wall_West", zone48.transform,
+                new Vector3(-62.0f, vestY + 2.5f, 17.0f), new Vector3(0.5f, wingH, 22.0f), matWallIvory);
+            // Muro Sur de la Galería de Vigilancia (Z = 6.0m, X: -62.0m a -42.0m)
+            CreateWall("IsadoraSpyGallery_Wall_South", zone48.transform,
+                new Vector3(-52.0f, vestY + 2.5f, 6.0f), new Vector3(20.0f, wingH, 0.5f), matWallIvory);
+            // Cierre del escalón Este-Oeste en Z = 12.0m (X: -42.0m a -38.0m, ya cubierto por Infirmary_Wall_North, añadimos moldura interior)
+            // Muro Este entre Z = 26.0m y Z = 28.0m (X = -38.0m, colindante con el extremo sur del Archivo de Expedientes)
+            CreateWall("IsadoraSuite_Wall_East_NorthStub", zone48.transform,
+                new Vector3(-38.0f, vestY + 2.5f, 27.0f), new Vector3(0.5f, wingH, 2.0f), matWallIvory);
+
+            // Muro Norte compartido con 47. Comedor Antiguo y Salón del Patronato (Z = 28.0m, X: -62.0m a -38.0m) con puerta doble en X = -50.0m
+            CreateWall("IsadoraSuite_Wall_North_W", zone48.transform,
+                new Vector3(-56.75f, vestY + 2.5f, 28.0f), new Vector3(10.5f, wingH, 0.5f), matWallIvory);
+            CreateWall("IsadoraSuite_Wall_North_E", zone48.transform,
+                new Vector3(-43.25f, vestY + 2.5f, 28.0f), new Vector3(10.5f, wingH, 0.5f), matWallIvory);
+            CreateArchitecturalDoubleDoor("Doors_IsadoraSuite_To_DiningPatronage", zone48.transform,
+                new Vector3(-50.0f, vestY, 28.0f), Quaternion.identity,
+                3.0f, 3.6f, wingH, 0.5f, false, "",
+                "COMEDOR ANTIGUO Y SALÓN DEL PATRONATO (ZONA 47)", "", matMahogany, matGold, matWallIvory);
+
+            // Tabique interior N-S en X = -50.0m (Z: 12.0m a 28.0m) que divide el Gabinete de Trofeos y Gramófono (Este) de la Alcoba con Dosel (Oeste), con paso en Z = 20.0m
+            CreateWall("IsadoraSuite_InteriorWall_S", zone48.transform,
+                new Vector3(-50.0f, vestY + 2.5f, 15.25f), new Vector3(0.4f, wingH, 6.5f), matWallIvory);
+            CreateWall("IsadoraSuite_InteriorWall_N", zone48.transform,
+                new Vector3(-50.0f, vestY + 2.5f, 24.75f), new Vector3(0.4f, wingH, 6.5f), matWallIvory);
+            CreateWall("IsadoraSuite_InteriorWall_Lintel", zone48.transform,
+                new Vector3(-50.0f, vestY + 4.2f, 20.0f), new Vector3(0.4f, 1.6f, 3.0f), matWallIvory);
+
+            // Tabique de la Galería Oculta de Vigilancia en Z = 12.0m (X: -62.0m a -42.0m) con arco de paso en X = -46.0m
+            CreateWall("IsadoraSpyGallery_Partition_W", zone48.transform,
+                new Vector3(-55.0f, vestY + 2.5f, 12.0f), new Vector3(14.0f, wingH, 0.4f), matWallIvory);
+            CreateWall("IsadoraSpyGallery_Partition_E", zone48.transform,
+                new Vector3(-43.25f, vestY + 2.5f, 12.0f), new Vector3(2.5f, wingH, 0.4f), matWallIvory);
+
+            // Sub-área 48A: Gabinete de Trofeos, Retratos y Gramófono (X: -50.0m a -38.0m, Z: 12.0m a 28.0m)
+            CreateFramedArtPortrait("Retrato_Isadora_Juventud_Imperial_1898", zone48.transform,
+                new Vector3(-49.7f, vestY + 2.6f, 24.5f), new Vector3(0.12f, 2.2f, 1.6f), matGold, matPhotoTroupe1923,
+                "Retrato Oficial: «Isadora Vale — Primera Bailarina del Teatro Imperial (1898)»");
+            CreatePrimitive("Escritorio_Privado_Nocturno_Isadora", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-44.0f, vestY + 0.52f, 24.2f), new Vector3(2.6f, 1.04f, 1.4f), matMahogany);
+            DecoPiece("Tapete_Cuero_Escritorio_Isadora", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-44.0f, vestY + 1.05f, 24.2f), new Vector3(1.6f, 0.02f, 0.9f), matLeather);
+            CreatePrimitive("Sillon_Privado_Isadora", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-44.0f, vestY + 0.55f, 25.8f), new Vector3(0.95f, 1.1f, 0.95f), matLeather);
+            CreatePrimitive("Divan_Terciopelo_Isadora_Base", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-41.5f, vestY + 0.36f, 19.5f), new Vector3(1.1f, 0.52f, 2.8f), matVelvetDrapes);
+            CreatePrimitive("Divan_Terciopelo_Isadora_Respaldo", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-41.0f, vestY + 0.72f, 19.5f), new Vector3(0.22f, 0.85f, 2.8f), matMahogany);
+
+            // Vitrinas de coronas de plata y programas antiguos de ópera
+            for (int tc = 0; tc < 2; tc++)
+            {
+                float tcZ = 16.5f + tc * 6.5f;
+                CreatePrimitive($"Vitrina_Trofeos_Isadora_{tc + 1}", PrimitiveType.Cube, zone48.transform,
+                    new Vector3(-49.2f, vestY + 1.15f, tcZ), new Vector3(0.75f, 2.3f, 2.2f), matMahogany);
+                DecoPiece($"Cristal_Vitrina_Trofeos_{tc + 1}", PrimitiveType.Cube, zone48.transform,
+                    new Vector3(-48.80f, vestY + 1.35f, tcZ), new Vector3(0.04f, 1.5f, 1.9f), matMirrorGlass);
+                DecoPiece($"Corona_Laurel_Plata_{tc + 1}", PrimitiveType.Cylinder, zone48.transform,
+                    new Vector3(-49.15f, vestY + 1.40f, tcZ), new Vector3(0.38f, 0.08f, 0.38f), matGold);
+            }
+
+            // Sub-área 48B: Alcoba con Dosel de la Directora (X: -62.0m a -50.0m, Z: 12.0m a 28.0m)
+            // Cama señorial con cuatro columnas de caoba y cortinajes borgoña
+            CreatePrimitive("Cama_Dosel_Isadora_Base", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-58.5f, vestY + 0.38f, 21.5f), new Vector3(3.2f, 0.55f, 2.4f), matMahogany);
+            CreatePrimitive("Cama_Dosel_Isadora_Colchon", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-58.4f, vestY + 0.72f, 21.5f), new Vector3(2.9f, 0.28f, 2.2f), matVelvetDrapes);
+            CreatePrimitive("Cama_Dosel_Isadora_Cabecero", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-60.0f, vestY + 1.65f, 21.5f), new Vector3(0.25f, 2.6f, 2.5f), matMahogany);
+            CreatePrimitive("Cama_Dosel_Isadora_Techo", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-58.5f, vestY + 2.95f, 21.5f), new Vector3(3.3f, 0.18f, 2.5f), matMahogany);
+            float[] postOffsetsX = { -60.0f, -57.0f };
+            float[] postOffsetsZ = { 20.35f, 22.65f };
+            for (int px = 0; px < 2; px++)
+            {
+                for (int pz = 0; pz < 2; pz++)
+                {
+                    DecoPiece($"Poste_Dosel_{px}_{pz}", PrimitiveType.Cylinder, zone48.transform,
+                        new Vector3(postOffsetsX[px], vestY + 1.55f, postOffsetsZ[pz]), new Vector3(0.14f, 1.45f, 0.14f), matMahogany);
+                }
+            }
+            // Tocador personal y armario ropero de la directora
+            CreateVanityStation("Tocador_Privado_Isadora", zone48.transform,
+                new Vector3(-56.0f, vestY, 26.8f), Quaternion.Euler(0f, 180f, 0f),
+                matMahogany, matGold, matMirrorGlass, matVelvetDrapes, matLanternGlow, matPorcelain, matShadowFigure, true, false);
+            CreatePrimitive("Armario_Ropero_Isadora", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-56.0f, vestY + 1.35f, 13.2f), new Vector3(2.8f, 2.7f, 1.1f), matMahogany);
+
+            // Sub-área 48C: Galería Oculta de la Celosía de Vigilancia (X: -62.0m a -42.0m, Z: 6.0m a 12.0m)
+            // Mecanismo de rejilla de bronce, mirilla óptica hacia la Enfermería/Dirección y pupitre de anotación nocturna
+            CreatePrimitive("Pupitre_Espionaje_Isadora", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-47.5f, vestY + 0.52f, 7.2f), new Vector3(2.2f, 1.04f, 0.95f), matMahogany);
+            CreatePrimitive("Rejilla_Celosia_Vigilancia_Bronce", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-42.22f, vestY + 1.65f, 10.6f), new Vector3(0.12f, 0.85f, 1.4f), matGold);
+            DecoPiece("Tubo_Acustico_Interfono_Vigilancia", PrimitiveType.Cylinder, zone48.transform,
+                new Vector3(-42.35f, vestY + 1.45f, 11.4f), new Vector3(0.10f, 0.95f, 0.10f), matGold);
+
+            // SECRETO DE ZONA 48: Bitácora de Vigilancia Nocturna de Isadora Vale sobre el pupitre de la celosía
+            GameObject spyLatticeTrigger = CreatePrimitive("Bitacora_Celosia_Vigilancia_Isadora_Secreto", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-47.5f, vestY + 1.08f, 7.2f), new Vector3(0.55f, 0.08f, 0.42f), matLeather);
+            DecoPiece("Lente_Mirilla_Laton_Sobre_Bitacora", PrimitiveType.Cylinder, zone48.transform,
+                new Vector3(-47.15f, vestY + 1.12f, 7.25f), new Vector3(0.14f, 0.06f, 0.14f), matGold);
+            AcademyExpansionAnomalyController spyCtrl = spyLatticeTrigger.AddComponent<AcademyExpansionAnomalyController>();
+            spyCtrl.Configure(ExpansionNodeType.IsadoraSpyLatticeSecret);
+            EditorUtility.SetDirty(spyCtrl);
+
+            CreateOrnateLantern("Lampara_Salon_Isadora", zone48.transform,
+                new Vector3(-44.5f, vestY + 4.3f, 20.0f), matGold, matLanternGlow, new Color(1.0f, 0.78f, 0.45f), 2.1f);
+            CreateOrnateLantern("Lampara_Alcoba_Isadora", zone48.transform,
+                new Vector3(-56.0f, vestY + 4.3f, 20.5f), matGold, matLanternGlow, new Color(1.0f, 0.72f, 0.42f), 1.8f);
+            CreatePictureSpotlight("Foco_Celosia_Vigilancia_Z48", zone48.transform,
+                new Vector3(-47.5f, vestY + 3.8f, 8.8f), new Vector3(-47.5f, vestY + 1.08f, 7.2f),
+                new Color(1.0f, 0.82f, 0.50f), 2.8f);
+
+            // --------------------------------------------------------------------
+            // ZONA 47: COMEDOR ANTIGUO Y SALÓN DEL PATRONATO (+ GALERÍA DE ENLACE)
+            // Cuerpo Principal: X: -62.0m a -38.0m, Z: 28.0m a 54.0m, Y = 2.4m
+            // Galería de Enlace con 10. Pasillo de los Retratos: X: -38.0m a -20.0m, Z: 44.0m a 50.0m, Y = 2.4m
+            // --------------------------------------------------------------------
+            GameObject zone47 = new GameObject("47_Old_Dining_Hall_And_Patronage_Salon");
+            zone47.transform.parent = rootEnv;
+
+            // Galería de Enlace al Patronato (X: -38.0m a -20.0m, Z: 44.0m a 50.0m, encajada entre 8. Archivo [Z <= 44] y 16/17. Aulas [Z >= 50])
+            CreatePrimitive("PatronageGallery_Floor", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-29.0f, vestY - 0.25f, 47.0f), new Vector3(18.0f, 0.5f, 6.0f), matParquet);
+            CreatePrimitive("PatronageGallery_Ceiling", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-29.0f, vestY + wingH, 47.0f), new Vector3(18.0f, 0.5f, 6.0f), matWallIvory);
+            CreatePrimitive("PatronageGallery_Carpet", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-29.0f, vestY + 0.02f, 47.0f), new Vector3(17.0f, 0.04f, 2.8f), matCarpet);
+            CreateWall("PatronageGallery_Wall_South", zone47.transform,
+                new Vector3(-29.0f, vestY + 2.5f, 44.0f), new Vector3(18.0f, wingH, 0.4f), matWallIvory);
+            CreateWall("PatronageGallery_Wall_North", zone47.transform,
+                new Vector3(-29.0f, vestY + 2.5f, 50.0f), new Vector3(18.0f, wingH, 0.4f), matWallIvory);
+
+            // Placas de mecenas y benefactores en la Galería del Patronato
+            for (int pg = 0; pg < 3; pg++)
+            {
+                float pgX = -34.5f + pg * 5.5f;
+                CreateOrnateSconce($"Sconce_Patronato_Gal_{pg + 1}", zone47.transform,
+                    new Vector3(pgX, vestY + 3.0f, 49.7f), matGold, matLanternGlow, new Color(1.0f, 0.82f, 0.50f), 1.9f);
+                CreateFramedArtPortrait($"Cuadro_Benefactor_Patronato_{pg + 1}", zone47.transform,
+                    new Vector3(pgX, vestY + 2.5f, 44.3f), new Vector3(1.3f, 1.7f, 0.12f), matGold, matPhotoTroupe1923,
+                    $"Consejo de Mecenas del Patronato — Temporada {1918 + pg * 3}");
+            }
+
+            // Suelo, techo y alfombras del Cuerpo Principal del Comedor y Salón del Patronato (X: -62.0m a -38.0m, Z: 28.0m a 54.0m)
+            CreatePrimitive("DiningHall_Floor", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-50.0f, vestY - 0.25f, 41.0f), new Vector3(24.0f, 0.5f, 26.0f), matParquet);
+            CreatePrimitive("DiningHall_Ceiling", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-50.0f, vestY + wingH, 41.0f), new Vector3(24.0f, 0.5f, 26.0f), matWallIvory);
+            CreatePrimitive("PatronageSalon_Rug", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-44.0f, vestY + 0.02f, 40.5f), new Vector3(9.5f, 0.04f, 18.0f), matCarpet);
+
+            // Muros perimetrales de la Zona 47
+            CreateWall("DiningHall_Wall_West", zone47.transform,
+                new Vector3(-62.0f, vestY + 2.5f, 41.0f), new Vector3(0.5f, wingH, 26.0f), matWallIvory);
+            // Muro Este (X = -38.0m, Z: 28.0m a 54.0m) con puerta en Z = 47.0m hacia la Galería del Patronato
+            CreateWall("DiningHall_Wall_East_S", zone47.transform,
+                new Vector3(-38.0f, vestY + 2.5f, 37.025f), new Vector3(0.5f, wingH, 17.95f), matWallIvory);
+            CreateWall("DiningHall_Wall_East_N", zone47.transform,
+                new Vector3(-38.0f, vestY + 2.5f, 50.975f), new Vector3(0.5f, wingH, 6.05f), matWallIvory);
+            CreateArchitecturalDoor("Door_PatronageGallery_To_DiningHall", zone47.transform,
+                new Vector3(-38.0f, vestY, 47.0f), Quaternion.Euler(0f, 90f, 0f),
+                1.8f, 3.2f, wingH, 0.5f, false, "",
+                "COMEDOR ANTIGUO Y SALÓN DEL PATRONATO (ZONA 47)", "", matMahogany, matGold, matWallIvory);
+
+            // Muro Norte compartido con 45. Dormitorio Común de Internas (Z = 54.0m, X: -62.0m a -38.0m) con puerta doble en X = -50.0m
+            CreateWall("DiningHall_Wall_North_W", zone47.transform,
+                new Vector3(-56.75f, vestY + 2.5f, 54.0f), new Vector3(10.5f, wingH, 0.5f), matWallIvory);
+            CreateWall("DiningHall_Wall_North_E", zone47.transform,
+                new Vector3(-43.25f, vestY + 2.5f, 54.0f), new Vector3(10.5f, wingH, 0.5f), matWallIvory);
+            CreateArchitecturalDoubleDoor("Doors_DiningHall_To_Dormitory", zone47.transform,
+                new Vector3(-50.0f, vestY, 54.0f), Quaternion.identity,
+                3.0f, 3.6f, wingH, 0.5f, false, "",
+                "DORMITORIO COMÚN DE INTERNAS (ZONA 45)", "", matMahogany, matGold, matWallIvory);
+
+            // Columnata interior (X = -49.0m) que separa el Refectorio de Alumnas (Oeste) del Salón Reservado del Patronato (Este)
+            for (int dc = 0; dc < 3; dc++)
+            {
+                float colZ = 33.5f + dc * 7.5f;
+                CreateClassicalColumn($"Columna_Comedor_Patronato_{dc + 1}", zone47.transform,
+                    new Vector3(-49.0f, vestY, colZ), wingH, 0.65f, matFacade);
+            }
+
+            // Sub-área 47A: Gran Refectorio de Internas (X: -62.0m a -49.5m, Z: 34.0m a 52.0m)
+            // Dos largas mesas de roble con bancos corridos y pizarrón del régimen de pesaje
+            for (int rt = 0; rt < 2; rt++)
+            {
+                float tableX = -58.2f + rt * 4.8f;
+                CreatePrimitive($"Mesa_Refectorio_Alumnas_{rt + 1}", PrimitiveType.Cube, zone47.transform,
+                    new Vector3(tableX, vestY + 0.42f, 43.5f), new Vector3(1.5f, 0.84f, 11.5f), matWoodArchive);
+                CreatePrimitive($"Banco_Refectorio_W_{rt + 1}", PrimitiveType.Cube, zone47.transform,
+                    new Vector3(tableX - 1.15f, vestY + 0.24f, 43.5f), new Vector3(0.45f, 0.48f, 11.0f), matWoodArchive);
+                CreatePrimitive($"Banco_Refectorio_E_{rt + 1}", PrimitiveType.Cube, zone47.transform,
+                    new Vector3(tableX + 1.15f, vestY + 0.24f, 43.5f), new Vector3(0.45f, 0.48f, 11.0f), matWoodArchive);
+
+                // Platos de porcelana y jarras de agua alineados con precisión sobre las mesas
+                for (int pl = 0; pl < 5; pl++)
+                {
+                    float plateZ = 39.0f + pl * 2.2f;
+                    DecoPiece($"Plato_Refectorio_{rt}_{pl}", PrimitiveType.Cylinder, zone47.transform,
+                        new Vector3(tableX - 0.38f, vestY + 0.86f, plateZ), new Vector3(0.28f, 0.02f, 0.28f), matPorcelain);
+                    DecoPiece($"Plato_Refectorio_E_{rt}_{pl}", PrimitiveType.Cylinder, zone47.transform,
+                        new Vector3(tableX + 0.38f, vestY + 0.86f, plateZ), new Vector3(0.28f, 0.02f, 0.28f), matPorcelain);
+                }
+            }
+
+            CreateInteractiveWorldDoc("Doc_Pizarron_Regimen_Y_Pesaje_Refectorio", zone47.transform,
+                new Vector3(-61.55f, vestY + 1.65f, 43.5f), new Vector3(0.08f, 0.85f, 1.25f), matGold,
+                "doc_s11_refectory_weighing_regime",
+                "Tablón del Refectorio — Régimen Estricto y Control de Peso (Octubre 1924)",
+                "ORDEN DE LA DIRECCIÓN — RÉGIMEN DE INTERNAS PREVIO AL ESTRENO:\n\n" +
+                "«Queda terminantemente prohibido servir pan, lácteos o caldo con grasa a las integrantes del cuerpo de baile durante las dos semanas previas a 'El Lago de las Sombras'.\n\n" +
+                "Toda alumna cuyo peso exceda en más de trescientos gramos el baremo fijado por Madame Vale será trasladada a vigilancia médica en la Enfermería Antigua y perderá su puesto en la fila principal.»");
+
+            // Sub-área 47B: Oficio de Servicio y Montacargas al Subsuelo (Esquina Suroeste, X: -62.0m a -53.0m, Z: 28.5m a 33.5m)
+            CreatePrimitive("Mostrador_Oficio_Montacargas", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-58.0f, vestY + 0.55f, 31.0f), new Vector3(5.5f, 1.1f, 1.1f), matMahogany);
+            CreatePrimitive("Torre_Montacargas_Servicio_Subsuelo", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-60.8f, vestY + 1.85f, 29.3f), new Vector3(1.6f, 3.7f, 1.4f), matIron);
+            DecoPiece("Bandeja_Plata_Cubierta_Montacargas", PrimitiveType.Cylinder, zone47.transform,
+                new Vector3(-57.5f, vestY + 1.15f, 31.0f), new Vector3(0.55f, 0.16f, 0.55f), matGold);
+
+            // Sub-área 47C: Salón de Té y Mesa Presidencial del Patronato (Mitad Este, X: -48.0m a -38.0m, Z: 29.0m a 52.0m)
+            CreatePrimitive("Mesa_Presidencial_Patronato", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-43.5f, vestY + 0.44f, 39.5f), new Vector3(2.4f, 0.88f, 9.5f), matMahogany);
+            DecoPiece("Mantel_Bordado_Patronato", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-43.5f, vestY + 0.89f, 39.5f), new Vector3(2.1f, 0.02f, 9.1f), matVelvetDrapes);
+            // Candelabros de bronce y copas de cristal volcadas de la medianoche del 14 de octubre
+            for (int cnd = 0; cnd < 3; cnd++)
+            {
+                float cndZ = 36.5f + cnd * 3.0f;
+                DecoPiece($"Candelabro_Patronato_{cnd + 1}", PrimitiveType.Cylinder, zone47.transform,
+                    new Vector3(-43.5f, vestY + 1.15f, cndZ), new Vector3(0.22f, 0.26f, 0.22f), matGold);
+            }
+
+            // SECRETO DE ZONA 47: Acta Reservada de Medianoche del Patronato y Registro del Montacargas en la cabecera de la Mesa Presidencial
+            GameObject patronageSecretTrigger = CreatePrimitive("Acta_Secreta_Patronato_Y_Montacargas_1924", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-43.5f, vestY + 0.94f, 35.4f), new Vector3(0.62f, 0.08f, 0.46f), matLeather);
+            DecoPiece("Copa_Cristal_Volcada_Patronato", PrimitiveType.Cylinder, zone47.transform,
+                new Vector3(-43.0f, vestY + 0.95f, 35.6f), new Vector3(0.10f, 0.14f, 0.10f), matMirrorGlass).transform.localRotation = Quaternion.Euler(0f, 25f, 82f);
+            AcademyExpansionAnomalyController patronageCtrl = patronageSecretTrigger.AddComponent<AcademyExpansionAnomalyController>();
+            patronageCtrl.Configure(ExpansionNodeType.PatronageDinnerSecretMinutes);
+            EditorUtility.SetDirty(patronageCtrl);
+
+            CreateOrnateLantern("Lampara_Comedor_Refectorio", zone47.transform,
+                new Vector3(-55.5f, vestY + 4.3f, 42.0f), matGold, matLanternGlow, new Color(1.0f, 0.80f, 0.48f), 2.2f);
+            CreateOrnateLantern("Lampara_Salon_Patronato", zone47.transform,
+                new Vector3(-43.5f, vestY + 4.3f, 40.0f), matGold, matLanternGlow, new Color(1.0f, 0.78f, 0.45f), 2.4f);
+            CreatePictureSpotlight("Foco_Mesa_Presidencial_Patronato", zone47.transform,
+                new Vector3(-43.5f, vestY + 3.9f, 37.0f), new Vector3(-43.5f, vestY + 0.94f, 35.4f),
+                new Color(1.0f, 0.84f, 0.52f), 2.9f);
+
+            // --------------------------------------------------------------------
+            // ZONA 45: DORMITORIO COMÚN DE INTERNAS
+            // X: -62.0m a -38.0m, Z: 54.0m a 78.0m, Y = 2.4m
+            // --------------------------------------------------------------------
+            GameObject zone45 = new GameObject("45_Boarding_Students_Dormitory");
+            zone45.transform.parent = rootEnv;
+
+            CreatePrimitive("Dormitory_Floor", PrimitiveType.Cube, zone45.transform,
+                new Vector3(-50.0f, vestY - 0.25f, 66.0f), new Vector3(24.0f, 0.5f, 24.0f), matParquet);
+            CreatePrimitive("Dormitory_Ceiling", PrimitiveType.Cube, zone45.transform,
+                new Vector3(-50.0f, vestY + wingH, 66.0f), new Vector3(24.0f, 0.5f, 24.0f), matWallIvory);
+            CreatePrimitive("Dormitory_CenterRunner", PrimitiveType.Cube, zone45.transform,
+                new Vector3(-50.0f, vestY + 0.02f, 66.0f), new Vector3(3.6f, 0.04f, 22.0f), matCarpet);
+
+            // Muros perimetrales del Dormitorio Común
+            CreateWall("Dormitory_Wall_West", zone45.transform,
+                new Vector3(-62.0f, vestY + 2.5f, 66.0f), new Vector3(0.5f, wingH, 24.0f), matWallIvory);
+            CreateWall("Dormitory_Wall_East", zone45.transform,
+                new Vector3(-38.0f, vestY + 2.5f, 66.0f), new Vector3(0.5f, wingH, 24.0f), matWallIvory);
+
+            // Muro Norte compartido con 46. Taller de Zapatillas y Tintorería Escénica (Z = 78.0m, X: -62.0m a -38.0m) con puerta doble en X = -50.0m
+            CreateWall("Dormitory_Wall_North_W", zone45.transform,
+                new Vector3(-56.75f, vestY + 2.5f, 78.0f), new Vector3(10.5f, wingH, 0.5f), matWallIvory);
+            CreateWall("Dormitory_Wall_North_E", zone45.transform,
+                new Vector3(-43.25f, vestY + 2.5f, 78.0f), new Vector3(10.5f, wingH, 0.5f), matWallIvory);
+            CreateArchitecturalDoubleDoor("Doors_Dormitory_To_Workshop", zone45.transform,
+                new Vector3(-50.0f, vestY, 78.0f), Quaternion.identity,
+                3.0f, 3.6f, wingH, 0.5f, false, "",
+                "TALLER DE ZAPATILLAS Y TINTORERÍA ESCÉNICA (ZONA 46)", "", matMahogany, matGold, matWallIvory);
+
+            // Sub-área 45A: Nave de Camas y Baúles de Internas (2 filas de 5 camas de hierro y madera a cada lado del pasillo central)
+            GameObject maraTrunkLid = null;
+            for (int row = 0; row < 2; row++)
+            {
+                float bedX = (row == 0) ? -58.2f : -41.8f;
+                float trunkX = (row == 0) ? -55.4f : -44.6f;
+                float headboardX = (row == 0) ? -60.0f : -40.0f;
+
+                for (int b = 0; b < 5; b++)
+                {
+                    float bedZ = 57.5f + b * 4.2f;
+                    int bedNumber = (row * 5) + b + 1;
+
+                    // Armazón y colchón de la cama de interna
+                    CreatePrimitive($"Cama_Interna_{bedNumber}_Base", PrimitiveType.Cube, zone45.transform,
+                        new Vector3(bedX, vestY + 0.32f, bedZ), new Vector3(2.8f, 0.42f, 1.35f), matIron);
+                    CreatePrimitive($"Cama_Interna_{bedNumber}_Colchon", PrimitiveType.Cube, zone45.transform,
+                        new Vector3(bedX, vestY + 0.56f, bedZ), new Vector3(2.65f, 0.22f, 1.25f), matClothCover);
+                    CreatePrimitive($"Cama_Interna_{bedNumber}_Cabecero", PrimitiveType.Cube, zone45.transform,
+                        new Vector3(headboardX, vestY + 0.78f, bedZ), new Vector3(0.12f, 1.15f, 1.40f), matIron);
+
+                    // Mesilla de noche junto a la cama
+                    CreatePrimitive($"Mesilla_Interna_{bedNumber}", PrimitiveType.Cube, zone45.transform,
+                        new Vector3(headboardX + (row == 0 ? 0.55f : -0.55f), vestY + 0.38f, bedZ + 1.15f), new Vector3(0.65f, 0.76f, 0.55f), matMahogany);
+
+                    // Baúl personal de madera y latón al pie de cada cama
+                    CreatePrimitive($"Baul_Interna_{bedNumber}_Cuerpo", PrimitiveType.Cube, zone45.transform,
+                        new Vector3(trunkX, vestY + 0.26f, bedZ), new Vector3(0.75f, 0.52f, 1.15f), matWoodArchive);
+                    GameObject lid = CreatePrimitive($"Baul_Interna_{bedNumber}_Tapa", PrimitiveType.Cube, zone45.transform,
+                        new Vector3(trunkX, vestY + 0.55f, bedZ), new Vector3(0.78f, 0.08f, 1.18f), matMahogany);
+
+                    // Cama N.º 7 (row = 1, b = 1 -> Z = 61.7m): Cama de Mara Bell con su caja de música de bailarina y baúl con cintas ensangrentadas
+                    if (bedNumber == 7)
+                    {
+                        maraTrunkLid = lid;
+                        GameObject musicBoxObj = CreatePrimitive("Caja_De_Musica_Mara_Bell_Anomalia", PrimitiveType.Cube, zone45.transform,
+                            new Vector3(headboardX - 0.55f, vestY + 0.82f, bedZ + 1.15f), new Vector3(0.32f, 0.14f, 0.26f), matGold);
+                        GameObject ballerinaFig = DecoPiece("Figurilla_Bailarina_Porcelana_Mara", PrimitiveType.Cylinder, zone45.transform,
+                            new Vector3(headboardX - 0.55f, vestY + 0.96f, bedZ + 1.15f), new Vector3(0.08f, 0.12f, 0.08f), matPorcelain);
+
+                        AcademyExpansionAnomalyController maraMusicCtrl = musicBoxObj.AddComponent<AcademyExpansionAnomalyController>();
+                        maraMusicCtrl.Configure(
+                            ExpansionNodeType.DormitoryMusicBoxAndTrunkAnomaly,
+                            ballerinaFig.transform,
+                            null,
+                            maraTrunkLid);
+                        EditorUtility.SetDirty(maraMusicCtrl);
+                    }
+                }
+            }
+
+            // Sub-área 45B: Rincón de Estudio Nocturno y Estufa de Carbón (Centro-Sur del Dormitorio, X: -52.5m a -47.5m, Z: 55.5m a 60.5m)
+            CreatePrimitive("Estufa_Hierro_Fundido_Dormitorio", PrimitiveType.Cylinder, zone45.transform,
+                new Vector3(-50.0f, vestY + 0.85f, 58.0f), new Vector3(0.85f, 0.85f, 0.85f), matIron);
+            DecoPiece("Tubo_Humo_Estufa_Dormitorio", PrimitiveType.Cylinder, zone45.transform,
+                new Vector3(-50.0f, vestY + 3.1f, 58.0f), new Vector3(0.22f, 1.85f, 0.22f), matIron);
+            CreatePrimitive("Mesa_Lectura_Internas", PrimitiveType.Cube, zone45.transform,
+                new Vector3(-50.0f, vestY + 0.42f, 64.5f), new Vector3(1.8f, 0.84f, 3.2f), matMahogany);
+
+            CreateInteractiveWorldDoc("Doc_Reglamento_Silencio_Nocturno_Internado", zone45.transform,
+                new Vector3(-50.0f, vestY + 0.86f, 64.5f), new Vector3(0.42f, 0.04f, 0.32f), matGold,
+                "doc_s11_dormitory_curfew_rules",
+                "Reglamento del Internado — Toque de Queda y Clausura Nocturna (1924)",
+                "REGLAMENTO DE CONVIVENCIA DEL INTERNADO:\n\n" +
+                "«1. A las 21:30 horas se apagarán todas las lámparas del Dormitorio Común y se cerrarán con llave las puertas hacia el Comedor y los Talleres.\n" +
+                "2. Ninguna interna podrá abandonar su cama bajo pretexto de escuchar música o pasos procedentes del Teatro o de la Enfermería.\n" +
+                "3. Toda conversación sobre alumnas dadas de baja o trasladadas será sancionada con reclusión inmediata.»");
+
+            // Sub-área 45C y SECRETO DE ZONA 45: Nicho del Baúl Oculto tras el Tabique de Ropa Blanca (Esquina Noroeste, X: -61.2m a -56.5m, Z: 74.5m a 77.5m)
+            CreatePrimitive("Estanteria_Ropa_Blanca_Dormitorio", PrimitiveType.Cube, zone45.transform,
+                new Vector3(-57.8f, vestY + 1.25f, 75.2f), new Vector3(3.2f, 2.5f, 0.65f), matWoodArchive);
+            CreatePrimitive("Tabima_Madera_Falso_Fondo_Dormitorio", PrimitiveType.Cube, zone45.transform,
+                new Vector3(-60.4f, vestY + 0.14f, 76.4f), new Vector3(2.2f, 0.28f, 1.8f), matWoodArchive);
+
+            GameObject collectiveDiaryTrigger = CreatePrimitive("Baul_Oculto_Diario_Colectivo_Internas_Secreto", PrimitiveType.Cube, zone45.transform,
+                new Vector3(-60.4f, vestY + 0.48f, 76.4f), new Vector3(0.82f, 0.42f, 0.58f), matLeather);
+            DecoPiece("Candado_Laton_Forzado_Diario_Colectivo", PrimitiveType.Cube, zone45.transform,
+                new Vector3(-60.0f, vestY + 0.52f, 76.4f), new Vector3(0.12f, 0.16f, 0.14f), matGold);
+            AcademyExpansionAnomalyController diaryCtrl = collectiveDiaryTrigger.AddComponent<AcademyExpansionAnomalyController>();
+            diaryCtrl.Configure(ExpansionNodeType.DormitoryCollectiveDiarySecret);
+            EditorUtility.SetDirty(diaryCtrl);
+
+            CreateOrnateLantern("Lampara_Dormitorio_Sur", zone45.transform,
+                new Vector3(-50.0f, vestY + 4.3f, 60.5f), matGold, matLanternGlow, new Color(1.0f, 0.78f, 0.46f), 2.1f);
+            CreateOrnateLantern("Lampara_Dormitorio_Norte", zone45.transform,
+                new Vector3(-50.0f, vestY + 4.3f, 72.0f), matGold, matLanternGlow, new Color(1.0f, 0.78f, 0.46f), 2.1f);
+            CreatePictureSpotlight("Foco_Baul_Diario_Colectivo_Z45", zone45.transform,
+                new Vector3(-59.2f, vestY + 3.6f, 76.2f), new Vector3(-60.4f, vestY + 0.48f, 76.4f),
+                new Color(0.85f, 0.90f, 1.0f), 2.8f);
+
+            // --------------------------------------------------------------------
+            // ZONA 46: TALLER DE ZAPATILLAS Y TINTORERÍA ESCÉNICA
+            // Cuerpo Principal: X: -62.0m a -38.0m, Z: 78.0m a 98.0m, Y = 2.4m
+            // Nave Este de Patronaje (conexión directa con 30. Sala de Poleas en X = -28.0m, Z = 85.5m): X: -38.0m a -28.0m, Z: 80.0m a 98.0m, Y = 2.4m
+            // --------------------------------------------------------------------
+            GameObject zone46 = new GameObject("46_Cobbler_And_Scenic_Dye_Workshop");
+            zone46.transform.parent = rootEnv;
+
+            CreatePrimitive("Workshop_Floor_Main", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-50.0f, vestY - 0.25f, 88.0f), new Vector3(24.0f, 0.5f, 20.0f), matCeramicTile);
+            CreatePrimitive("Workshop_Ceiling_Main", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-50.0f, vestY + wingH, 88.0f), new Vector3(24.0f, 0.5f, 20.0f), matWallIvory);
+            CreatePrimitive("Workshop_Floor_EastBay", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-33.0f, vestY - 0.25f, 89.0f), new Vector3(10.0f, 0.5f, 18.0f), matCeramicTile);
+            CreatePrimitive("Workshop_Ceiling_EastBay", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-33.0f, vestY + wingH, 89.0f), new Vector3(10.0f, 0.5f, 18.0f), matWallIvory);
+
+            // Muros perimetrales de la Zona 46
+            CreateWall("Workshop_Wall_West", zone46.transform,
+                new Vector3(-62.0f, vestY + 2.5f, 88.0f), new Vector3(0.5f, wingH, 20.0f), matWallIvory);
+            // Muro Norte de Zona 46 con puerta en X = -50.0m hacia el Patio Trasero y Cochera (Zonas 57 a 59)
+            CreateWall("Workshop_Wall_North_W", zone46.transform,
+                new Vector3(-56.75f, vestY + 2.5f, 98.0f), new Vector3(10.5f, wingH, 0.5f), matWallIvory);
+            CreateWall("Workshop_Wall_North_E", zone46.transform,
+                new Vector3(-33.25f, vestY + 2.5f, 98.0f), new Vector3(23.5f, wingH, 0.5f), matWallIvory);
+            CreateArchitecturalDoor("Door_Workshop_To_CarriageCourtyard", zone46.transform,
+                new Vector3(-50.0f, vestY, 98.0f), Quaternion.identity,
+                2.2f, 3.4f, wingH, 0.5f, false, "",
+                "COCHERA DE CARRUAJES Y PATIO NORTE (ZONAS 57 A 59)", "", matIron, matGold, matWallIvory);
+            // Escalón Este-Oeste entre Z = 78.0m y Z = 80.0m (X = -38.0m) y Muro Sur de la Nave Este en Z = 80.0m (X: -38.0m a -28.0m, colindante con 19. Sala Individual)
+            CreateWall("Workshop_Wall_EastStep_Z78_80", zone46.transform,
+                new Vector3(-38.0f, vestY + 2.5f, 79.0f), new Vector3(0.5f, wingH, 2.0f), matWallIvory);
+            CreateWall("Workshop_EastBay_Wall_South", zone46.transform,
+                new Vector3(-33.0f, vestY + 2.5f, 80.0f), new Vector3(10.0f, wingH, 0.5f), matWallIvory);
+            // Tramo Este entre Z = 80.0m y Z = 84.0m (X = -28.0m, colindante con el Pasillo Técnico; de Z = 84 a 104 ya cierra PulleyRoom_Wall_West con su puerta en Z = 85.5m)
+            CreateWall("Workshop_EastBay_Wall_East_S", zone46.transform,
+                new Vector3(-28.0f, vestY + 2.5f, 82.0f), new Vector3(0.5f, wingH, 4.0f), matWallIvory);
+
+            // Sub-área 46A: Banco de Hormas de Madera Talladas a Medida (Oeste, X: -61.5m a -51.0m, Z: 80.0m a 96.0m)
+            for (int sh = 0; sh < 3; sh++)
+            {
+                float shZ = 82.5f + sh * 5.0f;
+                CreatePrimitive($"Estanteria_Hormas_Madera_{sh + 1}", PrimitiveType.Cube, zone46.transform,
+                    new Vector3(-60.8f, vestY + 1.35f, shZ), new Vector3(0.85f, 2.7f, 3.6f), matWoodArchive);
+
+                // Pares de hormas de madera de haya numeradas en los estantes
+                for (int h = 0; h < 4; h++)
+                {
+                    float hZ = shZ - 1.2f + h * 0.8f;
+                    DecoPiece($"Horma_Madera_Izq_{sh}_{h}", PrimitiveType.Capsule, zone46.transform,
+                        new Vector3(-60.65f, vestY + 1.48f, hZ), new Vector3(0.16f, 0.14f, 0.28f), matMahogany).transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                    DecoPiece($"Horma_Madera_Der_{sh}_{h}", PrimitiveType.Capsule, zone46.transform,
+                        new Vector3(-60.65f, vestY + 1.88f, hZ), new Vector3(0.16f, 0.14f, 0.28f), matMahogany).transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                }
+            }
+
+            CreatePrimitive("Banco_Maestro_Zapatero", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-55.0f, vestY + 0.46f, 88.5f), new Vector3(2.2f, 0.92f, 6.5f), matWoodArchive);
+            DecoPiece("Prensa_Cuero_Y_Suelas_Hierro", PrimitiveType.Cylinder, zone46.transform,
+                new Vector3(-55.0f, vestY + 1.18f, 86.5f), new Vector3(0.45f, 0.32f, 0.45f), matIron);
+            DecoPiece("Tarro_Resina_Colofonia_Ambar", PrimitiveType.Cylinder, zone46.transform,
+                new Vector3(-54.6f, vestY + 1.04f, 90.2f), new Vector3(0.24f, 0.14f, 0.24f), matGold);
+
+            // Sub-área 46B: Tintorería Escénica y Cubas de Tinte Negro Azabache (Centro-Norte, X: -49.0m a -39.0m, Z: 88.0m a 97.0m)
+            CreatePrimitive("Plataforma_Piedra_Tintoreria", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-44.0f, vestY + 0.10f, 93.5f), new Vector3(8.5f, 0.20f, 6.5f), matStoneWall);
+            for (int vat = 0; vat < 2; vat++)
+            {
+                float vatX = -46.2f + vat * 4.4f;
+                CreatePrimitive($"Cuba_Tinte_Negro_Azabache_{vat + 1}", PrimitiveType.Cylinder, zone46.transform,
+                    new Vector3(vatX, vestY + 0.75f, 94.0f), new Vector3(1.85f, 0.65f, 1.85f), matIron);
+                DecoPiece($"Liquido_Tinte_Negro_Cisne_{vat + 1}", PrimitiveType.Cylinder, zone46.transform,
+                    new Vector3(vatX, vestY + 1.32f, 94.0f), new Vector3(1.68f, 0.04f, 1.68f), matTutuBlack);
+            }
+            // Bastidor superior de secado con tules negros suspendidos sobre las cubas
+            DecoPiece("Barra_Secado_Tules_Negros", PrimitiveType.Cylinder, zone46.transform,
+                new Vector3(-44.0f, vestY + 2.85f, 94.0f), new Vector3(0.08f, 3.8f, 0.08f), matIron).transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            DecoPiece("Tul_Cisne_Negro_Escurriendo_1", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-45.5f, vestY + 2.25f, 94.0f), new Vector3(0.85f, 1.15f, 0.12f), matTutuBlack);
+            DecoPiece("Tul_Cisne_Negro_Escurriendo_2", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-42.5f, vestY + 2.25f, 94.0f), new Vector3(0.85f, 1.15f, 0.12f), matTutuBlack);
+
+            // Sub-área 46C y SECRETO DE ZONA 46: Nave Este de Patronaje y Encargo de los Dos Trajes Idénticos del Cisne Negro (X: -38.0m a -28.0m, Z: 80.0m a 98.0m)
+            CreatePrimitive("Mesa_Patronaje_Cisne_Negro", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-33.5f, vestY + 0.45f, 90.5f), new Vector3(2.4f, 0.90f, 5.5f), matMahogany);
+
+            // Dos maniquíes gemelos vestidos con el traje idéntico del Cisne Negro (Odile) junto a la mesa de patronaje
+            for (int mq = 0; mq < 2; mq++)
+            {
+                float mqZ = 88.8f + mq * 3.4f;
+                DecoPiece($"Pedestal_Maniqui_CisneNegro_Gemelo_{mq + 1}", PrimitiveType.Cylinder, zone46.transform,
+                    new Vector3(-36.2f, vestY + 0.45f, mqZ), new Vector3(0.45f, 0.45f, 0.45f), matMahogany);
+                DecoPiece($"Torso_Maniqui_CisneNegro_Gemelo_{mq + 1}", PrimitiveType.Capsule, zone46.transform,
+                    new Vector3(-36.2f, vestY + 1.35f, mqZ), new Vector3(0.42f, 0.52f, 0.32f), matTutuBlack);
+                DecoPiece($"Faldellin_Tutu_Negro_Gemelo_{mq + 1}", PrimitiveType.Cylinder, zone46.transform,
+                    new Vector3(-36.2f, vestY + 1.08f, mqZ), new Vector3(0.95f, 0.06f, 0.95f), matTutuBlack);
+            }
+
+            // SECRETO DE ZONA 46: Libro de Encargos Reservados de Sastrería y Hormas Modificadas N.º 14 y N.º 7 sobre la Mesa de Patronaje
+            GameObject workshopSecretTrigger = CreatePrimitive("Libro_Encargos_Dos_Cisnes_Negros_Y_Alzas_Secreto", PrimitiveType.Cube, zone46.transform,
+                new Vector3(-33.5f, vestY + 0.94f, 90.5f), new Vector3(0.65f, 0.08f, 0.48f), matLeather);
+            DecoPiece("Horma_Modificada_Con_Alzas_Mara_N7", PrimitiveType.Capsule, zone46.transform,
+                new Vector3(-33.0f, vestY + 0.98f, 91.2f), new Vector3(0.18f, 0.16f, 0.32f), matMahogany).transform.localRotation = Quaternion.Euler(90f, -25f, 0f);
+            AcademyExpansionAnomalyController workshopCtrl = workshopSecretTrigger.AddComponent<AcademyExpansionAnomalyController>();
+            workshopCtrl.Configure(ExpansionNodeType.WorkshopTwinBlackSwanOrderSecret);
+            EditorUtility.SetDirty(workshopCtrl);
+
+            CreateOrnateLantern("Lampara_Taller_Zapateria_Oeste", zone46.transform,
+                new Vector3(-54.0f, vestY + 4.3f, 88.5f), matGold, matLanternGlow, new Color(1.0f, 0.80f, 0.48f), 2.1f);
+            CreateOrnateLantern("Lampara_Taller_Patronaje_Este", zone46.transform,
+                new Vector3(-33.5f, vestY + 4.3f, 89.0f), matGold, matLanternGlow, new Color(1.0f, 0.80f, 0.48f), 2.1f);
+            CreatePictureSpotlight("Foco_Mesa_Patronaje_Secreto_Z46", zone46.transform,
+                new Vector3(-33.5f, vestY + 3.9f, 90.5f), new Vector3(-33.5f, vestY + 0.94f, 90.5f),
+                new Color(1.0f, 0.84f, 0.55f), 3.0f);
+
+            // ====================================================================
+            // SECCIÓN 12: PLANTA ALTA, RED SUBTERRÁNEA Y EXTERIORES TRASEROS (ZONAS 49 A 59)
+            // ====================================================================
+
+            // --------------------------------------------------------------------
+            // BLOQUE A: PLANTA ALTA CLÁSICA (Y = 7.70m, ZONAS 49 A 52)
+            // Conectada con la Terraza (Zona 42) en X = -11.0m, Z = 20.0m y con la Pasarela (Zona 35) en Z = 78.0m
+            // --------------------------------------------------------------------
+            GameObject blockUpperFloor = new GameObject("Section12_UpperFloor_Zones_49_To_52");
+            blockUpperFloor.transform.parent = rootEnv;
+            float upperFloorH = 4.2f;
+
+            // ZONA 49: Galería Superior del Vestíbulo (Mezzanine / Balcón Imperial) (X: -11.0m a +11.0m, Z: 9.0m a 31.0m, Y = 7.70m)
+            // Diseñada como una galería en forma de U con vano central abierto con barandilla que mira hacia el Vestíbulo inferior (Y = 2.4m)
+            GameObject zone49 = new GameObject("49_Mezzanine_Imperial_Gallery");
+            zone49.transform.parent = blockUpperFloor.transform;
+
+            // Galería Oeste (X: -11..-6, Z: 9..31)
+            CreatePrimitive("Mezzanine_Floor_West", PrimitiveType.Cube, zone49.transform,
+                new Vector3(-8.5f, roofY - 0.2f, 20.0f), new Vector3(5.0f, 0.4f, 22.0f), matParquet);
+            CreatePrimitive("Mezzanine_Carpet_West", PrimitiveType.Cube, zone49.transform,
+                new Vector3(-8.5f, roofY + 0.02f, 20.0f), new Vector3(2.4f, 0.04f, 20.0f), matCarpet);
+            // Galería Este (X: 6..11, Z: 9..31)
+            CreatePrimitive("Mezzanine_Floor_East", PrimitiveType.Cube, zone49.transform,
+                new Vector3(8.5f, roofY - 0.2f, 20.0f), new Vector3(5.0f, 0.4f, 22.0f), matParquet);
+            CreatePrimitive("Mezzanine_Carpet_East", PrimitiveType.Cube, zone49.transform,
+                new Vector3(8.5f, roofY + 0.02f, 20.0f), new Vector3(2.4f, 0.04f, 20.0f), matCarpet);
+            // Galería Sur (X: -6..6, Z: 9..14)
+            CreatePrimitive("Mezzanine_Floor_South", PrimitiveType.Cube, zone49.transform,
+                new Vector3(0.0f, roofY - 0.2f, 11.5f), new Vector3(7.0f, 0.4f, 5.0f), matParquet);
+            // Galería Norte (X: -6..6, Z: 26..31)
+            CreatePrimitive("Mezzanine_Floor_North", PrimitiveType.Cube, zone49.transform,
+                new Vector3(0.0f, roofY - 0.2f, 28.5f), new Vector3(7.0f, 0.4f, 5.0f), matParquet);
+
+            // Balaustrada dorada interior que asoma al vacío del Vestíbulo
+            CreateArchitecturalBalustrade("Mezzanine_Balustrade_Inner_W", zone49.transform,
+                new Vector3(-6.0f, roofY, 20.0f), 12.0f, matGold, matMahogany);
+            CreateArchitecturalBalustrade("Mezzanine_Balustrade_Inner_E", zone49.transform,
+                new Vector3(6.0f, roofY, 20.0f), 12.0f, matGold, matMahogany);
+
+            // Muros exteriores de la Mezzanine
+            CreateWall("Mezzanine_Wall_West", zone49.transform,
+                new Vector3(-11.0f, roofY + 2.1f, 20.0f), new Vector3(0.5f, upperFloorH, 22.0f), matWallIvory);
+            CreateWall("Mezzanine_Wall_East", zone49.transform,
+                new Vector3(11.0f, roofY + 2.1f, 20.0f), new Vector3(0.5f, upperFloorH, 22.0f), matWallIvory);
+            CreateWall("Mezzanine_Wall_South", zone49.transform,
+                new Vector3(0.0f, roofY + 2.1f, 9.0f), new Vector3(22.0f, upperFloorH, 0.5f), matWallIvory);
+            CreateWall("Mezzanine_Wall_North_W", zone49.transform,
+                new Vector3(-6.75f, roofY + 2.1f, 31.0f), new Vector3(8.5f, upperFloorH, 0.5f), matWallIvory);
+            CreateWall("Mezzanine_Wall_North_E", zone49.transform,
+                new Vector3(6.75f, roofY + 2.1f, 31.0f), new Vector3(8.5f, upperFloorH, 0.5f), matWallIvory);
+
+            // Puerta Norte de la Mezzanine hacia las Aulas de Teoría (Zona 50)
+            CreateArchitecturalDoubleDoor("Doors_Mezzanine_To_TheoryClass", zone49.transform,
+                new Vector3(0.0f, roofY, 31.0f), Quaternion.identity,
+                3.0f, 3.4f, upperFloorH, 0.5f, false, "",
+                "AULAS DE TEORÍA ESCÉNICA Y ANATOMÍA (ZONA 50)", "", matMahogany, matGold, matWallIvory);
+
+            // Secreto / Punto de Observación de Zona 49
+            GameObject mezzanineTrigger = CreatePrimitive("Atril_Protocolo_Mezzanine_Z49", PrimitiveType.Cube, zone49.transform,
+                new Vector3(0.0f, roofY + 0.52f, 14.5f), new Vector3(1.2f, 1.04f, 0.8f), matMahogany);
+            DecoPiece("Libro_Protocolo_Ceremonial_Z49", PrimitiveType.Cube, zone49.transform,
+                new Vector3(0.0f, roofY + 1.08f, 14.5f), new Vector3(0.54f, 0.08f, 0.38f), matLeather);
+            AcademyExpansionAnomalyController mezzanineCtrl = mezzanineTrigger.AddComponent<AcademyExpansionAnomalyController>();
+            mezzanineCtrl.Configure(ExpansionNodeType.MezzanineImperialBalconyOverview);
+            EditorUtility.SetDirty(mezzanineCtrl);
+
+            // ZONA 50: Aulas de Teoría Escénica, Anatomía y Linterna Mágica (X: -16.0m a +16.0m, Z: 31.0m a 55.0m, Y = 7.70m)
+            GameObject zone50 = new GameObject("50_Theory_And_Anatomy_Amphitheatre");
+            zone50.transform.parent = blockUpperFloor.transform;
+
+            CreatePrimitive("Theory_Floor", PrimitiveType.Cube, zone50.transform,
+                new Vector3(0.0f, roofY - 0.2f, 43.0f), new Vector3(32.0f, 0.4f, 24.0f), matParquet);
+            CreatePrimitive("Theory_Ceiling", PrimitiveType.Cube, zone50.transform,
+                new Vector3(0.0f, roofY + upperFloorH, 43.0f), new Vector3(32.0f, 0.4f, 24.0f), matWallIvory);
+            CreateWall("Theory_Wall_West", zone50.transform,
+                new Vector3(-16.0f, roofY + 2.1f, 43.0f), new Vector3(0.5f, upperFloorH, 24.0f), matWallIvory);
+            CreateWall("Theory_Wall_East", zone50.transform,
+                new Vector3(16.0f, roofY + 2.1f, 43.0f), new Vector3(0.5f, upperFloorH, 24.0f), matWallIvory);
+            CreateWall("Theory_Wall_North_W", zone50.transform,
+                new Vector3(-9.25f, roofY + 2.1f, 55.0f), new Vector3(13.5f, upperFloorH, 0.5f), matWallIvory);
+            CreateWall("Theory_Wall_North_E", zone50.transform,
+                new Vector3(9.25f, roofY + 2.1f, 55.0f), new Vector3(13.5f, upperFloorH, 0.5f), matWallIvory);
+
+            // Puerta Norte hacia la Residencia de Profesores (Zona 51)
+            CreateArchitecturalDoubleDoor("Doors_Theory_To_ProfessorsResidence", zone50.transform,
+                new Vector3(0.0f, roofY, 55.0f), Quaternion.identity,
+                3.0f, 3.4f, upperFloorH, 0.5f, false, "",
+                "RESIDENCIA DE PROFESORES Y DEL MAESTRO VIKTOR KROL (ZONA 51)", "", matMahogany, matGold, matWallIvory);
+
+            // Mobiliario: Anfiteatro escalonado con pupitres y proyector de Linterna Mágica
+            for (int r = 0; r < 3; r++)
+            {
+                float tierZ = 35.0f + r * 3.5f;
+                float tierY = roofY + (r * 0.35f);
+                CreatePrimitive($"Grada_Teoria_{r + 1}", PrimitiveType.Cube, zone50.transform,
+                    new Vector3(0.0f, tierY - 0.17f, tierZ), new Vector3(18.0f, 0.35f, 3.0f), matWoodArchive);
+                CreatePrimitive($"Pupitre_Teoria_{r + 1}", PrimitiveType.Cube, zone50.transform,
+                    new Vector3(0.0f, tierY + 0.42f, tierZ), new Vector3(16.0f, 0.84f, 0.9f), matMahogany);
+            }
+            // Pantalla de proyección y pizarra anatómica al frente (Norte)
+            CreatePrimitive("Pantalla_Proyeccion_Lienzo", PrimitiveType.Cube, zone50.transform,
+                new Vector3(0.0f, roofY + 2.2f, 54.5f), new Vector3(8.5f, 3.2f, 0.1f), matClothCover);
+
+            // Linterna mágica / Proyector de placas de cristal (SECRETO ZONA 50)
+            GameObject projectorObj = CreatePrimitive("Proyector_Linterna_Magica_Laton", PrimitiveType.Cube, zone50.transform,
+                new Vector3(0.0f, roofY + 0.75f, 33.5f), new Vector3(0.85f, 0.70f, 1.2f), matGold);
+            DecoPiece("Tubo_Optico_Proyector", PrimitiveType.Cylinder, projectorObj.transform,
+                new Vector3(0.0f, 0.1f, 0.75f), new Vector3(0.24f, 0.45f, 0.24f), matGold).transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            Light projectorBeam = CreatePictureSpotlight("Luz_Haz_Proyector_Cristal", zone50.transform,
+                new Vector3(0.0f, roofY + 1.2f, 34.0f), new Vector3(0.0f, roofY + 2.2f, 54.5f),
+                new Color(1.0f, 0.92f, 0.75f), 3.2f);
+            AcademyExpansionAnomalyController projectorCtrl = projectorObj.AddComponent<AcademyExpansionAnomalyController>();
+            projectorCtrl.Configure(ExpansionNodeType.TheoryGlassSlideProjectorSecret, projectorObj.transform, null, null, projectorBeam);
+            EditorUtility.SetDirty(projectorCtrl);
+
+            // ZONA 51: Residencia de Profesores y del Maestro Viktor Krol (X: -16.0m a +16.0m, Z: 55.0m a 72.0m, Y = 7.70m)
+            GameObject zone51 = new GameObject("51_Professors_And_Maestro_Krol_Residence");
+            zone51.transform.parent = blockUpperFloor.transform;
+
+            CreatePrimitive("Residence_Floor", PrimitiveType.Cube, zone51.transform,
+                new Vector3(0.0f, roofY - 0.2f, 63.5f), new Vector3(32.0f, 0.4f, 17.0f), matParquet);
+            CreatePrimitive("Residence_Ceiling", PrimitiveType.Cube, zone51.transform,
+                new Vector3(0.0f, roofY + upperFloorH, 63.5f), new Vector3(32.0f, 0.4f, 17.0f), matWallIvory);
+            CreateWall("Residence_Wall_West", zone51.transform,
+                new Vector3(-16.0f, roofY + 2.1f, 63.5f), new Vector3(0.5f, upperFloorH, 17.0f), matWallIvory);
+            CreateWall("Residence_Wall_East", zone51.transform,
+                new Vector3(16.0f, roofY + 2.1f, 63.5f), new Vector3(0.5f, upperFloorH, 17.0f), matWallIvory);
+            CreateWall("Residence_Wall_North_W", zone51.transform,
+                new Vector3(-9.25f, roofY + 2.1f, 72.0f), new Vector3(13.5f, upperFloorH, 0.5f), matWallIvory);
+            CreateWall("Residence_Wall_North_E", zone51.transform,
+                new Vector3(9.25f, roofY + 2.1f, 72.0f), new Vector3(13.5f, upperFloorH, 0.5f), matWallIvory);
+
+            // Puerta Norte hacia la Torre del Reloj (Zona 52)
+            CreateArchitecturalDoor("Door_Residence_To_ClockTower", zone51.transform,
+                new Vector3(0.0f, roofY, 72.0f), Quaternion.identity,
+                2.0f, 3.2f, upperFloorH, 0.5f, false, "",
+                "DESVÁN Y TORRE DEL RELOJ DE LA ACADEMIA (ZONA 52)", "", matMahogany, matIron, matWallIvory);
+
+            // Estudio y Armonio del Maestro Viktor Krol
+            CreatePrimitive("Armonio_Viktor_Krol", PrimitiveType.Cube, zone51.transform,
+                new Vector3(-8.5f, roofY + 0.65f, 68.0f), new Vector3(2.4f, 1.3f, 1.2f), matMahogany);
+            CreatePrimitive("Atril_Partitura_Maestro_Krol", PrimitiveType.Cube, zone51.transform,
+                new Vector3(-8.5f, roofY + 1.25f, 67.8f), new Vector3(0.9f, 0.2f, 0.3f), matGold);
+
+            // SECRETO ZONA 51: Partitura original corregida del Acto III
+            GameObject krolScoreTrigger = CreatePrimitive("Partitura_Acto3_Anotada_Krol_Secreto", PrimitiveType.Cube, zone51.transform,
+                new Vector3(-8.5f, roofY + 1.35f, 67.8f), new Vector3(0.48f, 0.06f, 0.36f), matSecretPaper);
+            AcademyExpansionAnomalyController krolCtrl = krolScoreTrigger.AddComponent<AcademyExpansionAnomalyController>();
+            krolCtrl.Configure(ExpansionNodeType.MaestroKrolAlteredScoreSecret);
+            EditorUtility.SetDirty(krolCtrl);
+
+            // ZONA 52: Desván y Torre del Reloj de la Academia (X: -12.0m a +12.0m, Z: 72.0m a 88.0m, Y = 7.70m, conecta con Pasarela Zona 35 en Z = 88.0m)
+            GameObject zone52 = new GameObject("52_Clock_Tower_And_High_Attic");
+            zone52.transform.parent = blockUpperFloor.transform;
+
+            CreatePrimitive("ClockTower_Floor", PrimitiveType.Cube, zone52.transform,
+                new Vector3(0.0f, roofY - 0.2f, 80.0f), new Vector3(24.0f, 0.4f, 16.0f), matDarkCement);
+            CreatePrimitive("ClockTower_Ceiling", PrimitiveType.Cube, zone52.transform,
+                new Vector3(0.0f, roofY + 6.5f, 80.0f), new Vector3(24.0f, 0.4f, 16.0f), matAgedBrick);
+            CreateWall("ClockTower_Wall_West", zone52.transform,
+                new Vector3(-12.0f, roofY + 3.25f, 80.0f), new Vector3(0.5f, 6.5f, 16.0f), matAgedBrick);
+            CreateWall("ClockTower_Wall_East", zone52.transform,
+                new Vector3(12.0f, roofY + 3.25f, 80.0f), new Vector3(0.5f, 6.5f, 16.0f), matAgedBrick);
+
+            // Muro Norte (Z = 88.0m) con paso hacia el puente de la Pasarela Superior (Zona 35)
+            CreateWall("ClockTower_Wall_North_W", zone52.transform,
+                new Vector3(-7.25f, roofY + 3.25f, 88.0f), new Vector3(9.5f, 6.5f, 0.5f), matAgedBrick);
+            CreateWall("ClockTower_Wall_North_E", zone52.transform,
+                new Vector3(7.25f, roofY + 3.25f, 88.0f), new Vector3(9.5f, 6.5f, 0.5f), matAgedBrick);
+            CreateArchitecturalDoor("Door_ClockTower_To_TheatreCatwalk", zone52.transform,
+                new Vector3(0.0f, roofY, 88.0f), Quaternion.identity,
+                2.0f, 3.2f, 6.5f, 0.5f, false, "",
+                "PASARELA SUPERIOR DEL GRAN TEATRO (ZONA 35)", "", matCatwalkSteel, matGold, matAgedBrick);
+
+            // Gran maquinaria de bronce del reloj maestro detenido a las 20:15 (SECRETO ZONA 52)
+            GameObject clockGearMaster = CreatePrimitive("Engranaje_Maestro_Reloj_Torre_Z52", PrimitiveType.Cylinder, zone52.transform,
+                new Vector3(0.0f, roofY + 2.5f, 81.5f), new Vector3(3.2f, 0.35f, 3.2f), matGold);
+            clockGearMaster.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            GameObject jammedWedge = DecoPiece("Cuña_Hierro_Sabotaje_Reloj_2015", PrimitiveType.Cube, clockGearMaster.transform,
+                new Vector3(1.2f, 0.0f, 0.8f), new Vector3(0.35f, 0.55f, 0.35f), matIron);
+            AcademyExpansionAnomalyController clockCtrl = clockGearMaster.AddComponent<AcademyExpansionAnomalyController>();
+            clockCtrl.Configure(ExpansionNodeType.ClockTowerJammedGearSecret, clockGearMaster.transform);
+            EditorUtility.SetDirty(clockCtrl);
+
+            // --------------------------------------------------------------------
+            // BLOQUE B: RED SUBTERRÁNEA COMPLETA (Y = -3.20m, ZONAS 53 A 56)
+            // Conectada al Sótano de Mantenimiento (Zona 41) en X = 16.0m, Z = -21.5m
+            // --------------------------------------------------------------------
+            GameObject blockSubterranean = new GameObject("Section12_Subterranean_Zones_53_To_56");
+            blockSubterranean.transform.parent = rootEnv;
+            float subFloorY = -3.2f;
+            float subVaultH = 4.2f;
+
+            // ZONA 53: Sala de Calderas y Generadores Eléctricos (X: -15.0m a +16.0m, Z: -34.0m a -14.0m, Y = -3.20m)
+            GameObject zone53 = new GameObject("53_Boiler_Room_And_Electrical_Generators");
+            zone53.transform.parent = blockSubterranean.transform;
+
+            CreatePrimitive("Boiler_Floor", PrimitiveType.Cube, zone53.transform,
+                new Vector3(0.5f, subFloorY - 0.2f, -24.0f), new Vector3(31.0f, 0.4f, 20.0f), matDarkCement);
+            CreatePrimitive("Boiler_Ceiling", PrimitiveType.Cube, zone53.transform,
+                new Vector3(0.5f, subFloorY + subVaultH, -24.0f), new Vector3(31.0f, 0.4f, 20.0f), matAgedBrick);
+            CreateWall("Boiler_Wall_South", zone53.transform,
+                new Vector3(0.5f, subFloorY + 2.1f, -34.0f), new Vector3(31.0f, subVaultH, 0.5f), matAgedBrick);
+            CreateWall("Boiler_Wall_North_W", zone53.transform,
+                new Vector3(-8.5f, subFloorY + 2.1f, -14.0f), new Vector3(13.0f, subVaultH, 0.5f), matAgedBrick);
+            CreateWall("Boiler_Wall_North_E", zone53.transform,
+                new Vector3(9.5f, subFloorY + 2.1f, -14.0f), new Vector3(13.0f, subVaultH, 0.5f), matAgedBrick);
+
+            // Puerta Norte hacia la Cripta Fundacional (Zona 56)
+            CreateArchitecturalDoor("Door_Boiler_To_AncientCrypt", zone53.transform,
+                new Vector3(0.5f, subFloorY, -14.0f), Quaternion.identity,
+                2.0f, 3.2f, subVaultH, 0.5f, false, "",
+                "CRIPTA Y CIMIENTOS ANTIGUOS DEL SIGLO XVIII (ZONA 56)", "", matIron, matGold, matAgedBrick);
+
+            // Puerta Oeste hacia la Lavandería Subterránea (Zona 54) en X = -15.0m, Z = -24.0m
+            CreateWall("Boiler_Wall_West_S", zone53.transform,
+                new Vector3(-15.0f, subFloorY + 2.1f, -29.5f), new Vector3(0.5f, subVaultH, 9.0f), matAgedBrick);
+            CreateWall("Boiler_Wall_West_N", zone53.transform,
+                new Vector3(-15.0f, subFloorY + 2.1f, -18.5f), new Vector3(0.5f, subVaultH, 9.0f), matAgedBrick);
+            CreateArchitecturalDoor("Door_Boiler_To_Laundry", zone53.transform,
+                new Vector3(-15.0f, subFloorY, -24.0f), Quaternion.Euler(0f, 90f, 0f),
+                2.0f, 3.2f, subVaultH, 0.5f, false, "",
+                "LAVANDERÍA SUBTERRÁNEA Y MONTACARGAS (ZONA 54)", "", matIron, matGold, matAgedBrick);
+
+            // Batería de 3 grandes calderas cilíndricas de carbón remachadas
+            GameObject boiler3Door = null;
+            for (int b = 0; b < 3; b++)
+            {
+                float bx = -8.0f + b * 8.5f;
+                CreatePrimitive($"Caldera_Cilindro_Remachado_{b + 1}", PrimitiveType.Cylinder, zone53.transform,
+                    new Vector3(bx, subFloorY + 1.8f, -28.5f), new Vector3(3.2f, 1.8f, 3.2f), matBoilerTank);
+                GameObject door = CreatePrimitive($"Puerta_Cenicero_Caldera_{b + 1}", PrimitiveType.Cube, zone53.transform,
+                    new Vector3(bx, subFloorY + 0.65f, -26.8f), new Vector3(1.1f, 0.85f, 0.25f), matIron);
+                if (b == 2) boiler3Door = door;
+            }
+
+            // SECRETO ZONA 53: La Caldera N.º 3 con restos del tutú incinerado y frascos de sedante
+            AcademyExpansionAnomalyController boilerCtrl = boiler3Door.AddComponent<AcademyExpansionAnomalyController>();
+            boilerCtrl.Configure(ExpansionNodeType.BoilerIncinerationFurnaceSecret, boiler3Door.transform);
+            EditorUtility.SetDirty(boilerCtrl);
+
+            // ZONA 54: Lavandería Industrial Subterránea y Pozo del Montacargas (X: -65.0m a -15.0m, Z: 18.0m a 36.0m, Y = -3.20m)
+            // Conecta en la vertical con el Oficio de Comedor (Zona 47 en X = -60.8m, Z = 29.3m)
+            GameObject zone54 = new GameObject("54_Subterranean_Laundry_And_Dumbwaiter");
+            zone54.transform.parent = blockSubterranean.transform;
+
+            // Galería conector subterránea de X: -15m a -38m, Z: -26m a 20m
+            CreatePrimitive("Laundry_Tunnel_Floor", PrimitiveType.Cube, zone54.transform,
+                new Vector3(-26.5f, subFloorY - 0.2f, -3.0f), new Vector3(23.0f, 0.4f, 44.0f), matDarkCement);
+            CreatePrimitive("Laundry_Tunnel_Ceiling", PrimitiveType.Cube, zone54.transform,
+                new Vector3(-26.5f, subFloorY + subVaultH, -3.0f), new Vector3(23.0f, 0.4f, 44.0f), matAgedBrick);
+            // Nave principal de lavado (X: -65..-38, Z: 18..36)
+            CreatePrimitive("Laundry_Main_Floor", PrimitiveType.Cube, zone54.transform,
+                new Vector3(-51.5f, subFloorY - 0.2f, 27.0f), new Vector3(27.0f, 0.4f, 18.0f), matDarkCement);
+            CreatePrimitive("Laundry_Main_Ceiling", PrimitiveType.Cube, zone54.transform,
+                new Vector3(-51.5f, subFloorY + subVaultH, 27.0f), new Vector3(27.0f, 0.4f, 18.0f), matAgedBrick);
+            CreateWall("Laundry_Wall_West", zone54.transform,
+                new Vector3(-65.0f, subFloorY + 2.1f, 27.0f), new Vector3(0.5f, subVaultH, 18.0f), matAgedBrick);
+            CreateWall("Laundry_Wall_North", zone54.transform,
+                new Vector3(-51.5f, subFloorY + 2.1f, 36.0f), new Vector3(27.0f, subVaultH, 0.5f), matAgedBrick);
+
+            // Pozo y Terminal Inferior del Montacargas (SECRETO ZONA 54)
+            GameObject dumbwaiterShaft = CreatePrimitive("Pozo_Montacargas_Subterraneo_Terminal_Z54", PrimitiveType.Cube, zone54.transform,
+                new Vector3(-60.8f, subFloorY + 1.85f, 29.3f), new Vector3(1.8f, 3.7f, 1.6f), matIron);
+            DecoPiece("Caja_Montacargas_Inferior", PrimitiveType.Cube, dumbwaiterShaft.transform,
+                new Vector3(0f, -0.4f, 0f), new Vector3(1.4f, 1.4f, 1.2f), matWoodArchive);
+            AcademyExpansionAnomalyController laundryCtrl = dumbwaiterShaft.AddComponent<AcademyExpansionAnomalyController>();
+            laundryCtrl.Configure(ExpansionNodeType.SubterraneanLaundryDumbwaiterSecret);
+            EditorUtility.SetDirty(laundryCtrl);
+
+            // ZONA 56: Cripta y Cimientos del Siglo XVIII (X: -15.0m a +15.0m, Z: -14.0m a 60.0m, Y = -3.20m)
+            // Galería central abovedada que cruza bajo toda la academia
+            GameObject zone56 = new GameObject("56_Ancient_Crypt_And_Founders_Vault");
+            zone56.transform.parent = blockSubterranean.transform;
+
+            CreatePrimitive("Crypt_Floor", PrimitiveType.Cube, zone56.transform,
+                new Vector3(0.0f, subFloorY - 0.2f, 23.0f), new Vector3(8.0f, 0.4f, 74.0f), matStoneWall);
+            CreatePrimitive("Crypt_Vault_Ceiling", PrimitiveType.Cube, zone56.transform,
+                new Vector3(0.0f, subFloorY + subVaultH, 23.0f), new Vector3(8.0f, 0.4f, 74.0f), matAgedBrick);
+            CreateWall("Crypt_Wall_West", zone56.transform,
+                new Vector3(-4.0f, subFloorY + 2.1f, 23.0f), new Vector3(0.5f, subVaultH, 74.0f), matStoneWall);
+            CreateWall("Crypt_Wall_East", zone56.transform,
+                new Vector3(4.0f, subFloorY + 2.1f, 23.0f), new Vector3(0.5f, subVaultH, 74.0f), matStoneWall);
+
+            // Altar del siglo XVIII y Lápida Fundacional en el centro de la cripta (SECRETO ZONA 56)
+            GameObject cryptAltar = CreatePrimitive("Altar_Secular_Cripta_Fundacional_Z56", PrimitiveType.Cube, zone56.transform,
+                new Vector3(0.0f, subFloorY + 0.65f, 23.0f), new Vector3(2.4f, 1.3f, 1.6f), matStoneWall);
+            DecoPiece("Lapida_Fundacional_1768", PrimitiveType.Cube, cryptAltar.transform,
+                new Vector3(0.0f, 0.55f, 0.0f), new Vector3(1.9f, 0.15f, 1.2f), matMarble);
+            AcademyExpansionAnomalyController cryptCtrl = cryptAltar.AddComponent<AcademyExpansionAnomalyController>();
+            cryptCtrl.Configure(ExpansionNodeType.AncientCryptFoundersPassageSecret);
+            EditorUtility.SetDirty(cryptCtrl);
+
+            // Puerta Norte de la Cripta hacia el Foso Bajo el Escenario (Zona 55) en Z = 60.0m
+            CreateArchitecturalDoor("Door_Crypt_To_Understage", zone56.transform,
+                new Vector3(0.0f, subFloorY, 60.0f), Quaternion.identity,
+                2.0f, 3.2f, subVaultH, 0.5f, false, "",
+                "FOSO BAJO EL ESCENARIO — UNDERSTAGE (ZONA 55)", "", matIron, matGold, matStoneWall);
+
+            // ZONA 55: Foso Bajo el Escenario (Understage y Trampilla del Cisne) (X: -22.0m a +10.0m, Z: 60.0m a 108.0m, Y = -3.20m)
+            // Justo debajo del Escenario Principal (Zona 32 en Y = 2.4m)
+            GameObject zone55 = new GameObject("55_Understage_Pit_And_Trapdoor");
+            zone55.transform.parent = blockSubterranean.transform;
+
+            CreatePrimitive("Understage_Floor", PrimitiveType.Cube, zone55.transform,
+                new Vector3(-6.0f, subFloorY - 0.2f, 84.0f), new Vector3(32.0f, 0.4f, 48.0f), matDarkCement);
+            CreatePrimitive("Understage_Ceiling", PrimitiveType.Cube, zone55.transform,
+                new Vector3(-6.0f, subFloorY + 5.4f, 84.0f), new Vector3(32.0f, 0.4f, 48.0f), matTheatreDarkWood);
+            CreateWall("Understage_Wall_West", zone55.transform,
+                new Vector3(-22.0f, subFloorY + 2.7f, 84.0f), new Vector3(0.5f, 5.4f, 48.0f), matAgedBrick);
+            CreateWall("Understage_Wall_North", zone55.transform,
+                new Vector3(-6.0f, subFloorY + 2.7f, 108.0f), new Vector3(32.0f, 5.4f, 0.5f), matAgedBrick);
+
+            // Conexión Este (X = 10.0m, Z = 100.0m) hacia la Zona Secreta B-00 (Zonas 36 a 39)
+            CreateWall("Understage_Wall_East_S", zone55.transform,
+                new Vector3(10.0f, subFloorY + 2.7f, 78.0f), new Vector3(0.5f, 5.4f, 36.0f), matAgedBrick);
+            CreateWall("Understage_Wall_East_N", zone55.transform,
+                new Vector3(10.0f, subFloorY + 2.7f, 104.5f), new Vector3(0.5f, 5.4f, 7.0f), matAgedBrick);
+            CreateArchitecturalDoor("Door_Understage_To_SecretVaultB00", zone55.transform,
+                new Vector3(10.0f, subFloorY, 100.0f), Quaternion.Euler(0f, 90f, 0f),
+                2.0f, 3.2f, 5.4f, 0.5f, false, "",
+                "BÓVEDA ESTRUCTURAL B-00 Y CÁMARA TRAS EL ESCENARIO (SECCIÓN 8)", "", matIron, matGold, matAgedBrick);
+
+            // Bosque de puntales de madera bajo las tablas del escenario
+            for (int px = -18; px <= 6; px += 6)
+            {
+                for (int pz = 66; pz <= 102; pz += 9)
+                {
+                    DecoPiece($"Puntal_Madera_Understage_{px}_{pz}", PrimitiveType.Cube, zone55.transform,
+                        new Vector3(px, subFloorY + 2.7f, pz), new Vector3(0.35f, 5.4f, 0.35f), matWoodArchive);
+                }
+            }
+
+            // Mecanismo inferior de la Trampilla de Apariciones (SECRETO ZONA 55)
+            GameObject trapdoorMechanism = CreatePrimitive("Mecanismo_Trampilla_Escotillon_Z55", PrimitiveType.Cube, zone55.transform,
+                new Vector3(-8.0f, subFloorY + 3.8f, 100.0f), new Vector3(2.6f, 0.45f, 2.6f), matIron);
+            DecoPiece("Palanca_Cerrojo_Saboteado_Z55", PrimitiveType.Cylinder, trapdoorMechanism.transform,
+                new Vector3(0.8f, -0.6f, 0.0f), new Vector3(0.12f, 0.9f, 0.12f), matGold);
+            AcademyExpansionAnomalyController understageCtrl = trapdoorMechanism.AddComponent<AcademyExpansionAnomalyController>();
+            understageCtrl.Configure(ExpansionNodeType.UnderstageTrapdoorMechanismSecret, trapdoorMechanism.transform);
+            EditorUtility.SetDirty(understageCtrl);
+
+            // --------------------------------------------------------------------
+            // BLOQUE C: RECINTO EXTERIOR TRASERO Y PARQUE (Y = 0.0m a 2.4m, ZONAS 57 A 59)
+            // Conectado al Taller de Zapatillas (Zona 46) en X = -50.0m, Z = 98.0m
+            // --------------------------------------------------------------------
+            GameObject blockExteriors = new GameObject("Section12_Exteriors_Zones_57_To_59");
+            blockExteriors.transform.parent = rootEnv;
+
+            // ZONA 57: Cochera de Carruajes y Patio de Carga Norte (X: -65.0m a -30.0m, Z: 98.0m a 125.0m, Y = 0.0m)
+            GameObject zone57 = new GameObject("57_Carriage_House_And_North_Courtyard");
+            zone57.transform.parent = blockExteriors.transform;
+
+            CreatePrimitive("Carriage_Ground", PrimitiveType.Cube, zone57.transform,
+                new Vector3(-47.5f, -0.2f, 111.5f), new Vector3(35.0f, 0.4f, 27.0f), matCobble);
+            CreateWall("Carriage_Wall_West", zone57.transform,
+                new Vector3(-65.0f, 2.5f, 111.5f), new Vector3(0.6f, 5.0f, 27.0f), matStoneWall);
+            CreateWall("Carriage_Wall_North", zone57.transform,
+                new Vector3(-47.5f, 2.5f, 125.0f), new Vector3(35.0f, 5.0f, 0.6f), matStoneWall);
+
+            // Carruaje negro de gala histórico
+            GameObject carriageObj = CreatePrimitive("Carruaje_Gala_Negro_Historico", PrimitiveType.Cube, zone57.transform,
+                new Vector3(-55.0f, 1.4f, 112.0f), new Vector3(2.8f, 2.4f, 4.8f), matLeather);
+            for (int w = 0; w < 4; w++)
+            {
+                float wx = (w % 2 == 0) ? -56.5f : -53.5f;
+                float wz = (w < 2) ? 110.2f : 113.8f;
+                DecoPiece($"Rueda_Carruaje_{w + 1}", PrimitiveType.Cylinder, zone57.transform,
+                    new Vector3(wx, 0.6f, wz), new Vector3(1.2f, 0.14f, 1.2f), matIron).transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            }
+
+            // SECRETO ZONA 57: El baúl confiscado con billetes hacia Viena a nombre de Elena y Mara
+            GameObject carriageTrunk = CreatePrimitive("Baul_Viaje_Confiscado_Elena_Z57", PrimitiveType.Cube, zone57.transform,
+                new Vector3(-58.5f, 0.45f, 112.0f), new Vector3(0.85f, 0.65f, 1.4f), matWoodArchive);
+            AcademyExpansionAnomalyController carriageCtrl = carriageTrunk.AddComponent<AcademyExpansionAnomalyController>();
+            carriageCtrl.Configure(ExpansionNodeType.CarriageHouseConfiscatedTrunkSecret);
+            EditorUtility.SetDirty(carriageCtrl);
+
+            // ZONA 58: Pabellón del Guarda y Centralita Telefónica Exterior (X: -65.0m a -48.0m, Z: 125.0m a 145.0m, Y = 0.0m)
+            GameObject zone58 = new GameObject("58_Gatehouse_And_Exterior_Switchboard");
+            zone58.transform.parent = blockExteriors.transform;
+
+            CreatePrimitive("Gatehouse_Floor", PrimitiveType.Cube, zone58.transform,
+                new Vector3(-56.5f, -0.2f, 135.0f), new Vector3(17.0f, 0.4f, 20.0f), matCobble);
+            CreatePrimitive("Gatehouse_Roof", PrimitiveType.Cube, zone58.transform,
+                new Vector3(-56.5f, 4.2f, 135.0f), new Vector3(17.0f, 0.4f, 20.0f), matStoneWall);
+            CreateWall("Gatehouse_Wall_West", zone58.transform,
+                new Vector3(-65.0f, 2.0f, 135.0f), new Vector3(0.5f, 4.0f, 20.0f), matStoneWall);
+            CreateWall("Gatehouse_Wall_North", zone58.transform,
+                new Vector3(-56.5f, 2.0f, 145.0f), new Vector3(17.0f, 4.0f, 0.5f), matStoneWall);
+
+            // Gran verja exterior de salida al bosque
+            CreateWroughtIronGate("Verja_Hierro_Salida_Exterior_Z58", zone58.transform,
+                new Vector3(-56.5f, 0.0f, 145.0f), 5.5f, 4.2f, matIron, false);
+
+            // Centralita telefónica de clavijas con cables cortados (SECRETO ZONA 58)
+            GameObject switchboardObj = CreatePrimitive("Centralita_Telefonica_Cables_Cortados_Z58", PrimitiveType.Cube, zone58.transform,
+                new Vector3(-62.0f, 1.25f, 136.0f), new Vector3(0.85f, 2.2f, 2.2f), matMahogany);
+            DecoPiece("Cables_Cobre_Cortados_Centralita", PrimitiveType.Cylinder, switchboardObj.transform,
+                new Vector3(0.35f, -0.2f, 0.0f), new Vector3(0.12f, 0.4f, 0.6f), matCopperPipe);
+            AcademyExpansionAnomalyController gatehouseCtrl = switchboardObj.AddComponent<AcademyExpansionAnomalyController>();
+            gatehouseCtrl.Configure(ExpansionNodeType.GatehouseCutSwitchboardSecret);
+            EditorUtility.SetDirty(gatehouseCtrl);
+
+            // ZONA 59: Estanque Exterior Helado y Quiosco de Música del Parque (X: 30.0m a 85.0m, Z: 98.0m a 145.0m, Y = 0.0m)
+            // Justo al norte del Jardín de Invierno
+            GameObject zone59 = new GameObject("59_Frozen_Swan_Pond_And_Park_Gazebo");
+            zone59.transform.parent = blockExteriors.transform;
+
+            CreatePrimitive("Park_Ground", PrimitiveType.Cube, zone59.transform,
+                new Vector3(57.5f, -0.25f, 121.5f), new Vector3(55.0f, 0.4f, 47.0f), matCobble);
+
+            // Gran estanque helado (espejo exterior del Lago de las Sombras)
+            CreatePrimitive("Estanque_Cisnes_Agua_Helada", PrimitiveType.Cube, zone59.transform,
+                new Vector3(57.5f, -0.1f, 121.5f), new Vector3(42.0f, 0.15f, 32.0f), matPuddle);
+            for (int r = 0; r < 4; r++)
+            {
+                // r = 0/1 -> lados Este/Oeste (a lo largo de Z); r = 2/3 -> lados Norte/Sur (a lo largo de X, girados 90°)
+                bool alongX = r >= 2;
+                float side = (r % 2 == 0) ? 1f : -1f;
+                Vector3 balPos = alongX
+                    ? new Vector3(57.5f, 0.0f, 121.5f + side * 17.0f)
+                    : new Vector3(57.5f + side * 22.0f, 0.0f, 121.5f);
+                float balLen = alongX ? 42.0f : 32.0f;
+                string balName = $"Balustrada_Estanque_{r + 1}";
+                CreateArchitecturalBalustrade(balName, zone59.transform, balPos, balLen, matFacade, matStoneWall);
+                if (alongX)
+                {
+                    Transform balT = zone59.transform.Find(balName);
+                    if (balT != null) balT.rotation = Quaternion.Euler(0f, 90f, 0f);
+                }
+            }
+
+            // Quiosco de música / Templete de piedra en el centro del estanque
+            GameObject gazeboObj = CreatePrimitive("Templete_Quiosco_Musica_Estanque", PrimitiveType.Cylinder, zone59.transform,
+                new Vector3(57.5f, 0.4f, 121.5f), new Vector3(8.5f, 0.8f, 8.5f), matStoneWall);
+            for (int c = 0; c < 6; c++)
+            {
+                float ang = c * 60f * Mathf.Deg2Rad;
+                Vector3 colPos = new Vector3(57.5f + Mathf.Cos(ang) * 3.6f, 0.8f, 121.5f + Mathf.Sin(ang) * 3.6f);
+                CreateClassicalColumn($"Columna_Quiosco_{c + 1}", zone59.transform, colPos, 4.2f, 0.55f, matFacade);
+            }
+            CreatePrimitive("Cupula_Quiosco_Musica", PrimitiveType.Sphere, zone59.transform,
+                new Vector3(57.5f, 5.4f, 121.5f), new Vector3(8.8f, 2.5f, 8.8f), matFacade);
+
+            // SECRETO ZONA 59: El estuche sumergido en el agua helada con el cilindro de cera original y la carta de Mara
+            GameObject pondSecretTrigger = CreatePrimitive("Estuche_Grabacion_Sumergido_Estanque_Z59", PrimitiveType.Cube, zone59.transform,
+                new Vector3(57.5f, 0.85f, 118.0f), new Vector3(0.65f, 0.18f, 0.42f), matLeather);
+            AcademyExpansionAnomalyController pondCtrl = pondSecretTrigger.AddComponent<AcademyExpansionAnomalyController>();
+            pondCtrl.Configure(ExpansionNodeType.FrozenSwanPondGazeboSecret);
+            EditorUtility.SetDirty(pondCtrl);
         }
 
         #region Métodos de Creación PBR, Muebles y Narrativa

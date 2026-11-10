@@ -33,14 +33,29 @@ namespace UltimoActo.Interaction
         private Quaternion rightOpenRot;
         private Coroutine animateCoroutine;
 
+        // Sellado por el sistema de noches (NightManager): independiente de las llaves
+        private bool nightLocked;
+        private string nightLockReason = string.Empty;
+
         public string Id => id;
         public bool IsOpen => isOpen;
         public bool IsLocked => isLocked;
+        public bool IsNightLocked => nightLocked;
+
+        public void SetNightLock(bool locked, string reason)
+        {
+            nightLocked = locked;
+            nightLockReason = reason ?? string.Empty;
+        }
 
         public string Prompt
         {
             get
             {
+                if (nightLocked)
+                {
+                    return $"[E] {nightLockReason}";
+                }
                 if (isLocked)
                 {
                     if (!string.IsNullOrEmpty(lockedDescription))
@@ -96,6 +111,12 @@ namespace UltimoActo.Interaction
 
         public void Interact(GameObject player)
         {
+            if (nightLocked)
+            {
+                if (NightManager.Instance != null) NightManager.Instance.ShowToast(nightLockReason, 3.0f);
+                return;
+            }
+
             if (isLocked)
             {
                 var inventory = player.GetComponent<SimpleInventory>();

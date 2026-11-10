@@ -48,9 +48,9 @@ namespace UltimoActo.UI
         private bool isExpanded = false;
         private bool isGuideVisible = true;
 
-        // Límites del mundo representados en el plano (X: -42 a +48, Z: -38 a +154)
-        private const float WorldMinX = -42f;
-        private const float WorldMaxX = 48f;
+        // Límites del mundo representados en el plano (X: -68 a +96, Z: -38 a +154)
+        private const float WorldMinX = -68f;
+        private const float WorldMaxX = 96f;
         private const float WorldMinZ = -38f;
         private const float WorldMaxZ = 154f;
 
@@ -233,6 +233,55 @@ namespace UltimoActo.UI
             AddRoom("z37", "37. Depósito", "37. Depósito Clausurado Subterráneo (Sección 8)", 29f, 114.2f, 13f, 12.3f, colSec8);
             AddRoom("z38", "38. Arch. Prohibidos", "38. Sala de Archivos Prohibidos (Sección 8)", 16f, 126.5f, 26f, 12f, colSec8);
             AddRoom("z39", "39. Cám. Escenario", "39. Cámara tras el Escenario — La Verdad Oculta (Sección 8)", 6f, 98.5f, 4.6f, 8.5f, colSec8);
+
+            // Sección 9: Jardín de Invierno (Zona 40)
+            Color colSec9 = new Color(0.18f, 0.33f, 0.22f, 0.90f);
+            AddRoom("z40", "40. JARDÍN DE INVIERNO", "40. Jardín de Invierno — Gran Invernadero Clásico (Sección 9)", 45f, 22f, 48f, 70f, colSec9);
+
+            // Sección 10: Sótano de Mantenimiento, Terraza y Azotea, Enfermería Antigua y Sala Conmemorativa (Zonas 41 a 44)
+            Color colSec10Base = new Color(0.26f, 0.24f, 0.20f, 0.90f);
+            Color colSec10Wing = new Color(0.24f, 0.36f, 0.38f, 0.90f);
+            Color colSec10Memorial = new Color(0.38f, 0.24f, 0.28f, 0.90f);
+            AddRoom("z41", "41. SÓTANO MANTENIMIENTO", "41. Sótano de Mantenimiento — Tuberías y Depósitos (Nivel Subterráneo)", 16f, -34f, 38f, 20f, colSec10Base);
+            AddRoom("z41_stair", "Esc. Sótano", "41. Escalera Técnica al Sótano de Mantenimiento", 16f, -14f, 24f, 14f, colSec10Base);
+            AddRoom("z42_hub", "42. Esc. Azotea", "Torreón del Ala Suroeste y Escalera a la Terraza y Azotea (Zona 42)", -25f, -4f, 10.5f, 16f, colSec10Wing);
+            AddRoom("z43", "43. ENFERMERÍA", "43. Enfermería Antigua — Camillas y Registros Clínicos", -42f, -6f, 17f, 18f, colSec10Wing);
+            AddRoom("z44", "44. SALA CONMEMORATIVA", "44. Sala Conmemorativa — Placas y Memoria de Alumnas", -38f, -22f, 23.5f, 18f, colSec10Memorial);
+
+            // Sección 11: Gran Ala Occidental de Residencia y Talleres (Zonas 45 a 48)
+            Color colSec11Dorm = new Color(0.28f, 0.26f, 0.38f, 0.90f);
+            Color colSec11Work = new Color(0.36f, 0.26f, 0.20f, 0.90f);
+            Color colSec11Dine = new Color(0.34f, 0.28f, 0.18f, 0.90f);
+            Color colSec11Isadora = new Color(0.42f, 0.16f, 0.26f, 0.90f);
+            AddRoom("z48_spy", "Celosía", "48. Galería de la Celosía de Vigilancia de Isadora Vale", -62f, 6f, 20f, 6f, colSec11Isadora);
+            AddRoom("z48", "48. ESTANCIA ISADORA", "48. Estancia Privada de Isadora Vale y Celosía de Vigilancia", -62f, 12f, 24f, 16f, colSec11Isadora);
+            AddRoom("z47_gal", "Gal. Patronato", "47. Galería de Enlace al Salón del Patronato", -38f, 44f, 18f, 6f, colSec11Dine);
+            AddRoom("z47", "47. COMEDOR Y PATRONATO", "47. Comedor Antiguo y Salón del Patronato", -62f, 28f, 24f, 26f, colSec11Dine);
+            AddRoom("z45", "45. DORMITORIO INTERNAS", "45. Dormitorio Común de Internas", -62f, 54f, 24f, 24f, colSec11Dorm);
+            AddRoom("z46", "46. TALLER Y TINTORERÍA", "46. Taller de Zapatillas y Tintorería Escénica", -62f, 78f, 24f, 20f, colSec11Work);
+            AddRoom("z46_east", "Patronaje", "46. Nave Este de Patronaje Escénico", -38f, 80f, 10f, 18f, colSec11Work);
+
+            // Sección 12: Planta Alta, Red Subterránea y Exteriores Traseros (Zonas 49 a 59)
+            Color colSec12Upper = new Color(0.30f, 0.38f, 0.48f, 0.90f);
+            Color colSec12Sub = new Color(0.24f, 0.20f, 0.28f, 0.90f);
+            Color colSec12Ext = new Color(0.22f, 0.32f, 0.26f, 0.90f);
+
+            // Planta Alta (Y = 7.70m)
+            AddRoom("z49", "49. MEZZANINE", "49. Galería Superior del Vestíbulo (Mezzanine — Nivel Superior)", -11f, 9f, 22f, 22f, colSec12Upper);
+            AddRoom("z50", "50. TEORÍA ESCÉNICA", "50. Aulas de Teoría Escénica y Linterna Mágica (Nivel Superior)", -16f, 31f, 32f, 24f, colSec12Upper);
+            AddRoom("z51", "51. RESIDENCIA PROF.", "51. Residencia de Profesores y del Maestro Viktor Krol (Nivel Superior)", -16f, 55f, 32f, 17f, colSec12Upper);
+            AddRoom("z52", "52. TORRE DEL RELOJ", "52. Desván y Torre del Reloj de la Academia (Nivel Superior)", -12f, 72f, 24f, 16f, colSec12Upper);
+
+            // Red Subterránea (Y = -3.20m)
+            AddRoom("z53", "53. CALDERAS", "53. Sala de Calderas y Generadores Eléctricos (Nivel Subterráneo)", -15f, -34f, 31f, 20f, colSec12Sub);
+            AddRoom("z54", "54. LAVANDERÍA", "54. Lavandería Industrial Subterránea y Montacargas (Nivel Subterráneo)", -65f, 18f, 27f, 18f, colSec12Sub);
+            AddRoom("z56", "56. CRIPTA ANTIGUA", "56. Cripta y Cimientos del Siglo XVIII (Nivel Subterráneo)", -4f, -14f, 8f, 74f, colSec12Sub);
+            AddRoom("z55", "55. UNDERSTAGE", "55. Foso Bajo el Escenario — Understage (Nivel Subterráneo)", -22f, 60f, 32f, 48f, colSec12Sub);
+
+            // Exteriores Traseros (Y = 0.0m a 2.4m)
+            AddRoom("z57", "57. COCHERA", "57. Cochera de Carruajes y Patio de Carga Norte (Exterior)", -65f, 98f, 35f, 27f, colSec12Ext);
+            AddRoom("z58", "58. PABELLÓN GUARDA", "58. Pabellón del Guarda y Centralita Exterior (Exterior)", -65f, 125f, 17f, 20f, colSec12Ext);
+            AddRoom("z59", "59. ESTANQUE CISNES", "59. Estanque Exterior Helado y Quiosco del Parque (Exterior)", 30f, 98f, 55f, 47f, colSec12Ext);
         }
 
         private void AddRoom(string id, string shortLabel, string fullName, float xMin, float zMin, float width, float height, Color color)
@@ -345,7 +394,39 @@ namespace UltimoActo.UI
                 new Vector2(29f, 116f),   // Escalera Oculta -> Depósito Clausurado (Zona 37)
                 new Vector2(35.5f, 126.5f),// Depósito Clausurado -> Archivos Prohibidos (Zona 38)
                 new Vector2(16f, 132.5f), // Archivos Prohibidos -> Pasaje a Cámara tras el Escenario (Zona 39)
-                new Vector2(6f, 105.4f)   // Cámara tras el Escenario -> Escenario Principal
+                new Vector2(6f, 105.4f),  // Cámara tras el Escenario -> Escenario Principal
+                new Vector2(45f, 80.5f),  // Pasillo de la Academia -> Jardín de Invierno (Entrada de Madera Oscura y Cristal)
+                new Vector2(45f, 58f),    // Corredor de Mantenimiento -> Jardín de Invierno
+                new Vector2(45f, 34.8f),  // Rampa del Patio Principal -> Jardín de Invierno
+                new Vector2(19f, 0f),     // Lavabos y Duchas -> Escalera Norte del Sótano de Mantenimiento (Zona 41)
+                new Vector2(42f, -12f),   // Sótano de Mantenimiento -> Escalera Este hacia Callejón de Servicio y Jardín
+                new Vector2(14f, -10f),   // Patio de Entrada -> Paso de Servicio al Sótano y Jardín
+                new Vector2(-22f, 12f),   // Recepción Antigua -> Torreón del Ala Suroeste (Zonas 42, 43 y 44)
+                new Vector2(-17f, 11.5f), // Torreón -> Terraza y Azotea Mirador (Zona 42, Nivel Superior)
+                new Vector2(-25f, 3f),    // Torreón -> Enfermería Antigua (Zona 43)
+                new Vector2(-22.2f, -4f), // Torreón -> Sala Conmemorativa (Zona 44)
+                new Vector2(-42f, 8.5f),  // Enfermería Antigua -> Galería de la Celosía de Vigilancia (Zona 48)
+                new Vector2(-38f, 14.5f), // Oficina de Dirección -> Estancia Privada de Isadora Vale (Zona 48)
+                new Vector2(-50f, 28f),   // Estancia de Isadora Vale -> Comedor Antiguo y Salón del Patronato (Zona 47)
+                new Vector2(-20f, 47f),   // Pasillo de los Retratos -> Galería del Patronato (Zona 47)
+                new Vector2(-38f, 47f),   // Galería del Patronato -> Comedor Antiguo y Salón del Patronato (Zona 47)
+                new Vector2(-50f, 54f),   // Comedor Antiguo -> Dormitorio Común de Internas (Zona 45)
+                new Vector2(-50f, 78f),   // Dormitorio Común -> Taller de Zapatillas y Tintorería Escénica (Zona 46)
+                new Vector2(-28f, 85.5f), // Taller de Zapatillas y Tintorería -> Sala de Mecanismos y Poleas (Zona 30)
+                // Conectores de Sección 12 (Zonas 49 a 59)
+                new Vector2(-11f, 20f),   // Terraza / Azotea -> Mezzanine / Planta Alta (Zona 49)
+                new Vector2(0f, 31f),     // Mezzanine -> Aulas de Teoría Escénica (Zona 50)
+                new Vector2(0f, 55f),     // Aulas de Teoría -> Residencia de Profesores / Maestro Krol (Zona 51)
+                new Vector2(0f, 72f),     // Residencia de Profesores -> Torre del Reloj (Zona 52)
+                new Vector2(0f, 88f),     // Torre del Reloj -> Pasarela Superior del Teatro (Zona 35)
+                new Vector2(16f, -21.5f), // Sótano de Mantenimiento -> Sala de Calderas (Zona 53)
+                new Vector2(-15f, -24f),  // Sala de Calderas -> Lavandería Subterránea (Zona 54)
+                new Vector2(0.5f, -14f),  // Sala de Calderas -> Cripta Fundacional del Siglo XVIII (Zona 56)
+                new Vector2(0f, 60f),     // Cripta Fundacional -> Foso Bajo el Escenario / Understage (Zona 55)
+                new Vector2(10f, 100f),   // Foso Bajo el Escenario -> Bóveda B-00 / Cámara tras el Escenario (Zona 39)
+                new Vector2(-50f, 98f),   // Taller de Zapatillas -> Cochera de Carruajes (Zona 57)
+                new Vector2(-56.5f, 125f),// Cochera de Carruajes -> Pabellón del Guarda y Verja Exterior (Zona 58)
+                new Vector2(30f, 98f)     // Jardín de Invierno / Pasillo -> Estanque Exterior y Quiosco (Zona 59)
             };
 
             foreach (Vector2 dp in doorPositions)
@@ -552,6 +633,50 @@ namespace UltimoActo.UI
                 {
                     activeRoomTitle = r.fullName;
                 }
+            }
+
+            // Detección de nivel vertical para Planta Alta (Y >= 6.0m), Nivel Subterráneo (Y <= -1.0m) y Exteriores
+            if (pPos.y >= 6.0f)
+            {
+                if (new Rect(-13.0f, 7.0f, 26.0f, 25.0f).Contains(pt))
+                    activeRoomTitle = "49. Galería Superior del Vestíbulo (Mezzanine) — Planta Alta";
+                else if (new Rect(-18.0f, 30.0f, 36.0f, 26.0f).Contains(pt))
+                    activeRoomTitle = "50. Aulas de Teoría Escénica y Linterna Mágica — Planta Alta";
+                else if (new Rect(-18.0f, 54.0f, 36.0f, 19.0f).Contains(pt))
+                    activeRoomTitle = "51. Residencia de Profesores y del Maestro Viktor Krol — Planta Alta";
+                else if (new Rect(-14.0f, 71.0f, 28.0f, 18.0f).Contains(pt))
+                    activeRoomTitle = "52. Desván y Torre del Reloj de la Academia — Planta Alta";
+                else if (new Rect(-38.5f, 10.5f, 28.0f, 34.0f).Contains(pt))
+                    activeRoomTitle = "42. Terraza y Azotea Mirador — Nivel Superior";
+                else if (new Rect(-24.0f, 96.0f, 32.0f, 22.0f).Contains(pt))
+                    activeRoomTitle = "35. Pasarela Superior del Teatro — Nivel Superior";
+            }
+            else if (pPos.y <= -1.0f)
+            {
+                if (new Rect(-16.0f, -36.0f, 34.0f, 23.0f).Contains(pt))
+                    activeRoomTitle = "53. Sala de Calderas y Generadores Eléctricos — Nivel Subterráneo";
+                else if (new Rect(-66.0f, -5.0f, 53.0f, 43.0f).Contains(pt))
+                    activeRoomTitle = "54. Lavandería Industrial Subterránea y Montacargas — Nivel Subterráneo";
+                else if (new Rect(-6.0f, -15.0f, 12.0f, 76.0f).Contains(pt))
+                    activeRoomTitle = "56. Cripta y Cimientos del Siglo XVIII — Nivel Subterráneo";
+                else if (new Rect(-24.0f, 59.0f, 36.0f, 50.0f).Contains(pt))
+                    activeRoomTitle = "55. Foso Bajo el Escenario (Understage) — Nivel Subterráneo";
+                else if (new Rect(15.5f, -34.5f, 39.0f, 35.0f).Contains(pt))
+                    activeRoomTitle = "41. Sótano de Mantenimiento — Nivel Subterráneo";
+                else if (new Rect(14.0f, 112.0f, 30.0f, 28.0f).Contains(pt))
+                    activeRoomTitle = "37-38. Bóveda Subterránea B-00 y Archivos Prohibidos";
+            }
+            else if (new Rect(-66.0f, 97.0f, 38.0f, 30.0f).Contains(pt))
+            {
+                activeRoomTitle = "57. Cochera de Carruajes y Patio de Carga Norte — Exterior";
+            }
+            else if (new Rect(-66.0f, 124.0f, 20.0f, 23.0f).Contains(pt))
+            {
+                activeRoomTitle = "58. Pabellón del Guarda y Verja Exterior — Exterior";
+            }
+            else if (new Rect(28.0f, 97.0f, 59.0f, 50.0f).Contains(pt))
+            {
+                activeRoomTitle = "59. Estanque Exterior Helado y Quiosco de Música — Parque";
             }
 
             if (currentZoneTMP != null)

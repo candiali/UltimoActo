@@ -3,6 +3,7 @@ using TMPro;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
+using UltimoActo.Core;
 using UltimoActo.Narrative;
 using UltimoActo.Player;
 
@@ -128,6 +129,12 @@ namespace UltimoActo.UI
             if (closeHintText != null) closeHintText.text = "Presiona [E] o [Esc] para cerrar";
 
             Debug.Log($"<color=cyan>[DocumentUI]</color> Abriendo documento en pantalla: {title}");
+
+            // Sistema de noches: cada documento / secreto leído por primera vez cuenta como evidencia
+            if (NightManager.Instance != null)
+            {
+                NightManager.Instance.RegisterEvidence(title);
+            }
 
             // Pausar rotación de cámara para leer cómodamente
             if (playerCameraLook != null)
