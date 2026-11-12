@@ -87,7 +87,7 @@ namespace UltimoActo.Editor
         private const string ElenaPortraitPath = "Assets/_Project/Textures/Portraits/Elena_Vesper_Portrait.jpg";
         private const string IsadoraPortraitPath = "Assets/_Project/Textures/Portraits/Isadora_Vale_Portrait.jpg";
         private const string TroupePhotoPath = "Assets/_Project/Textures/Portraits/Troupe_1923_Photo.jpg";
-        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1_To_12_V35";
+        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1_To_12_V39";
 
         static Section1SceneBuilder()
         {
@@ -3040,6 +3040,40 @@ namespace UltimoActo.Editor
                 "Por favor, si escuchas pasar páginas en la estantería del fondo cuando la biblioteca está cerrada, no enciendas las luces altas: el aire que sube desde el foso de orquesta mueve los papeles... o eso prefiero creer.”");
 
             // ====================================================================
+            // NOCHE IV · PUZZLE DEL ATRIL DE PARTITURAS (Biblioteca Musical)
+            // ====================================================================
+            CreatePrimitive("Mesa_Restauracion_Partituras_Noche4", PrimitiveType.Cube, zone21.transform,
+                new Vector3(15.0f, vestY + 0.45f, 75.5f), new Vector3(3.4f, 0.9f, 1.1f), matWoodArchive);
+            CreateInteractiveWorldDoc("Doc_Nota_Restauracion_Noche4", zone21.transform,
+                new Vector3(13.2f, vestY + 0.93f, 75.5f), new Vector3(0.40f, 0.04f, 0.30f), matGold,
+                "doc_n4_restoration_note",
+                "Nota del Archivero — Cómo se Restaura una Obra Alterada",
+                "«Para deshacer una falsificación hay que desandarla: se empieza por la versión más reciente, la oficial de octubre de 1924, " +
+                "se sigue con la revisión de septiembre y se termina en el manuscrito original de 1922.\n" +
+                "Los tres volúmenes están sobre la mesa de restauración. Colócalos en ese orden y la estantería devolverá lo que escondió.»");
+            Material matScoreOld = GetOrCreateBasicMaterial("Mat_N4_Score1922", new Color(0.35f, 0.22f, 0.14f), 0.3f, 0f);
+            Material matScoreMid = GetOrCreateBasicMaterial("Mat_N4_Score1924A", new Color(0.20f, 0.30f, 0.22f), 0.3f, 0f);
+            Material matScoreNew = GetOrCreateBasicMaterial("Mat_N4_Score1924B", new Color(0.30f, 0.12f, 0.14f), 0.3f, 0f);
+            BuildSequencePuzzle(zone21.transform, "partituras_noche4", PrimitiveType.Cube, new Vector3(0.45f, 0.10f, 0.34f),
+                new[]
+                {
+                    new Vector3(15.8f, vestY + 0.96f, 75.5f),
+                    new Vector3(16.6f, vestY + 0.96f, 75.5f),
+                    new Vector3(17.4f, vestY + 0.96f, 75.5f)
+                },
+                new[] { "Manuscrito original (1922)", "Revisión de septiembre (1924)", "Versión oficial de octubre (1924)" },
+                new[] { matScoreOld, matScoreMid, matScoreNew },
+                new[] { 2, 1, 0 },
+                new Vector3(14.2f, vestY + 0.93f, 75.5f), new Vector3(0.42f, 0.05f, 0.32f), matYellowedPaper,
+                "doc_n4_elena_water_note",
+                "Nota de Elena — Las Tres Notas del Agua",
+                "Una hoja de pentagrama doblada, con la letra de Elena:\n\n" +
+                "«Mara y yo escondimos el siguiente mensaje donde el agua ya no corre. La fuente seca del Jardín de Invierno guarda tres grifos de cisne: " +
+                "ábrelos como suena la cadencia: el de la izquierda, el de la derecha y, al final, el del centro.»",
+                "Las partituras encajan — la estantería devuelve una nota de Elena.",
+                "Orden incorrecto — la restauración se deshace.");
+
+            // ====================================================================
             // ZONA 22: SALA DEL PIANO (X: 8 a 26, Z: 78 a 92, Y: 2.4m, Altura: 5.6m)
             // ====================================================================
             GameObject zone22 = new GameObject("22_Grand_Piano_Room");
@@ -5593,6 +5627,29 @@ namespace UltimoActo.Editor
             // ====================================================================
             // 8. VEGETACIÓN ABUNDANTE PERO CONTROLADA: ÁRBOLES DE INVERNADERO, HIEDRA, HELECHOS, RAÍCES Y ARBUSTOS
             // ====================================================================
+            // ====================================================================
+            // NOCHE IV · PUZZLE DE LOS TRES GRIFOS DE CISNE (Fuente seca)
+            // ====================================================================
+            BuildSequencePuzzle(zone40.transform, "grifos_noche4", PrimitiveType.Cylinder, new Vector3(0.40f, 0.35f, 0.40f),
+                new[]
+                {
+                    new Vector3(65.2f, gardenY + 0.55f, 58.0f),
+                    new Vector3(69.0f, gardenY + 0.55f, 62.0f),
+                    new Vector3(72.8f, gardenY + 0.55f, 58.0f)
+                },
+                new[] { "Grifo de cisne (izquierda)", "Grifo de cisne (centro)", "Grifo de cisne (derecha)" },
+                new[] { matGold },
+                new[] { 0, 2, 1 },
+                new Vector3(69.0f, gardenY + 0.90f, 58.0f), new Vector3(0.42f, 0.05f, 0.32f), matClothCover,
+                "doc_n4_fountain_ledger",
+                "Papel Impermeabilizado del Fondo de la Fuente — Orden de los Sectores",
+                "Pegado bajo el brocal, protegido con cera:\n\n" +
+                "«Si buscas por qué se apagó el teatro la noche del 14, ve al sótano de mantenimiento y reconecta los sectores como se hacía tras un apagón: " +
+                "primero el AGUA, luego la CALEFACCIÓN, después la ILUMINACIÓN y por último el TEATRO.\n" +
+                "Así lo registró el ingeniero. Así debe volver a quedar.»",
+                "Un chorro de aire sale de la fuente — había un papel impermeabilizado bajo el brocal.",
+                "Los grifos no suenan como la cadencia — se reinicia.");
+
             GameObject vegetationGroup = new GameObject("WinterGarden_Controlled_Vegetation");
             vegetationGroup.transform.parent = zone40.transform;
 
@@ -5930,6 +5987,32 @@ namespace UltimoActo.Editor
                 new Vector3(48.8f, baseFloorY + 1.00f, -24.85f), new Vector3(0.58f, 0.08f, 0.44f), matGold);
             AcademyExpansionAnomalyController secretMaintCtrl = secretMaintLedger.AddComponent<AcademyExpansionAnomalyController>();
             secretMaintCtrl.Configure(ExpansionNodeType.BasementSecretMaintenanceLog);
+
+            // --- NOCHE IV · PUZZLE DE LOS INTERRUPTORES DE SECTOR (Panel de Suministro al Teatro) ---
+            Material matBreakerRed = GetOrCreateBasicMaterial("Mat_N4_BreakerRed", new Color(0.65f, 0.08f, 0.08f), 0.4f, 0.2f);
+            Material matBreakerBlue = GetOrCreateBasicMaterial("Mat_N4_BreakerBlue", new Color(0.10f, 0.25f, 0.65f), 0.4f, 0.2f);
+            Material matBreakerAmber = GetOrCreateBasicMaterial("Mat_N4_BreakerAmber", new Color(0.80f, 0.55f, 0.10f), 0.4f, 0.2f);
+            Material matBreakerGreen = GetOrCreateBasicMaterial("Mat_N4_BreakerGreen", new Color(0.12f, 0.50f, 0.20f), 0.4f, 0.2f);
+            BuildSequencePuzzle(zone41.transform, "sectores_noche4", PrimitiveType.Cube, new Vector3(0.14f, 0.24f, 0.34f),
+                new[]
+                {
+                    new Vector3(52.85f, baseFloorY + 1.0f, -26.2f),
+                    new Vector3(52.85f, baseFloorY + 1.0f, -25.2f),
+                    new Vector3(52.85f, baseFloorY + 1.0f, -24.2f),
+                    new Vector3(52.85f, baseFloorY + 1.0f, -23.2f)
+                },
+                new[] { "Interruptor del Sector 1 — CALEFACCIÓN", "Interruptor del Sector 2 — AGUA", "Interruptor del Sector 3 — TEATRO", "Interruptor del Sector 4 — ILUMINACIÓN" },
+                new[] { matBreakerRed, matBreakerBlue, matBreakerAmber, matBreakerGreen },
+                new[] { 1, 0, 3, 2 },
+                new Vector3(48.8f, baseFloorY + 1.06f, -24.2f), new Vector3(0.45f, 0.04f, 0.34f), matSecretPaper,
+                "doc_n4_theatre_power_report",
+                "Informe del Ingeniero — Consumo no Autorizado del Teatro (14 de octubre)",
+                "El panel suelta un compartimento con un informe:\n\n" +
+                "«A las 20:10 de la noche del estreno, alguien conectó el sector del Teatro sin pasar por mí. " +
+                "La carga fue la de un telón de contrapesos funcionando durante cuatro minutos y un foco de proscenio permanentemente encendido.\n" +
+                "Cuando pregunté a la Directora, me dijo que el estreno no tenía por qué recordarse con tanta precisión. Me despidió esa misma semana.»",
+                "El panel se desbloquea — el ingeniero dejó un informe oculto sobre el consumo del Teatro.",
+                "Reconexión fuera de orden — salta el diferencial. Se reinicia.");
             EditorUtility.SetDirty(secretMaintCtrl);
 
             // Iluminación funcional cálida e industrial del Sótano de Mantenimiento
@@ -6202,6 +6285,52 @@ namespace UltimoActo.Editor
             CreateWall("Infirmary_Consult_Partition_E", zone43.transform,
                 new Vector3(-28.0f, vestY + 2.5f, 5.5f), new Vector3(6.0f, wingH, 0.4f), matWallIvory);
 
+            // --- NOCHE II · PUZZLE DE LA BOTICA: administrar los tres frascos en el orden de la ficha de dosificación ---
+            CreatePrimitive("Botica_Armario_Noche2", PrimitiveType.Cube, zone43.transform,
+                new Vector3(-31.0f, vestY + 1.0f, -5.45f), new Vector3(3.2f, 2.0f, 0.5f), matMahogany);
+            CreatePrimitive("Botica_Repisa_Noche2", PrimitiveType.Cube, zone43.transform,
+                new Vector3(-31.0f, vestY + 1.15f, -5.1f), new Vector3(3.0f, 0.06f, 0.35f), matGold);
+
+            OrderedSequencePuzzle boticaPuzzle = zone43.AddComponent<OrderedSequencePuzzle>();
+            string[] frascoLabels = { "Frasco de Láudano (etiqueta roja)", "Frasco de Valeriana (etiqueta verde)", "Frasco de Cloral (etiqueta azul)" };
+            Color[] frascoColors = { new Color(0.8f, 0.1f, 0.1f), new Color(0.15f, 0.65f, 0.25f), new Color(0.15f, 0.3f, 0.85f) };
+            for (int fr = 0; fr < 3; fr++)
+            {
+                GameObject frasco = CreatePrimitive($"Frasco_Botica_{fr + 1}", PrimitiveType.Cylinder, zone43.transform,
+                    new Vector3(-32.0f + fr * 1.0f, vestY + 1.33f, -5.1f), new Vector3(0.20f, 0.17f, 0.20f), matAmberBottle);
+                Material tint = GetOrCreateBasicMaterial($"Mat_N2_Label_{fr}", frascoColors[fr], 0.4f, 0f);
+                DecoPiece($"Etiqueta_Frasco_{fr + 1}", PrimitiveType.Cylinder, frasco.transform,
+                    new Vector3(0f, 0f, 0f), new Vector3(1.04f, 0.28f, 1.04f), tint);
+                frasco.AddComponent<SequenceNode>().Configure(boticaPuzzle, fr, frascoLabels[fr]);
+            }
+
+            // Recompensa: cajón oculto con el registro clínico real de Elena
+            GameObject boticaReward = new GameObject("Recompensa_Botica_Registro_Clinico");
+            boticaReward.transform.parent = zone43.transform;
+            CreateInteractiveWorldDoc("Doc_Registro_Clinico_Real_Elena", boticaReward.transform,
+                new Vector3(-31.0f, vestY + 1.25f, -4.85f), new Vector3(0.40f, 0.05f, 0.30f), matSecretPaper,
+                "doc_n2_real_clinical_record",
+                "Registro Clínico Real — Elena Vesper (13 de octubre de 1924)",
+                "ENFERMERÍA — ENTRADA RESERVADA:\n\n" +
+                "«Paciente: E. Vesper. Diagnóstico oficial: agotamiento nervioso.\n" +
+                "Diagnóstico real: ninguno. Se administra Valeriana, Láudano y Cloral por orden de Dirección para mantenerla dócil durante los ensayos.\n\n" +
+                "Nota al margen: la paciente pregunta cada noche por qué la dejan sin ver a su hermana.»");
+            boticaPuzzle.Configure("botica_noche2", new[] { 1, 0, 2 }, new[] { boticaReward },
+                "El armario cede — un cajón oculto se abre con el registro clínico real.",
+                "Orden de dosificación incorrecto — los frascos vuelven a su sitio.");
+
+            CreatePrimitive("Escritorio_Enfermera_Hale", PrimitiveType.Cube, zone43.transform,
+                new Vector3(-30.0f, vestY + 0.45f, 8.5f), new Vector3(2.0f, 0.9f, 1.0f), matMahogany);
+            CreateInteractiveWorldDoc("Doc_Ficha_Dosificacion_Noche2", zone43.transform,
+                new Vector3(-30.0f, vestY + 0.94f, 8.5f), new Vector3(0.40f, 0.04f, 0.30f), matGold,
+                "doc_n2_dosage_card",
+                "Ficha de Dosificación Nocturna (Enfermera Hale)",
+                "PROTOCOLO PARA LA PACIENTE DEL ACTO III:\n\n" +
+                "«Primero calmar el pulso: VALERIANA.\n" +
+                "Después dormir el dolor: LÁUDANO.\n" +
+                "Al final, sedar del todo: CLORAL.\n\n" +
+                "Nunca alterar el orden. La Directora lo comprueba cada mañana en la botica de la sala de camillas.»");
+
             // --- SUBÁREA 43A: SALA DE CAMILLAS Y BIOMBOS DE OBSERVACIÓN (X: -42..-32, Z: -6..5.5) ---
             float[] cotZ = { -3.8f, -0.2f, 3.2f };
             for (int c = 0; c < cotZ.Length; c++)
@@ -6450,6 +6579,41 @@ namespace UltimoActo.Editor
             CreateWinterGardenIronBench("Banco_Frente_Muro_De_Placas", zone44.transform,
                 new Vector3(-24.5f, vestY, -19.4f), Quaternion.Euler(0f, 180f, 0f), matIron, matMahogany);
 
+            // --- NOCHE II · PUZZLE DE LAS OFRENDAS: depositar las flores en el orden del Libro de Duelo ---
+            OrderedSequencePuzzle ofrendaPuzzle = zone44.AddComponent<OrderedSequencePuzzle>();
+            string[] ofrendaLabels = { "Ramo de Rosas Secas", "Corona de Laurel", "Flores Negras Marchitas" };
+            Material[] ofrendaMats = { matDryFlowers, matHedge, matShadowFigure };
+            for (int of = 0; of < 3; of++)
+            {
+                float ox = -28.5f + of * 4.0f;
+                CreatePrimitive($"Pedestal_Ofrenda_{of + 1}", PrimitiveType.Cylinder, zone44.transform,
+                    new Vector3(ox, vestY + 0.45f, -14.0f), new Vector3(0.7f, 0.45f, 0.7f), matMarble);
+                GameObject ofr = CreatePrimitive($"Ofrenda_{of + 1}", PrimitiveType.Sphere, zone44.transform,
+                    new Vector3(ox, vestY + 1.05f, -14.0f), new Vector3(0.42f, 0.30f, 0.42f), ofrendaMats[of]);
+                ofr.AddComponent<SequenceNode>().Configure(ofrendaPuzzle, of, ofrendaLabels[of]);
+            }
+            GameObject ofrendaReward = new GameObject("Recompensa_Ofrendas_Lista_Borrada");
+            ofrendaReward.transform.parent = zone44.transform;
+            CreateInteractiveWorldDoc("Doc_Lista_Alumnas_Borradas", ofrendaReward.transform,
+                new Vector3(-24.5f, vestY + 0.12f, -13.0f), new Vector3(0.45f, 0.04f, 0.32f), matSecretPaper,
+                "doc_n2_erased_students_list",
+                "Lista de Alumnas Borradas de la Sala de Honor",
+                "Bajo el pedestal central, un compartimento se abre y deja ver una lista:\n\n" +
+                "«Alumnas retiradas de la memoria pública por orden de Dirección: C. Valmont (1919), N. Volkova (1921), M. Laurent (1922) y E. Vesper (1924).\n" +
+                "Sus placas fueron arrancadas. Sus familias recibieron cartas de 'traslado voluntario'.»");
+            ofrendaPuzzle.Configure("ofrendas_noche2", new[] { 1, 0, 2 }, new[] { ofrendaReward },
+                "Los pedestales encajan — se abre un compartimento con una lista de alumnas borradas.",
+                "Las ofrendas no siguen el orden del duelo — vuelven a su lugar.");
+
+            CreateInteractiveWorldDoc("Doc_Libro_Duelo_Noche2", zone44.transform,
+                new Vector3(-34.5f, vestY + 1.15f, -11.5f), new Vector3(0.40f, 0.05f, 0.30f), matGold,
+                "doc_n2_mourning_book",
+                "Libro de Duelo — Orden de las Ofrendas",
+                "RITUAL DE LA SALA CONMEMORATIVA:\n\n" +
+                "«Primero el laurel, por las que se graduaron.\n" +
+                "Después las rosas, por las solistas.\n" +
+                "Al final las flores negras, por las que nadie nombra.»");
+
             // Iluminación solemne y silenciosa de la Sala Conmemorativa
             CreatePictureSpotlight("Foco_Muro_De_Honor_Y_Placa_Retirada", zone44.transform,
                 new Vector3(-24.5f, vestY + 4.4f, -17.5f), new Vector3(-24.5f, vestY + 2.4f, -21.6f),
@@ -6511,6 +6675,29 @@ namespace UltimoActo.Editor
             // Muro Este entre Z = 26.0m y Z = 28.0m (X = -38.0m, colindante con el extremo sur del Archivo de Expedientes)
             CreateWall("IsadoraSuite_Wall_East_NorthStub", zone48.transform,
                 new Vector3(-38.0f, vestY + 2.5f, 27.0f), new Vector3(0.5f, wingH, 2.0f), matWallIvory);
+
+            // --- NOCHE III · PUZZLE DE LAS COPAS DE CRISTAL (salón privado de Isadora) ---
+            CreatePrimitive("Aparador_Copas_Noche3", PrimitiveType.Cube, zone48.transform,
+                new Vector3(-44.5f, vestY + 0.45f, 22.5f), new Vector3(2.4f, 0.9f, 0.8f), matMahogany);
+            BuildSequencePuzzle(zone48.transform, "copas_noche3", PrimitiveType.Cylinder, new Vector3(0.16f, 0.14f, 0.16f),
+                new[]
+                {
+                    new Vector3(-45.3f, vestY + 1.04f, 22.5f),
+                    new Vector3(-44.5f, vestY + 1.04f, 22.5f),
+                    new Vector3(-43.7f, vestY + 1.04f, 22.5f)
+                },
+                new[] { "Copa de cristal (izquierda)", "Copa de cristal (centro)", "Copa de cristal (derecha)" },
+                new[] { matMirrorGlass },
+                new[] { 2, 0, 1 },
+                new Vector3(-44.5f, vestY + 0.94f, 21.8f), new Vector3(0.42f, 0.05f, 0.32f), matSecretPaper,
+                "doc_n3_isadora_private_diary",
+                "Diario Privado de Isadora Vale",
+                "Del compartimento del aparador:\n\n" +
+                "«Elena no iba a denunciar mi negligencia: iba a denunciar lo que hice después. Si la sustituyo, el teatro la olvida.\n" +
+                "He mandado cerrar las alas una a una. Que la academia misma decida a quién deja pasar.»\n\n" +
+                "Una anotación posterior, con otra letra: «Las puertas se abren solas cada noche, un poco más.»",
+                "El aparador se abre — un diario privado de Isadora estaba escondido tras las copas.",
+                "Las copas tintinean fuera de orden — se reinicia.");
 
             // Muro Norte compartido con 47. Comedor Antiguo y Salón del Patronato (Z = 28.0m, X: -62.0m a -38.0m) con puerta doble en X = -50.0m
             CreateWall("IsadoraSuite_Wall_North_W", zone48.transform,
@@ -6745,6 +6932,20 @@ namespace UltimoActo.Editor
                 new Vector3(-43.0f, vestY + 0.95f, 35.6f), new Vector3(0.10f, 0.14f, 0.10f), matMirrorGlass).transform.localRotation = Quaternion.Euler(0f, 25f, 82f);
             AcademyExpansionAnomalyController patronageCtrl = patronageSecretTrigger.AddComponent<AcademyExpansionAnomalyController>();
             patronageCtrl.Configure(ExpansionNodeType.PatronageDinnerSecretMinutes);
+
+            // --- NOCHE III · CLUE 1: lista de vigilia nocturna del internado (resuelve el puzzle de las almohadas) ---
+            CreatePrimitive("Atril_Lista_Vigilia_Noche3", PrimitiveType.Cube, zone47.transform,
+                new Vector3(-50.0f, vestY + 0.5f, 33.0f), new Vector3(1.2f, 1.0f, 0.8f), matMahogany);
+            CreateInteractiveWorldDoc("Doc_Lista_Vigilia_Noche3", zone47.transform,
+                new Vector3(-50.0f, vestY + 1.05f, 33.0f), new Vector3(0.45f, 0.05f, 0.32f), matGold,
+                "doc_n3_vigil_list",
+                "Lista de Vigilia Nocturna — Dormitorio Común",
+                "REGISTRO DE LA INSPECTORA, OCTUBRE DE 1924:\n\n" +
+                "«Ronda de las 23:00. Comprobar las almohadas en este orden exacto:\n" +
+                "  1.º la cama N.º 3 (la que llora por las noches),\n" +
+                "  2.º la cama N.º 5 (la que sabe demasiado),\n" +
+                "  3.º la cama N.º 1 (la que nunca duerme).\n\n" +
+                "Quien rompa el orden despierta a las demás.»");
             EditorUtility.SetDirty(patronageCtrl);
 
             CreateOrnateLantern("Lampara_Comedor_Refectorio", zone47.transform,
@@ -6787,6 +6988,26 @@ namespace UltimoActo.Editor
 
             // Sub-área 45A: Nave de Camas y Baúles de Internas (2 filas de 5 camas de hierro y madera a cada lado del pasillo central)
             GameObject maraTrunkLid = null;
+
+            // --- NOCHE III · PUZZLE DE LAS ALMOHADAS (camas 1, 3 y 5 de la fila oeste) ---
+            BuildSequencePuzzle(zone45.transform, "almohadas_noche3", PrimitiveType.Cube, new Vector3(0.12f, 0.12f, 0.6f),
+                new[]
+                {
+                    new Vector3(-59.3f, vestY + 0.74f, 57.5f),
+                    new Vector3(-59.3f, vestY + 0.74f, 65.9f),
+                    new Vector3(-59.3f, vestY + 0.74f, 74.3f)
+                },
+                new[] { "Almohada de la cama N.º 1", "Almohada de la cama N.º 3", "Almohada de la cama N.º 5" },
+                new[] { matClothCover },
+                new[] { 1, 2, 0 },
+                new Vector3(-59.45f, vestY + 0.80f, 58.65f), new Vector3(0.42f, 0.04f, 0.32f), matSecretPaper,
+                "doc_n3_boarders_diary",
+                "Diario Colectivo de las Internas",
+                "Bajo la almohada de la cama N.º 1, escrito por turnos por varias manos:\n\n" +
+                "«Isadora nos escucha por las celosías. Por eso hablamos de tinte y no de nombres.\n" +
+                "Si quieres saber qué le dieron a Elena, busca la receta del Cisne Negro en el banco del zapatero: primero el azabache, luego el carmín, al final la plata.»",
+                "Las almohadas ceden — había un diario escondido bajo la cama N.º 1.",
+                "Has roto el orden de la ronda — las internas se agitan. Se reinicia.");
             for (int row = 0; row < 2; row++)
             {
                 float bedX = (row == 0) ? -58.2f : -41.8f;
@@ -6980,6 +7201,30 @@ namespace UltimoActo.Editor
                 new Vector3(-33.0f, vestY + 0.98f, 91.2f), new Vector3(0.18f, 0.16f, 0.32f), matMahogany).transform.localRotation = Quaternion.Euler(90f, -25f, 0f);
             AcademyExpansionAnomalyController workshopCtrl = workshopSecretTrigger.AddComponent<AcademyExpansionAnomalyController>();
             workshopCtrl.Configure(ExpansionNodeType.WorkshopTwinBlackSwanOrderSecret);
+
+            // --- NOCHE III · PUZZLE DE LA RECETA DE TINTE (banco del zapatero) ---
+            Material matDyeBlack = GetOrCreateBasicMaterial("Mat_N3_DyeBlack", new Color(0.04f, 0.04f, 0.06f), 0.5f, 0f);
+            Material matDyeCrimson = GetOrCreateBasicMaterial("Mat_N3_DyeCrimson", new Color(0.55f, 0.05f, 0.10f), 0.5f, 0f);
+            Material matDyeSilver = GetOrCreateBasicMaterial("Mat_N3_DyeSilver", new Color(0.75f, 0.77f, 0.80f), 0.7f, 0.5f);
+            BuildSequencePuzzle(zone46.transform, "tinte_noche3", PrimitiveType.Cylinder, new Vector3(0.22f, 0.16f, 0.22f),
+                new[]
+                {
+                    new Vector3(-55.0f, vestY + 1.08f, 87.6f),
+                    new Vector3(-55.0f, vestY + 1.08f, 88.5f),
+                    new Vector3(-55.0f, vestY + 1.08f, 89.4f)
+                },
+                new[] { "Tarro de tinte azabache", "Tarro de tinte carmín", "Tarro de polvo de plata" },
+                new[] { matDyeBlack, matDyeCrimson, matDyeSilver },
+                new[] { 0, 1, 2 },
+                new Vector3(-33.5f, vestY + 0.94f, 88.4f), new Vector3(0.45f, 0.05f, 0.34f), matLeather,
+                "doc_n3_isadora_commission",
+                "Encargo Personal de Isadora Vale al Taller",
+                "Hoja de encargo reservada, hallada bajo la mesa de patronaje:\n\n" +
+                "«Dos trajes idénticos del Cisne Negro, uno ajustado a Elena y otro a Mara. Que ninguna sepa del otro.\n" +
+                "Las copas de cristal de mi salón deben llevar la mezcla: primero la tercera, luego la primera y por último la del centro.\n" +
+                "— I. V.»",
+                "La receta es correcta — el banco guarda un encargo secreto de Isadora.",
+                "La receta no coincide con el Cisne Negro — los tarros vuelven a su sitio.");
             EditorUtility.SetDirty(workshopCtrl);
 
             CreateOrnateLantern("Lampara_Taller_Zapateria_Oeste", zone46.transform,
@@ -7106,6 +7351,41 @@ namespace UltimoActo.Editor
             projectorCtrl.Configure(ExpansionNodeType.TheoryGlassSlideProjectorSecret, projectorObj.transform, null, null, projectorBeam);
             EditorUtility.SetDirty(projectorCtrl);
 
+            // ====================================================================
+            // NOCHE V · PUZZLE 1 — PLACAS DE CRISTAL DE LA LINTERNA MÁGICA (Aula de Anatomía)
+            // ====================================================================
+            CreateInteractiveWorldDoc("Doc_Clave_Anatomia_Noche5", zone50.transform,
+                new Vector3(-5.0f, roofY + 1.24f, 38.5f), new Vector3(0.42f, 0.04f, 0.30f), matGold,
+                "doc_n5_anatomy_clue",
+                "Apuntes del Profesor de Anatomía — Orden de la Lección",
+                "«La lección del Cisne Negro se proyecta siempre igual:\n" +
+                "primero los MÚSCULOS de la pantorrilla, que son lo que la alumna cree controlar;\n" +
+                "después el ESQUELETO del pie, que es lo que realmente la sostiene;\n" +
+                "y al final el SISTEMA NERVIOSO, que es lo que la Directora quería domar.\n\n" +
+                "Las tres placas están en el primer pupitre. No las mezcles.»");
+            Material matSlideA = GetOrCreateBasicMaterial("Mat_N5_SlideA", new Color(0.70f, 0.85f, 0.95f), 0.9f, 0f);
+            Material matSlideB = GetOrCreateBasicMaterial("Mat_N5_SlideB", new Color(0.95f, 0.85f, 0.70f), 0.9f, 0f);
+            Material matSlideC = GetOrCreateBasicMaterial("Mat_N5_SlideC", new Color(0.85f, 0.70f, 0.90f), 0.9f, 0f);
+            BuildSequencePuzzle(zone50.transform, "placas_noche5", PrimitiveType.Cube, new Vector3(0.50f, 0.04f, 0.38f),
+                new[]
+                {
+                    new Vector3(-2.0f, roofY + 0.88f, 35.0f),
+                    new Vector3(0.0f, roofY + 0.88f, 35.0f),
+                    new Vector3(2.0f, roofY + 0.88f, 35.0f)
+                },
+                new[] { "Placa I — Esqueleto del pie", "Placa II — Músculos de la pantorrilla", "Placa III — Sistema nervioso" },
+                new[] { matSlideA, matSlideB, matSlideC },
+                new[] { 1, 0, 2 },
+                new Vector3(5.0f, roofY + 0.90f, 35.0f), new Vector3(0.42f, 0.04f, 0.30f), matSecretPaper,
+                "doc_n5_krol_gear_note",
+                "Nota del Maestro Krol — El Mecanismo del Reloj",
+                "Escondida tras el proyector:\n\n" +
+                "«El reloj se detuvo a las 20:15 por una cuña de hierro, pero nadie recuerda quién la puso.\n" +
+                "Si quieres que el engranaje vuelva a girar sin romperse, libéralo en este orden: primero el PÉNDULO, luego los MINUTOS y al final las HORAS.\n" +
+                "Hazlo en la torre. Yo ya no tengo edad para subir.»",
+                "La linterna mágica proyecta algo — hay una nota del Maestro Krol.",
+                "Las placas no siguen el orden de la lección — se reinician.");
+
             // ZONA 51: Residencia de Profesores y del Maestro Viktor Krol (X: -16.0m a +16.0m, Z: 55.0m a 72.0m, Y = 7.70m)
             GameObject zone51 = new GameObject("51_Professors_And_Maestro_Krol_Residence");
             zone51.transform.parent = blockUpperFloor.transform;
@@ -7175,6 +7455,32 @@ namespace UltimoActo.Editor
             clockCtrl.Configure(ExpansionNodeType.ClockTowerJammedGearSecret, clockGearMaster.transform);
             EditorUtility.SetDirty(clockCtrl);
 
+            // ====================================================================
+            // NOCHE V · PUZZLE 2 — ENGRANAJES DE LA TORRE DEL RELOJ
+            // ====================================================================
+            CreatePrimitive("Banco_Mecanismo_Reloj_Noche5", PrimitiveType.Cube, zone52.transform,
+                new Vector3(0.0f, roofY + 0.45f, 85.0f), new Vector3(7.0f, 0.9f, 1.0f), matIron);
+            Material matGearBrass = GetOrCreateBasicMaterial("Mat_N5_GearBrass", new Color(0.78f, 0.60f, 0.22f), 0.7f, 0.8f);
+            BuildSequencePuzzle(zone52.transform, "engranajes_noche5", PrimitiveType.Cylinder, new Vector3(0.7f, 0.08f, 0.7f),
+                new[]
+                {
+                    new Vector3(-2.2f, roofY + 0.98f, 85.0f),
+                    new Vector3(0.0f, roofY + 0.98f, 85.0f),
+                    new Vector3(2.2f, roofY + 0.98f, 85.0f)
+                },
+                new[] { "Engranaje de las HORAS", "Engranaje de los MINUTOS", "Engranaje del PÉNDULO" },
+                new[] { matGearBrass },
+                new[] { 2, 1, 0 },
+                new Vector3(0.0f, roofY + 0.94f, 86.2f), new Vector3(0.44f, 0.04f, 0.32f), matSecretPaper,
+                "doc_n5_clockmaker_record",
+                "Registro del Relojero — Orden de Encendido de las Calderas",
+                "Encontrado en un compartimento tras el cuadrante:\n\n" +
+                "«Por orden de la Directora, el reloj se detuvo a las 20:15 del 14 de octubre para que 'el tiempo no testifique'.\n" +
+                "Para reavivar el sistema de calefacción que alimenta la torre hay que encender las calderas en este orden: " +
+                "primero la N.º 2, luego la N.º 3 y por último la N.º 1. La tres es la que quemó cosas que no debía.»",
+                "El reloj vuelve a girar un instante — el relojero dejó un registro oculto.",
+                "Los engranajes chirrían fuera de orden — se reinician.");
+
             // --------------------------------------------------------------------
             // BLOQUE B: RED SUBTERRÁNEA COMPLETA (Y = -3.20m, ZONAS 53 A 56)
             // Conectada al Sótano de Mantenimiento (Zona 41) en X = 16.0m, Z = -21.5m
@@ -7232,6 +7538,30 @@ namespace UltimoActo.Editor
             boilerCtrl.Configure(ExpansionNodeType.BoilerIncinerationFurnaceSecret, boiler3Door.transform);
             EditorUtility.SetDirty(boilerCtrl);
 
+            // ====================================================================
+            // NOCHE V · PUZZLE 3 — VÁLVULAS DE LAS TRES CALDERAS
+            // ====================================================================
+            Material matValveRed = GetOrCreateBasicMaterial("Mat_N5_ValveRed", new Color(0.70f, 0.10f, 0.08f), 0.5f, 0.6f);
+            BuildSequencePuzzle(zone53.transform, "calderas_noche5", PrimitiveType.Cylinder, new Vector3(0.40f, 0.06f, 0.40f),
+                new[]
+                {
+                    new Vector3(-8.0f, subFloorY + 1.35f, -26.55f),
+                    new Vector3(0.5f, subFloorY + 1.35f, -26.55f),
+                    new Vector3(9.0f, subFloorY + 1.35f, -26.55f)
+                },
+                new[] { "Válvula de la Caldera N.º 1", "Válvula de la Caldera N.º 2", "Válvula de la Caldera N.º 3" },
+                new[] { matValveRed },
+                new[] { 1, 2, 0 },
+                new Vector3(0.5f, subFloorY + 0.55f, -22.0f), new Vector3(0.45f, 0.06f, 0.34f), matSecretPaper,
+                "doc_n5_boiler_manifest",
+                "Manifiesto de Carga — Cenicero N.º 3 (15 de octubre)",
+                "Se abre una trampilla de carbón con un manifiesto dentro:\n\n" +
+                "«Quemado en la caldera N.º 3: un tutú negro, cintas de satén manchadas y frascos de sedante vacíos. Ordenado por Dirección.\n" +
+                "Los fundadores del siglo XVIII decían que la cripta solo se abre a quien honra los elementos en el orden de la piedra: " +
+                "primero la PIEDRA, luego el AGUA y al final el FUEGO.»",
+                "Las calderas rugen en orden — una trampilla de carbón muestra un manifiesto.",
+                "Presión incorrecta — las calderas se apagan. Se reinicia.");
+
             // ZONA 54: Lavandería Industrial Subterránea y Pozo del Montacargas (X: -65.0m a -15.0m, Z: 18.0m a 36.0m, Y = -3.20m)
             // Conecta en la vertical con el Oficio de Comedor (Zona 47 en X = -60.8m, Z = 29.3m)
             GameObject zone54 = new GameObject("54_Subterranean_Laundry_And_Dumbwaiter");
@@ -7283,6 +7613,34 @@ namespace UltimoActo.Editor
             AcademyExpansionAnomalyController cryptCtrl = cryptAltar.AddComponent<AcademyExpansionAnomalyController>();
             cryptCtrl.Configure(ExpansionNodeType.AncientCryptFoundersPassageSecret);
             EditorUtility.SetDirty(cryptCtrl);
+
+            // ====================================================================
+            // NOCHE V · PUZZLE 4 — LOS TRES ELEMENTOS DE LOS FUNDADORES (Cripta)
+            // ====================================================================
+            CreatePrimitive("Plinto_Elementos_Fundadores_Noche5", PrimitiveType.Cube, zone56.transform,
+                new Vector3(0.0f, subFloorY + 0.4f, 27.5f), new Vector3(3.6f, 0.8f, 0.9f), matStoneWall);
+            Material matElemStone = GetOrCreateBasicMaterial("Mat_N5_ElemStone", new Color(0.40f, 0.38f, 0.36f), 0.2f, 0f);
+            Material matElemWater = GetOrCreateBasicMaterial("Mat_N5_ElemWater", new Color(0.15f, 0.35f, 0.65f), 0.9f, 0f);
+            Material matElemFire = GetOrCreateBasicMaterial("Mat_N5_ElemFire", new Color(0.95f, 0.45f, 0.10f), 0.4f, 0f);
+            BuildSequencePuzzle(zone56.transform, "elementos_noche5", PrimitiveType.Sphere, new Vector3(0.45f, 0.45f, 0.45f),
+                new[]
+                {
+                    new Vector3(-1.2f, subFloorY + 1.03f, 27.5f),
+                    new Vector3(0.0f, subFloorY + 1.03f, 27.5f),
+                    new Vector3(1.2f, subFloorY + 1.03f, 27.5f)
+                },
+                new[] { "Fuego fundacional", "Piedra fundacional", "Agua fundacional" },
+                new[] { matElemFire, matElemStone, matElemWater },
+                new[] { 1, 2, 0 },
+                new Vector3(0.0f, subFloorY + 1.45f, 23.0f), new Vector3(0.48f, 0.05f, 0.36f), matSecretPaper,
+                "doc_n5_founders_charter",
+                "Acta Fundacional de 1768 — Sobre qué se Construyó la Academia",
+                "El altar cede una trampilla con un pergamino:\n\n" +
+                "«En el año de 1768, sobre los cimientos de un antiguo teatro de maquinaria que ardió con su compañía dentro, " +
+                "se fundó esta casa. El foso quedó sellado. Prometimos no volver a abrirlo.»\n\n" +
+                "Al margen, escrito recientemente en carmín: «Elena sabía que el foso volvía a respirar.»",
+                "La cripta responde — el altar guarda el acta fundacional de la academia.",
+                "Los elementos no están en el orden de los fundadores — se reinician.");
 
             // Puerta Norte de la Cripta hacia el Foso Bajo el Escenario (Zona 55) en Z = 60.0m
             CreateArchitecturalDoor("Door_Crypt_To_Understage", zone56.transform,
@@ -8257,6 +8615,32 @@ namespace UltimoActo.Editor
             obj.transform.localScale = scale;
             if (mat != null) obj.GetComponent<Renderer>().sharedMaterial = mat;
             return obj;
+        }
+
+        /// <summary>
+        /// Crea un puzzle de secuencia ordenada: un nodo interactivo por posición, y un contenedor de recompensa
+        /// (que arranca desactivado) con un documento. order = índices de nodos en el orden correcto.
+        /// </summary>
+        private static void BuildSequencePuzzle(
+            Transform parent, string puzzleId, PrimitiveType nodeShape, Vector3 nodeScale,
+            Vector3[] positions, string[] labels, Material[] mats, int[] order,
+            Vector3 rewardPos, Vector3 rewardScale, Material rewardMat,
+            string docId, string docTitle, string docContent, string okMsg, string badMsg)
+        {
+            GameObject host = new GameObject("Puzzle_" + puzzleId);
+            host.transform.parent = parent;
+            OrderedSequencePuzzle puzzle = host.AddComponent<OrderedSequencePuzzle>();
+
+            for (int i = 0; i < positions.Length; i++)
+            {
+                GameObject node = CreatePrimitive($"{puzzleId}_Nodo_{i + 1}", nodeShape, parent, positions[i], nodeScale, mats[i % mats.Length]);
+                node.AddComponent<SequenceNode>().Configure(puzzle, i, labels[i]);
+            }
+
+            GameObject reward = new GameObject("Recompensa_" + puzzleId);
+            reward.transform.parent = parent;
+            CreateInteractiveWorldDoc("Doc_" + puzzleId, reward.transform, rewardPos, rewardScale, rewardMat, docId, docTitle, docContent);
+            puzzle.Configure(puzzleId, order, new[] { reward }, okMsg, badMsg);
         }
 
         private static GameObject CreateWall(string name, Transform parent, Vector3 pos, Vector3 scale, Material mat)
