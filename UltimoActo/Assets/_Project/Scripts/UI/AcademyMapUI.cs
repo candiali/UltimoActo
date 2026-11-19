@@ -307,19 +307,25 @@ namespace UltimoActo.UI
                 GameObject lblObj = new GameObject("RoomLabel");
                 lblObj.transform.SetParent(rt, false);
                 TextMeshProUGUI tmp = lblObj.AddComponent<TextMeshProUGUI>();
-                tmp.text = shortLabel;
-                tmp.fontSize = 9.5f;
+                // En salas pequeñas mostramos solo el número o abreviatura limpia y auto-ajustamos al recuadro para evitar solapamientos
+                tmp.text = (width * height < 140f && shortLabel.Contains("."))
+                    ? shortLabel.Split('.')[0]
+                    : shortLabel;
+                tmp.enableAutoSizing = true;
+                tmp.fontSizeMin = 4.5f;
+                tmp.fontSizeMax = 8.5f;
                 tmp.fontStyle = FontStyles.Bold;
                 tmp.alignment = TextAlignmentOptions.Center;
-                tmp.color = new Color(0.95f, 0.93f, 0.88f, 0.92f);
-                tmp.enableWordWrapping = true;
+                tmp.color = new Color(0.95f, 0.93f, 0.88f, 0.90f);
+                tmp.textWrappingMode = TextWrappingModes.Normal;
+                tmp.overflowMode = TextOverflowModes.Truncate;
                 tmp.raycastTarget = false;
 
                 RectTransform lrt = lblObj.GetComponent<RectTransform>();
                 lrt.anchorMin = Vector2.zero;
                 lrt.anchorMax = Vector2.one;
-                lrt.offsetMin = new Vector2(1f, 1f);
-                lrt.offsetMax = new Vector2(-1f, -1f);
+                lrt.offsetMin = new Vector2(1.5f, 1.5f);
+                lrt.offsetMax = new Vector2(-1.5f, -1.5f);
             }
 
             rooms.Add(new RoomZoneDef
@@ -618,7 +624,13 @@ namespace UltimoActo.UI
             for (int i = 0; i < rooms.Count; i++)
             {
                 RoomZoneDef r = rooms[i];
-                bool inside = r.worldXZ.Contains(pt);
+                bool isSubRoom = r.id == "z41" || r.id == "z53" || r.id == "z54" || r.id == "z55" || r.id == "z56" || r.id == "z37" || r.id == "z38";
+                bool isUpperRoom = r.id == "z42" || r.id == "z49" || r.id == "z50" || r.id == "z51" || r.id == "z52" || r.id == "z34" || r.id == "z35";
+                bool levelMatch = (pPos.y <= -1.0f && isSubRoom) ||
+                                  (pPos.y >= 6.0f && isUpperRoom) ||
+                                  (pPos.y > -1.0f && pPos.y < 6.0f && !isSubRoom && !isUpperRoom);
+
+                bool inside = levelMatch && r.worldXZ.Contains(pt);
                 if (r.uiBox != null)
                 {
                     r.uiBox.color = inside

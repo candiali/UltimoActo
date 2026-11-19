@@ -37,10 +37,11 @@ namespace UltimoActo.Player
         [SerializeField] private float dynamoRechargePerCrank = 20f;
 
         [Header("Óptica")]
-        [SerializeField] private float baseIntensity = 1.7f;
-        [SerializeField] private float baseRange = 22f;
-        [SerializeField] private float baseAngle = 52f;
-        [SerializeField] private Color lightColor = new Color(0.96f, 0.93f, 0.84f);
+        [SerializeField] private float baseIntensity = 28.0f;
+        [SerializeField] private float baseRange = 42f;
+        [SerializeField] private float baseAngle = 66f;
+        [SerializeField] private Color lightColor = new Color(0.98f, 0.95f, 0.88f);
+        private Light closeFillLight;
 
         [Header("Interferencia Sobrenatural")]
         [Tooltip("Multiplicador de parpadeo activo (1 = normal, 0..1 en anomalías)")]
@@ -250,24 +251,66 @@ namespace UltimoActo.Player
 
             bool shouldBeLit = hasFlashlight && isOn && battery > 0f;
             spotLight.enabled = shouldBeLit;
+            if (closeFillLight != null) closeFillLight.enabled = shouldBeLit;
 
             if (shouldBeLit)
             {
-                // La luz se vuelve más tenue e inestable al agotarse la dínamo (<20%)
                 float batteryFactor = battery < 20f ? Mathf.Lerp(0.35f, 1.0f, battery / 20f) : 1.0f;
-                spotLight.intensity = baseIntensity * batteryFactor * anomalyFlickerMultiplier;
+                bool isRuins = EraVisualManager.Instance != null && EraVisualManager.Instance.CurrentEra == EraVisual.Ruins;
+                float effectiveBase = Mathf.Max(baseIntensity, 28.0f) * (isRuins ? 1.45f : 1.0f);
+
+                spotLight.range = Mathf.Max(baseRange, 42f);
+                spotLight.spotAngle = Mathf.Max(baseAngle, 66f);
+                spotLight.innerSpotAngle = 38f;
+                spotLight.cullingMask = ~0;
+                spotLight.intensity = effectiveBase * batteryFactor * anomalyFlickerMultiplier;
+
+                if (closeFillLight != null)
+                {
+                    closeFillLight.cullingMask = ~0;
+                    closeFillLight.intensity = (isRuins ? 4.2f : 2.8f) * batteryFactor * anomalyFlickerMultiplier;
+                }
             }
         }
 
         private void ConfigureLightProperties()
         {
             if (spotLight == null) return;
+            baseIntensity = Mathf.Max(baseIntensity, 28.0f);
+            baseRange = Mathf.Max(baseRange, 42f);
+            baseAngle = Mathf.Max(baseAngle, 66f);
+
             spotLight.type = LightType.Spot;
             spotLight.color = lightColor;
             spotLight.range = baseRange;
             spotLight.spotAngle = baseAngle;
+            spotLight.innerSpotAngle = 38f;
             spotLight.intensity = baseIntensity;
-            spotLight.shadows = LightShadows.None; // Optimización de sombras para rendimiento óptimo
+            spotLight.cullingMask = ~0;
+            spotLight.shadows = LightShadows.None;
+
+            Transform fillTrans = transform.Find("Flashlight_CloseFill");
+            if (fillTrans == null)
+            {
+                GameObject fillObj = new GameObject("Flashlight_CloseFill");
+                fillObj.transform.SetParent(transform, false);
+                fillObj.transform.localPosition = new Vector3(0f, 0f, 0.25f);
+                closeFillLight = fillObj.AddComponent<Light>();
+            }
+            else
+            {
+                closeFillLight = fillTrans.GetComponent<Light>();
+            }
+
+            if (closeFillLight != null)
+            {
+                closeFillLight.type = LightType.Point;
+                closeFillLight.color = lightColor;
+                closeFillLight.range = 11.0f;
+                closeFillLight.intensity = 3.5f;
+                closeFillLight.cullingMask = ~0;
+                closeFillLight.shadows = LightShadows.None;
+            }
         }
 
         // ====================================================================

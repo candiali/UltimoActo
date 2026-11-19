@@ -1,0 +1,55 @@
+# Materials for CH_Protagonista_B
+newmtl Mat_Char_AgedGold
+Kd 0.7200 0.5800 0.2900
+Ka 0.0500 0.0500 0.0500
+Ks 0.1000 0.1000 0.1000
+d 1.0
+
+newmtl Mat_Char_Black
+Kd 0.0600 0.0600 0.0700
+Ka 0.0500 0.0500 0.0500
+Ks 0.1000 0.1000 0.1000
+d 1.0
+
+newmtl Mat_Char_CharcoalCoat
+Kd 0.1200 0.1300 0.1500
+Ka 0.0500 0.0500 0.0500
+Ks 0.1000 0.1000 0.1000
+d 1.0
+
+newmtl Mat_Char_HairChestnut
+Kd 0.2400 0.1400 0.1000
+Ka 0.0500 0.0500 0.0500
+Ks 0.1000 0.1000 0.1000
+d 1.0
+
+newmtl Mat_Char_HairDark
+Kd 0.0900 0.0800 0.0900
+Ka 0.0500 0.0500 0.0500
+Ks 0.1000 0.1000 0.1000
+d 1.0
+
+newmtl Mat_Char_IvoryCloth
+Kd 0.9000 0.8700 0.7800
+Ka 0.0500 0.0500 0.0500
+Ks 0.1000 0.1000 0.1000
+d 1.0
+
+newmtl Mat_Char_LeatherDark
+Kd 0.1600 0.1000 0.0800
+Ka 0.0500 0.0500 0.0500
+Ks 0.1000 0.1000 0.1000
+d 1.0
+
+newmtl Mat_Char_Skin
+Kd 0.8600 0.7700 0.7200
+Ka 0.0500 0.0500 0.0500
+Ks 0.1000 0.1000 0.1000
+d 1.0
+
+newmtl Mat_Char_WineJacket
+Kd 0.3500 0.0900 0.1400
+Ka 0.0500 0.0500 0.0500
+Ks 0.1000 0.1000 0.1000
+d 1.0
+

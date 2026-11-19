@@ -87,7 +87,7 @@ namespace UltimoActo.Editor
         private const string ElenaPortraitPath = "Assets/_Project/Textures/Portraits/Elena_Vesper_Portrait.jpg";
         private const string IsadoraPortraitPath = "Assets/_Project/Textures/Portraits/Isadora_Vale_Portrait.jpg";
         private const string TroupePhotoPath = "Assets/_Project/Textures/Portraits/Troupe_1923_Photo.jpg";
-        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1_To_12_V39";
+        private const string AutoBuildSessionKey = "UltimoActo_AutoBuild_Section1_To_12_V48";
 
         static Section1SceneBuilder()
         {
@@ -1171,6 +1171,12 @@ namespace UltimoActo.Editor
                     matCeramicTile, matFacade, matGreenGlass);
 
                 // ====================================================================
+                // REMODELACIÓN VISUAL INTEGRAL EN DOS ÉPOCAS (12 SECCIONES / 59 ZONAS)
+                // Época 1929 (Gloria) ↔ Época Ruinas (Actualidad)
+                // ====================================================================
+                EraAcademyFullRemodeler.RemodelAllSectionsAndZones(rootEnv.transform, vestY);
+
+                // ====================================================================
                 // JUGADOR EN PRIMERA PERSONA
                 // ====================================================================
                 GameObject player = new GameObject("Player");
@@ -1187,6 +1193,7 @@ namespace UltimoActo.Editor
 
                 PlayerMovement movement = player.AddComponent<PlayerMovement>();
                 SimpleInventory inventory = player.AddComponent<SimpleInventory>();
+                player.AddComponent<PlayerEraAssigner>();
 
                 GameObject cameraObj = new GameObject("FirstPersonCamera");
                 cameraObj.transform.parent = player.transform;
@@ -1208,6 +1215,7 @@ namespace UltimoActo.Editor
                 camData.renderPostProcessing = true;
 
                 cameraObj.AddComponent<AudioListener>();
+                cameraObj.AddComponent<EraCameraBinder>();
 
                 PlayerCameraLook cameraLook = player.AddComponent<PlayerCameraLook>();
                 SerializedObject serLook = new SerializedObject(cameraLook);
@@ -2291,6 +2299,9 @@ namespace UltimoActo.Editor
                 "Una fotografía en blanco y negro tomada desde la esquina del piano vertical pocos días antes del cierre.\n\n" +
                 "Las alumnas mantienen la quinta posición en el centro del aula mirando hacia los espejos del sur.\n" +
                 "Al observar el reflejo capturado en el cristal del fondo, todas las bailarinas aparecen de frente salvo una figura en el extremo izquierdo cuyo reflejo permanece de espaldas, mirando fijamente hacia el interior del espejo.");
+
+            // REMODELACIÓN VISUAL DUAL (1929 GLORIA ↔ ACTUALIDAD RUINAS) — ZONA PILOTO (ZONA 16)
+            EraPilotStudioBuilder.SetupEraSystemAndPilotZone16(rootEnv, zone16, vestY);
 
             // ====================================================================
             // ZONA 17: AULA DE ESPEJOS (X: -38 a -26, Z: 50 a 68, Y: 2.4m, Altura: 6.0m)
@@ -3824,6 +3835,17 @@ namespace UltimoActo.Editor
                 "Isadora retiró ayer el decorado original al Almacén de Decorados y ordenó modificar las cuerdas de la Sala de Mecanismos y Poleas. No quiere sustituirme únicamente en el cartel: quiere que el telón de contrapeso caiga antes de que yo pueda cruzar hacia el proscenio.\n\n" +
                 "He dejado la prueba cosida dentro del traje del Cisne Negro.”");
 
+            // Pista Noche VI (Paso 1): Marcación de bastidores del Acto III
+            CreateInteractiveWorldDoc("Doc_Noche6_Marcacion_Bastidores", zone27.transform,
+                new Vector3(37.25f, vestY + 0.91f, 91.05f), new Vector3(0.30f, 0.04f, 0.22f), matGold,
+                "doc_n6_pista_marcacion_escenica",
+                "Libreto de Regiduría — Marcación de Bastidores (Acto III)",
+                "Anotación de emergencia escrita al margen del libreto antes del apagón del Acto III:\n\n" +
+                "«Para calibrar los bastidores de ensayo en el **Almacén de Decorados (Zona 29)** sin activar la alarma mecánica, respeta el orden exacto de entrada:\n" +
+                "1. **Oeste — Foco Ámbar** (señal de espera en el bosque)\n" +
+                "2. **Centro — Telón Borgoña** (apertura del arco del lago)\n" +
+                "3. **Este — Marco Dorado** (salida hacia el proscenio)»");
+
             // ====================================================================
             // ZONA 28: PASILLO DETRÁS DEL ESCENARIO (X: -12 a 45, Z: 92 a 98 + Conector X: -4 a 8, Z: 84 a 92)
             // ====================================================================
@@ -4046,6 +4068,39 @@ namespace UltimoActo.Editor
                 "Sobre la caja contigua hay un croquis de los carpinteros de teatro:\n\n" +
                 "«Nos hicieron construir un panel ciego idéntico al arco del lago pero sin salida trasera. Si alguien baja el Contrapeso III desde la Sala de Poleas en mitad de la función, la bailarina que esté en el fondo del escenario queda incomunicada de los bastidores».");
 
+            // Puzzle Noche VI (Paso 2): Secuencia de bastidores en Almacén de Decorados (Oeste -> Centro -> Este)
+            BuildSequencePuzzle(
+                zone29.transform,
+                "Noche6_BastidoresEscenicos",
+                PrimitiveType.Cube,
+                new Vector3(0.45f, 0.95f, 0.45f),
+                new[]
+                {
+                    new Vector3(18.5f, vestY + 0.48f, 101.5f),
+                    new Vector3(22.0f, vestY + 0.48f, 101.5f),
+                    new Vector3(25.5f, vestY + 0.48f, 101.5f)
+                },
+                new[]
+                {
+                    "Marcador Oeste: Foco Ámbar",
+                    "Marcador Centro: Telón Borgoña",
+                    "Marcador Este: Marco Dorado"
+                },
+                new[] { matLanternGlow, matVelvetDrapes, matGold },
+                new[] { 0, 1, 2 },
+                new Vector3(22.0f, vestY + 0.98f, 101.5f),
+                new Vector3(0.36f, 0.04f, 0.26f),
+                matBlueprintPaper,
+                "doc_n6_orden_poleas_isadora",
+                "Orden Cifrada de Tramoya — Secuencia de Contrapesos",
+                "Al alinear los marcadores del Almacén de Decorados se desprende una hoja técnica oculta:\n\n" +
+                "«Para anular el bloqueo de los tambores en la **Sala de Mecanismos y Poleas (Zona 30)**, libera los frenos de contrapeso en este orden exacto:\n" +
+                "1. **Contrapeso I** (Telón Norte — Hierro)\n" +
+                "2. **Contrapeso III** (Arco del Lago — Latón Dorado)\n" +
+                "3. **Contrapeso II** (Puente de Luces — Cuerda Central)»",
+                "Los bastidores encajan en su riel; una hoja técnica cae sobre el marcador central.",
+                "El marcador vibra en falso y la secuencia de bastidores se reinicia.");
+
             // ====================================================================
             // ZONA 30: SALA DE MECANISMOS Y POLEAS (X: -28 a -12, Z: 84 a 104, Y: 2.4m, Altura: 7.2m)
             // ====================================================================
@@ -4167,6 +4222,37 @@ namespace UltimoActo.Editor
                 "“14 de Octubre de 1924 — 20:30 h\n\n" +
                 "Al revisar los tambores de cable después del tercer acto, encontré la empuñadura de latón de la Palanca III limpia de polvo y con marcas de haberse accionado con fuerza durante la representación.\n\n" +
                 "Los elementos del escenario fueron movidos en un orden inverso al previsto en el libreto: alguien bajó el cierre del fondo mientras Elena estaba en escena, justo en el compás en que la música fue alterada.”");
+
+            // Puzzle Noche VI (Paso 3): Secuencia de frenos de contrapeso en Sala de Poleas (I -> III -> II)
+            BuildSequencePuzzle(
+                zone30.transform,
+                "Noche6_ContrapesosTramoya",
+                PrimitiveType.Cylinder,
+                new Vector3(0.28f, 0.55f, 0.28f),
+                new[]
+                {
+                    new Vector3(-25.2f, vestY + 0.55f, 87.5f),
+                    new Vector3(-25.2f, vestY + 0.55f, 91.7f),
+                    new Vector3(-25.2f, vestY + 0.55f, 95.9f)
+                },
+                new[]
+                {
+                    "Freno Contrapeso I (Telón Norte)",
+                    "Freno Contrapeso II (Puente de Luces)",
+                    "Freno Contrapeso III (Arco del Lago)"
+                },
+                new[] { matIron, matHempRope, matGold },
+                new[] { 0, 2, 1 },
+                new Vector3(-16.45f, vestY + 0.94f, 88.5f),
+                new Vector3(0.38f, 0.04f, 0.28f),
+                matGold,
+                "doc_n6_confesion_jefe_tramoya",
+                "Carta Sellada del Jefe de Tramoya — El Sabotaje del Acto III",
+                "“Isadora Vale me pagó tres veces mi sueldo anual por invertir el embrague del Contrapeso III antes de la función del 14 de octubre.\n\n" +
+                "Cuando el violonchelo diera la nota alterada, yo debía soltar el freno para que el telón ciego cayera detrás del arco del lago, aislando a Elena en la oscuridad de la cámara trasera mientras Mara salía a recibir los aplausos bajo el foco principal.\n\n" +
+                "La verdad completa aguarda tras el **Escenario Principal (Noche VII)**.”",
+                "Los tres frenos de contrapeso liberan el mecanismo; un sobre sellado aparece sobre la mesa de trabajo.",
+                "Las poleas chirrían con violencia y los frenos vuelven a bloquearse.");
         }
 
         // ====================================================================
@@ -4334,6 +4420,37 @@ namespace UltimoActo.Editor
                 "Posición B (Hombro Derecho): Mara Bell — Entrada añadida el 13 de octubre.\n" +
                 "Posición C (Bajo el Arco del Lago): Punto donde Elena debía emerger al sonar el Do Natural, justo debajo del bastidor conectado al Contrapeso III».");
 
+            // Puzzle Noche VII (Paso 3): Secuencia de marcas de posición en el Escenario Principal (B -> A -> C)
+            BuildSequencePuzzle(
+                zone32.transform,
+                "Noche7_MarcasEscenario",
+                PrimitiveType.Cylinder,
+                new Vector3(0.55f, 0.14f, 0.55f),
+                new[]
+                {
+                    new Vector3(-8.0f, stageY + 0.07f, 108.5f),
+                    new Vector3(-2.5f, stageY + 0.07f, 108.5f),
+                    new Vector3(-8.0f, stageY + 0.07f, 103.5f)
+                },
+                new[]
+                {
+                    "Marca A: Centro del Proscenio (Coda)",
+                    "Marca B: Hombro Derecho (Sustituta)",
+                    "Marca C: Bajo el Arco del Lago"
+                },
+                new[] { matTutuWhite, matTutuBlack, matGold },
+                new[] { 1, 0, 2 },
+                new Vector3(-8.0f, stageY + 0.16f, 103.5f),
+                new Vector3(0.38f, 0.04f, 0.28f),
+                matGold,
+                "doc_n7_llave_camara_oculta",
+                "Testimonio Final del Escenario — Paso hacia la Cámara Oculta",
+                "Al recorrer las tres marcas en el orden de la función (`B → A → C`), un resorte bajo las tablas libera un pliego dorado:\n\n" +
+                "«El cerrojo interior tras el muro este del escenario conduce a la **Cámara tras el Escenario (Zona 39)**, donde Elena esperó hasta el amanecer.\n\n" +
+                "Una vez inspeccionada la cámara secreta, el rastro final de su huida continúa hacia los exteriores traseros: la Cochera, el Pabellón del Guarda y el Estanque (**Noche VIII: Último Acto**).»",
+                "Las tablas bajo el Arco del Lago ceden con un clic metálico, revelando el testimonio final.",
+                "Un eco de pasos recorre el escenario y las marcas vuelven a apagarse.");
+
             // ====================================================================
             // CIRCULACIONES LATERALES Y ESCALERAS MULTI-NIVEL DEL TEATRO
             // Conecta Escenario (2.4m) <-> Foso (1.2m) <-> Patio de Butacas (1.6m) <-> Cabina y Pasarela (7.6m)
@@ -4462,6 +4579,17 @@ namespace UltimoActo.Editor
                 "En el suelo de madera quedan las marcas del punzón del violonchelo solista, pero ni la silla ni el instrumento están aquí: es el mismo violonchelo cubierto con tela negra que encontraste en el Depósito de Instrumentos (retirado el 13 de octubre).\n\n" +
                 "En la carpeta caída al pie del atril se lee:\n" +
                 "«Sin el Do Natural del primer violonchelo en el compás 48, Elena no sabrá que han adelantado la caída del telón de contrapeso. Interactúa con el **Podio del Director ([E])** en el centro del foso para reconstruir la secuencia musical»");
+
+            // Pista Noche VII (Paso 1): Cuaderno del Director con la secuencia de circuitos de luz
+            CreateInteractiveWorldDoc("Doc_Noche7_Cadencia_Focos", zone33.transform,
+                new Vector3(-8.55f, pitY + 0.26f, 120.2f), new Vector3(0.32f, 0.04f, 0.24f), matGold,
+                "doc_n7_pista_cadencia_focos",
+                "Cuaderno del Director — Sincronización de Focos y Coda (Acto III)",
+                "Anotación en tinta azul sobre el podio del director:\n\n" +
+                "«Para replicar la iluminación exacta del ensayo secreto en la **Cabina de Iluminación (Zona 34)**, activa los tres interruptores de circuito en este orden:\n" +
+                "1. **Circuito I — Proscenio Azul**\n" +
+                "2. **Circuito II — Arco del Lago**\n" +
+                "3. **Circuito III — Contraluz Dorado**»");
 
             // ====================================================================
             // ZONA 31: PATIO DE BUTACAS (X: -26 a +10, Z: 122 a 150, Y: 1.6m, Techo: 13.9m)
@@ -4630,6 +4758,38 @@ namespace UltimoActo.Editor
                 "• **Guion Oficial Impreso**: Mantener encendido el Circuito I (Proscenio) y apagar por completo el fondo del escenario en el compás 48.\n" +
                 "• **Corrección Manuscrita del Técnico de Luces**:\n" +
                 "  «Me ordenaron dejar a oscuras el Arco del Lago en el compás 48 para que el público no viera caer el bastidor de contrapeso sobre la posición de Elena. Si activas la **Consola de Iluminación ([E])** en el orden original (Proscenio -> Lago -> Contraluz del Arco), la luz revelará desde aquí arriba la estructura oculta detrás del telón falso».");
+
+            // Puzzle Noche VII (Paso 2): Secuencia de circuitos de iluminación en la Cabina (I -> II -> III)
+            BuildSequencePuzzle(
+                zone34.transform,
+                "Noche7_ConsolaFocos",
+                PrimitiveType.Cube,
+                new Vector3(0.45f, 0.90f, 0.45f),
+                new[]
+                {
+                    new Vector3(-26.5f, upperY + 0.45f, 122.5f),
+                    new Vector3(-26.5f, upperY + 0.45f, 124.5f),
+                    new Vector3(-26.5f, upperY + 0.45f, 126.5f)
+                },
+                new[]
+                {
+                    "Circuito I: Proscenio Azul",
+                    "Circuito II: Arco del Lago",
+                    "Circuito III: Contraluz Dorado"
+                },
+                new[] { matColdFluorescent, matLakeWaterSurface, matGold },
+                new[] { 0, 1, 2 },
+                new Vector3(-26.5f, upperY + 0.92f, 124.5f),
+                new Vector3(0.36f, 0.04f, 0.26f),
+                matProgramPaper,
+                "doc_n7_codigo_proscenio_escenario",
+                "Guion Luminotécnico — Clave de Posiciones en el Escenario",
+                "Al encender los tres circuitos en orden, la cabina proyecta su haz sobre las tablas del **Escenario Principal (Zona 32)** y revela el orden de las marcas de escena:\n\n" +
+                "1. **Marca B — Hombro Derecho** (donde Mara cubre el ángulo del público)\n" +
+                "2. **Marca A — Centro del Proscenio** (punto de la coda final)\n" +
+                "3. **Marca C — Bajo el Arco del Lago** (punto de salida hacia la cámara oculta)",
+                "Los tres circuitos quedan enclavados; un guion luminotécnico aparece sobre el panel central.",
+                "Un fusible salta con un chispazo y los circuitos vuelven a cero.");
 
             // ====================================================================
             // ZONA 35: PASARELA SUPERIOR DEL TEATRO (Y: 7.6m sobre el perímetro del Escenario Principal)
@@ -7727,6 +7887,17 @@ namespace UltimoActo.Editor
             carriageCtrl.Configure(ExpansionNodeType.CarriageHouseConfiscatedTrunkSecret);
             EditorUtility.SetDirty(carriageCtrl);
 
+            // Pista Noche VIII (Paso 1): Telegrama interceptado sobre el baúl confiscado
+            CreateInteractiveWorldDoc("Doc_Noche8_Telegrama_Viena", zone57.transform,
+                new Vector3(-58.5f, 0.80f, 112.0f), new Vector3(0.32f, 0.04f, 0.24f), matGold,
+                "doc_n8_pista_telegrama_viena",
+                "Recibo de Equipaje y Telegrama Interceptado — Estación Norte",
+                "Sobre el baúl confiscado descansa un telegrama arrugado con el sello de la cochera:\n\n" +
+                "«Para restablecer la comunicación en la centralita del **Pabellón del Guarda (Zona 58)** y descubrir hacia dónde partió el último carruaje, conecta las clavijas en este orden exacto:\n" +
+                "1. **Clavija I — Línea del Teatro (Cobre)**\n" +
+                "2. **Clavija III — Línea de la Verja Norte (Hierro)**\n" +
+                "3. **Clavija II — Línea de la Estación (Dorada)**»");
+
             // ZONA 58: Pabellón del Guarda y Centralita Telefónica Exterior (X: -65.0m a -48.0m, Z: 125.0m a 145.0m, Y = 0.0m)
             GameObject zone58 = new GameObject("58_Gatehouse_And_Exterior_Switchboard");
             zone58.transform.parent = blockExteriors.transform;
@@ -7752,6 +7923,40 @@ namespace UltimoActo.Editor
             AcademyExpansionAnomalyController gatehouseCtrl = switchboardObj.AddComponent<AcademyExpansionAnomalyController>();
             gatehouseCtrl.Configure(ExpansionNodeType.GatehouseCutSwitchboardSecret);
             EditorUtility.SetDirty(gatehouseCtrl);
+
+            // Puzzle Noche VIII (Paso 2): Secuencia de clavijas en la Centralita del Guarda (I -> III -> II)
+            BuildSequencePuzzle(
+                zone58.transform,
+                "Noche8_CentralitaGuarda",
+                PrimitiveType.Cylinder,
+                new Vector3(0.32f, 0.85f, 0.32f),
+                new[]
+                {
+                    new Vector3(-59.5f, 0.43f, 134.5f),
+                    new Vector3(-59.5f, 0.43f, 136.0f),
+                    new Vector3(-59.5f, 0.43f, 137.5f)
+                },
+                new[]
+                {
+                    "Clavija I: Línea del Teatro",
+                    "Clavija II: Línea de la Estación",
+                    "Clavija III: Línea de la Verja Norte"
+                },
+                new[] { matCopperPipe, matGold, matIron },
+                new[] { 0, 2, 1 },
+                new Vector3(-59.5f, 0.88f, 136.0f),
+                new Vector3(0.36f, 0.04f, 0.26f),
+                matWallIvory,
+                "doc_n8_bitacora_guarda_estanque",
+                "Bitácora del Guarda Nocturno — El Encargo del Estanque",
+                "La centralita emite un último chasquido eléctrico y abre el cajón lateral de la bitácora:\n\n" +
+                "«05:15 h — Las dos jóvenes cruzaron hacia el **Estanque Exterior Helado (Zona 59)** antes de salir por el parque. Dejaron su último mensaje en el **Templete del Quiosco de Música**, sellado según los cuatro actos de su obra:\n" +
+                "1. **Pilar Este — Acto I (Llegada)**\n" +
+                "2. **Pilar Norte — Acto II (Juramento)**\n" +
+                "3. **Pilar Oeste — Acto III (La Sombra)**\n" +
+                "4. **Pilar Sur — Acto IV (Amanecer)**»",
+                "La centralita conecta el circuito; el cajón de la bitácora se abre con un clic.",
+                "Un zumbido de línea muerta reinicia las clavijas de la centralita.");
 
             // ZONA 59: Estanque Exterior Helado y Quiosco de Música del Parque (X: 30.0m a 85.0m, Z: 98.0m a 145.0m, Y = 0.0m)
             // Justo al norte del Jardín de Invierno
@@ -7800,6 +8005,40 @@ namespace UltimoActo.Editor
             AcademyExpansionAnomalyController pondCtrl = pondSecretTrigger.AddComponent<AcademyExpansionAnomalyController>();
             pondCtrl.Configure(ExpansionNodeType.FrozenSwanPondGazeboSecret);
             EditorUtility.SetDirty(pondCtrl);
+
+            // Puzzle Noche VIII (Paso 3): Los cuatro actos en el Templete del Estanque (Este -> Norte -> Oeste -> Sur)
+            BuildSequencePuzzle(
+                zone59.transform,
+                "Noche8_TempleteAmanecer",
+                PrimitiveType.Cube,
+                new Vector3(0.42f, 0.90f, 0.42f),
+                new[]
+                {
+                    new Vector3(59.7f, 1.25f, 121.5f),
+                    new Vector3(57.5f, 1.25f, 123.7f),
+                    new Vector3(55.3f, 1.25f, 121.5f),
+                    new Vector3(57.5f, 1.25f, 119.3f)
+                },
+                new[]
+                {
+                    "Pilar Este: Acto I (Llegada)",
+                    "Pilar Norte: Acto II (Juramento)",
+                    "Pilar Oeste: Acto III (La Sombra)",
+                    "Pilar Sur: Acto IV (Amanecer)"
+                },
+                new[] { matFacade, matPuddle, matStoneWall, matGold },
+                new[] { 0, 1, 2, 3 },
+                new Vector3(57.5f, 0.85f, 121.5f),
+                new Vector3(0.42f, 0.05f, 0.30f),
+                matGold,
+                "doc_n8_epilogo_elena_mara_amanecer",
+                "Carta Final al Amanecer — Último Acto de Elena y Mara",
+                "“15 de Octubre de 1924 — 05:45 h\n\n" +
+                "Si has recorrido las ocho noches de esta academia hasta llegar al estanque antes del alba, ya conoces la verdad completa.\n\n" +
+                "Isadora Vale creyó que cerrando el teatro enterraría su culpa, pero la música no se encierra tras un telón ciego. Mara y yo cruzamos el estanque helado juntas y partimos en el primer tren hacia Viena con las copias originales.\n\n" +
+                "La función ha terminado. Por fin puedes cerrar la puerta de la Academia Vesper.”",
+                "La losa central del templete se ilumina con la primera luz del alba y revela la carta final.",
+                "El hielo del estanque cruje bajo la niebla y los pilares vuelven a silenciarse.");
         }
 
         #region Métodos de Creación PBR, Muebles y Narrativa
