@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -49,6 +50,17 @@ namespace UltimoActo.Core
         private TextMeshProUGUI eraBannerTitle;
         private TextMeshProUGUI eraBannerSubtitle;
         private float bannerTimer;
+
+        // Transición temporal con [Q] (Paso 2 — Modo Solo y Bloqueo en 2 Jugadores)
+        private CanvasGroup transitionVeilGroup;
+        private Image transitionVeilImage;
+        private TextMeshProUGUI bottomStatusPillText;
+        private Image bottomStatusPillBorder;
+        private Coroutine transitionCoroutine;
+        private AudioSource transitionAudioSource;
+        private AudioClip clipToRuins;
+        private AudioClip clipTo1929;
+        private bool isTransitioningEra;
 
         // Paleta atmosférica 1929 (Fiel a la fila superior de la imagen de referencia: Marfil luminoso y Rosa-Lavanda suave, SIN naranja saturado)
         private static readonly Color Fog1929 = new Color(0.56f, 0.48f, 0.54f, 1f);        // Bruma crepuscular rosa-lavanda suave
@@ -177,24 +189,59 @@ namespace UltimoActo.Core
 
         private void Update()
         {
+            bool qPressed = false;
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame)
+            {
+                qPressed = true;
+            }
+#else
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                qPressed = true;
+            }
+#endif
+            if (qPressed)
+            {
+                RequestEraToggleWithQ();
+            }
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             bool f1Pressed = false;
+            bool f2Pressed = false;
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
             {
                 f1Pressed = true;
+            }
+            if (Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
+            {
+                f2Pressed = true;
             }
 #else
             if (Input.GetKeyDown(KeyCode.F1))
             {
                 f1Pressed = true;
             }
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                f2Pressed = true;
+            }
 #endif
             if (f1Pressed)
             {
                 ToggleEra();
             }
+            if (f2Pressed)
+            {
+                LanSessionManager mgr = LanSessionManager.EnsureInstance();
+                int nextCount = mgr.ConnectedPlayerCount >= 2 ? 1 : 2;
+                mgr.SetConnectedPlayerCount(nextCount);
+                RefreshBottomEraStatusPill();
+            }
 #endif
+
+            RefreshBottomEraStatusPill();
 
             if (eraBannerGroup != null && eraBannerGroup.alpha > 0f)
             {
@@ -207,6 +254,148 @@ namespace UltimoActo.Core
                     eraBannerGroup.alpha = Mathf.MoveTowards(eraBannerGroup.alpha, 0f, Time.unscaledDeltaTime * 1.8f);
                 }
             }
+        }
+
+        /// <summary>
+        /// Paso 2: Alterna entre 1929 y Ruinas con la tecla [Q] aplicando un breve efecto de transición temporal.
+        /// Se desactiva automáticamente cuando hay 2 jugadores conectados en la sala (2/2).
+        /// </summary>
+        public void RequestEraToggleWithQ()
+        {
+            if (UltimoActo.UI.DocumentUI.Instance != null && UltimoActo.UI.DocumentUI.Instance.IsOpen)
+            {
+                return;
+            }
+            if (Time.timeScale == 0f)
+            {
+                return;
+            }
+
+            bool canToggle = LanSessionManager.Instance == null || LanSessionManager.Instance.CanLocalPlayerToggleEraWithQ;
+            if (!canToggle)
+            {
+                ShowLockedEraBanner();
+                return;
+            }
+
+            if (isTransitioningEra)
+            {
+                return;
+            }
+
+            EraVisual nextEra = era == EraVisual.Glory1929 ? EraVisual.Ruins : EraVisual.Glory1929;
+            if (transitionCoroutine != null)
+            {
+                StopCoroutine(transitionCoroutine);
+            }
+            transitionCoroutine = StartCoroutine(TransitionEraWithEffectRoutine(nextEra));
+        }
+
+        private IEnumerator TransitionEraWithEffectRoutine(EraVisual targetEra)
+        {
+            isTransitioningEra = true;
+
+            if (transitionVeilGroup != null && transitionVeilImage != null)
+            {
+                transitionVeilImage.color = targetEra == EraVisual.Glory1929
+                    ? new Color(0.95f, 0.86f, 0.68f, 0.78f) // Destello cálido dorado-marfil hacia 1929
+                    : new Color(0.42f, 0.56f, 0.74f, 0.82f); // Destello lunar frío hacia las Ruinas
+            }
+
+            PlayTemporalShiftSound(targetEra);
+
+            // Fase 1: Entrada rápida del velo temporal (0.14 s)
+            float inDuration = 0.14f;
+            float elapsed = 0f;
+            while (elapsed < inDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / inDuration);
+                if (transitionVeilGroup != null)
+                {
+                    transitionVeilGroup.alpha = Mathf.SmoothStep(0f, 1f, t);
+                }
+                yield return null;
+            }
+
+            // Punto álgido: cambiar época visual e iluminación
+            SetEra(targetEra, true);
+            RefreshBottomEraStatusPill();
+
+            // Fase 2: Disolución suave del velo (0.24 s)
+            float outDuration = 0.24f;
+            elapsed = 0f;
+            while (elapsed < outDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / outDuration);
+                if (transitionVeilGroup != null)
+                {
+                    transitionVeilGroup.alpha = Mathf.SmoothStep(1f, 0f, t);
+                }
+                yield return null;
+            }
+
+            if (transitionVeilGroup != null)
+            {
+                transitionVeilGroup.alpha = 0f;
+            }
+
+            isTransitioningEra = false;
+            transitionCoroutine = null;
+        }
+
+        private void PlayTemporalShiftSound(EraVisual targetEra)
+        {
+            if (transitionAudioSource == null)
+            {
+                transitionAudioSource = gameObject.GetComponent<AudioSource>();
+                if (transitionAudioSource == null)
+                {
+                    transitionAudioSource = gameObject.AddComponent<AudioSource>();
+                }
+                transitionAudioSource.playOnAwake = false;
+                transitionAudioSource.spatialBlend = 0f;
+                transitionAudioSource.volume = 0.42f;
+            }
+
+            if (clipTo1929 == null)
+            {
+                clipTo1929 = BuildTemporalChordClip(440f, 659.25f, 0.36f); // Resonancia cálida A4-E5
+            }
+            if (clipToRuins == null)
+            {
+                clipToRuins = BuildTemporalChordClip(293.66f, 220f, 0.36f); // Eco grave D4-A3
+            }
+
+            AudioClip clip = targetEra == EraVisual.Glory1929 ? clipTo1929 : clipToRuins;
+            if (clip != null)
+            {
+                transitionAudioSource.PlayOneShot(clip, 0.45f);
+            }
+        }
+
+        private static AudioClip BuildTemporalChordClip(float freqStart, float freqEnd, float durationSec)
+        {
+            int sampleRate = 22050;
+            int sampleCount = Mathf.Max(1, Mathf.RoundToInt(sampleRate * durationSec));
+            float[] samples = new float[sampleCount];
+
+            for (int i = 0; i < sampleCount; i++)
+            {
+                float t = (float)i / sampleCount;
+                float timeSec = (float)i / sampleRate;
+                float envelope = Mathf.Sin(t * Mathf.PI) * Mathf.Exp(-2.4f * t);
+                float f1 = Mathf.Lerp(freqStart, freqEnd, t * 0.65f);
+                float f2 = f1 * 1.498f;
+                float wave = 0.65f * Mathf.Sin(2f * Mathf.PI * f1 * timeSec)
+                           + 0.35f * Mathf.Sin(2f * Mathf.PI * f2 * timeSec);
+                samples[i] = wave * envelope * 0.38f;
+            }
+
+            AudioClip clip = AudioClip.Create("TemporalShiftChime", sampleCount, 1, sampleRate, false);
+            clip.SetData(samples, 0);
+            return clip;
         }
 
         private void LateUpdate()
@@ -562,6 +751,24 @@ namespace UltimoActo.Core
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
+            // Velo de transición temporal a pantalla completa para [Q]
+            GameObject veilObj = new GameObject("TemporalShiftVeil");
+            veilObj.transform.SetParent(canvasObj.transform, false);
+            RectTransform veilRt = veilObj.AddComponent<RectTransform>();
+            veilRt.anchorMin = Vector2.zero;
+            veilRt.anchorMax = Vector2.one;
+            veilRt.offsetMin = Vector2.zero;
+            veilRt.offsetMax = Vector2.zero;
+
+            transitionVeilImage = veilObj.AddComponent<Image>();
+            transitionVeilImage.color = new Color(0.95f, 0.86f, 0.68f, 0.78f);
+            transitionVeilImage.raycastTarget = false;
+
+            transitionVeilGroup = veilObj.AddComponent<CanvasGroup>();
+            transitionVeilGroup.alpha = 0f;
+            transitionVeilGroup.blocksRaycasts = false;
+            transitionVeilGroup.interactable = false;
+
             GameObject bannerObj = new GameObject("EraBanner");
             bannerObj.transform.SetParent(canvasObj.transform, false);
             RectTransform rt = bannerObj.AddComponent<RectTransform>();
@@ -569,10 +776,10 @@ namespace UltimoActo.Core
             rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0f, -24f);
-            rt.sizeDelta = new Vector2(600f, 74f);
+            rt.sizeDelta = new Vector2(680f, 76f);
 
             Image bg = bannerObj.AddComponent<Image>();
-            bg.color = new Color(0.06f, 0.05f, 0.07f, 0.86f);
+            bg.color = new Color(0.06f, 0.05f, 0.07f, 0.88f);
             bg.raycastTarget = false;
 
             eraBannerGroup = bannerObj.AddComponent<CanvasGroup>();
@@ -588,7 +795,7 @@ namespace UltimoActo.Core
             titleRt.offsetMax = new Vector2(-16f, 0f);
 
             eraBannerTitle = titleObj.AddComponent<TextMeshProUGUI>();
-            eraBannerTitle.fontSize = 22f;
+            eraBannerTitle.fontSize = 21f;
             eraBannerTitle.fontStyle = FontStyles.Bold;
             eraBannerTitle.alignment = TextAlignmentOptions.Center;
             eraBannerTitle.raycastTarget = false;
@@ -605,24 +812,119 @@ namespace UltimoActo.Core
             eraBannerSubtitle.fontSize = 14f;
             eraBannerSubtitle.alignment = TextAlignmentOptions.Center;
             eraBannerSubtitle.raycastTarget = false;
+
+            // Indicador permanente inferior-izquierdo de época y estado de [Q] / Pausa [ESC]
+            GameObject pillBorderObj = new GameObject("EraStatusPill_Border");
+            pillBorderObj.transform.SetParent(canvasObj.transform, false);
+            RectTransform pillRt = pillBorderObj.AddComponent<RectTransform>();
+            pillRt.anchorMin = new Vector2(0f, 0f);
+            pillRt.anchorMax = new Vector2(0f, 0f);
+            pillRt.pivot = new Vector2(0f, 0f);
+            pillRt.anchoredPosition = new Vector2(205f, 18f);
+            pillRt.sizeDelta = new Vector2(540f, 44f);
+
+            bottomStatusPillBorder = pillBorderObj.AddComponent<Image>();
+            bottomStatusPillBorder.color = new Color(0.79f, 0.64f, 0.29f, 0.65f);
+            bottomStatusPillBorder.raycastTarget = false;
+
+            GameObject pillFillObj = new GameObject("EraStatusPill_Fill");
+            pillFillObj.transform.SetParent(pillBorderObj.transform, false);
+            RectTransform fillRt = pillFillObj.AddComponent<RectTransform>();
+            fillRt.anchorMin = Vector2.zero;
+            fillRt.anchorMax = Vector2.one;
+            fillRt.offsetMin = new Vector2(1.5f, 1.5f);
+            fillRt.offsetMax = new Vector2(-1.5f, -1.5f);
+
+            Image pillFillImg = pillFillObj.AddComponent<Image>();
+            pillFillImg.color = new Color(0.06f, 0.04f, 0.06f, 0.86f);
+            pillFillImg.raycastTarget = false;
+
+            GameObject pillTextObj = new GameObject("Text");
+            pillTextObj.transform.SetParent(pillFillObj.transform, false);
+            RectTransform textRt = pillTextObj.AddComponent<RectTransform>();
+            textRt.anchorMin = Vector2.zero;
+            textRt.anchorMax = Vector2.one;
+            textRt.offsetMin = new Vector2(12f, 2f);
+            textRt.offsetMax = new Vector2(-12f, -2f);
+
+            bottomStatusPillText = pillTextObj.AddComponent<TextMeshProUGUI>();
+            bottomStatusPillText.fontSize = 13.5f;
+            bottomStatusPillText.alignment = TextAlignmentOptions.Left;
+            bottomStatusPillText.textWrappingMode = TextWrappingModes.NoWrap;
+            bottomStatusPillText.overflowMode = TextOverflowModes.Ellipsis;
+            bottomStatusPillText.raycastTarget = false;
+
+            RefreshBottomEraStatusPill();
+        }
+
+        public void RefreshBottomEraStatusPill()
+        {
+            if (bottomStatusPillText == null) return;
+
+            bool canToggleQ = LanSessionManager.Instance == null || LanSessionManager.Instance.CanLocalPlayerToggleEraWithQ;
+            int playerCount = LanSessionManager.Instance != null ? LanSessionManager.Instance.ConnectedPlayerCount : 1;
+            bool roomOpen = LanSessionManager.Instance != null && LanSessionManager.Instance.IsRoomOpenOnLan;
+
+            string eraLabel = era == EraVisual.Glory1929
+                ? "<color=#EED69A><b>ÉPOCA 1929 (GLORIA)</b></color>"
+                : "<color=#9EC0E6><b>ÉPOCA ACTUAL (RUINAS)</b></color>";
+
+            string qHint = canToggleQ
+                ? "<color=#D8C8B8>[Q] Alternar Época</color>"
+                : "<color=#D47A7A>[Q Bloqueado · 2/2 Jugadores]</color>";
+
+            string lanHint = playerCount >= 2
+                ? $"<color=#78C890>CO-OP LAN (2/2)</color>"
+                : (roomOpen ? "<color=#E5C168>SALA ABIERTA (1/2)</color>" : "<color=#B8A89A>SOLO (1/2)</color>");
+
+            bottomStatusPillText.text = $"{eraLabel}  ·  {qHint}  ·  {lanHint}  ·  <color=#C4B4A5>[ESC] Sala / Pausa</color>";
+
+            if (bottomStatusPillBorder != null)
+            {
+                bottomStatusPillBorder.color = era == EraVisual.Glory1929
+                    ? new Color(0.79f, 0.64f, 0.29f, 0.68f)
+                    : new Color(0.56f, 0.63f, 0.72f, 0.68f);
+            }
+        }
+
+        private void ShowLockedEraBanner()
+        {
+            if (eraBannerGroup == null) return;
+
+            string fixedEraName = era == EraVisual.Glory1929
+                ? "ÉPOCA 1929 (ANFITRIÓN)"
+                : "ÉPOCA ACTUAL / RUINAS (INVITADO)";
+
+            eraBannerTitle.text = $"ÉPOCA FIJADA EN COOPERATIVO — {fixedEraName}";
+            eraBannerTitle.color = new Color(0.92f, 0.66f, 0.64f);
+            eraBannerSubtitle.text = "Hay 2 jugadores conectados en la sala (2/2) · El cambio individual con [Q] está desactivado";
+            eraBannerSubtitle.color = new Color(0.92f, 0.88f, 0.85f, 0.92f);
+
+            eraBannerGroup.alpha = 1f;
+            bannerTimer = 2.6f;
         }
 
         private void ShowEraBanner(EraVisual current)
         {
             if (eraBannerGroup == null) return;
 
+            bool canToggleQ = LanSessionManager.Instance == null || LanSessionManager.Instance.CanLocalPlayerToggleEraWithQ;
+            string toggleHint = canToggleQ
+                ? "[Q] Alternar Época"
+                : "Cooperativo 2/2 (Época fija)";
+
             if (current == EraVisual.Glory1929)
             {
                 eraBannerTitle.text = "ÉPOCA 1929 — PALACIO IMPERIAL VESPER";
                 eraBannerTitle.color = new Color(0.95f, 0.88f, 0.72f);
-                eraBannerSubtitle.text = "[F1] Cambiar a Ruinas · Esplendor marfil, oro viejo y crepúsculo";
+                eraBannerSubtitle.text = $"{toggleHint} · Esplendor marfil, oro viejo y crepúsculo";
                 eraBannerSubtitle.color = new Color(0.95f, 0.91f, 0.88f, 0.88f);
             }
             else
             {
                 eraBannerTitle.text = "ÉPOCA ACTUAL — RUINAS DE LA ACADEMIA";
                 eraBannerTitle.color = new Color(0.68f, 0.78f, 0.90f);
-                eraBannerSubtitle.text = "[F1] Cambiar a 1929 · Abandono, hiedra, grietas y luz lunar fría";
+                eraBannerSubtitle.text = $"{toggleHint} · Abandono, hiedra, grietas y luz lunar fría";
                 eraBannerSubtitle.color = new Color(0.78f, 0.84f, 0.90f, 0.88f);
             }
 

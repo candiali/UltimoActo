@@ -18,8 +18,19 @@ namespace UltimoActo.Editor
         private const string ScenePath = "Assets/Scenes/MainMenu.unity";
         private const string BackgroundTexturePath = "Assets/_Project/Textures/MainMenu_Background.jpg";
 
+        [MenuItem("Tools/Último Acto/Red LAN/1. Construir y Abrir Menú Principal LAN (MainMenu)")]
+        public static void BuildAndOpenLanMainMenu()
+        {
+            BuildMainMenuScene(false);
+        }
+
         [MenuItem("Tools/Último Acto/2. Construir Menú Principal (MainMenu)")]
         public static void BuildMainMenuScene()
+        {
+            BuildMainMenuScene(true);
+        }
+
+        public static void BuildMainMenuScene(bool showPopup)
         {
             // 1. Crear o reiniciar escena en Assets/Scenes/MainMenu.unity
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -179,27 +190,28 @@ namespace UltimoActo.Editor
             colRect.anchorMin = new Vector2(0.5f, 0.5f);
             colRect.anchorMax = new Vector2(0.5f, 0.5f);
             colRect.pivot = new Vector2(0.5f, 0.5f);
-            colRect.anchoredPosition = new Vector2(0f, -70f);
-            colRect.sizeDelta = new Vector2(380f, 320f);
+            colRect.anchoredPosition = new Vector2(0f, -85f);
+            colRect.sizeDelta = new Vector2(380f, 390f);
 
             VerticalLayoutGroup vlg = buttonColumn.AddComponent<VerticalLayoutGroup>();
-            vlg.spacing = 18f;
+            vlg.spacing = 16f;
             vlg.childAlignment = TextAnchor.MiddleCenter;
             vlg.childControlWidth = true;
             vlg.childControlHeight = false;
             vlg.childForceExpandWidth = true;
             vlg.childForceExpandHeight = false;
 
-            Button btnNewGame = CreateMenuButton("Btn_NewGame", buttonColumn.transform, "NUEVA PARTIDA", 52f);
-            Button btnCoop = CreateMenuButton("Btn_Coop", buttonColumn.transform, "COOPERATIVO", 52f);
-            Button btnHowTo = CreateMenuButton("Btn_HowToPlay", buttonColumn.transform, "CÓMO JUGAR", 52f);
-            Button btnQuit = CreateMenuButton("Btn_Quit", buttonColumn.transform, "SALIR", 52f);
+            Button btnNewGame = CreateMenuButton("Btn_NewGame", buttonColumn.transform, "JUGAR SOLO", 50f);
+            Button btnCoop = CreateMenuButton("Btn_Coop", buttonColumn.transform, "CREAR SALA", 50f);
+            Button btnJoinLanMenu = CreateMenuButton("Btn_JoinLanMenu", buttonColumn.transform, "UNIRSE A SALA", 50f);
+            Button btnHowTo = CreateMenuButton("Btn_HowToPlay", buttonColumn.transform, "CÓMO JUGAR", 50f);
+            Button btnQuit = CreateMenuButton("Btn_Quit", buttonColumn.transform, "SALIR", 50f);
 
             // ========================================================
-            // SUBMENÚ: COOPERATIVO (Modal Centrado)
+            // SUBMENÚ: CREAR SALA (Modal Centrado — Se completa en MainMenuController)
             // ========================================================
-            GameObject coopPanel = CreateModalPanel("Coop_Submenu_Panel", canvasObj.transform, new Vector2(540f, 440f));
-            CreatePanelHeader(coopPanel.transform, "INVESTIGACIÓN COOPERATIVA", "Conexión LAN para 2 Jugadores");
+            GameObject coopPanel = CreateModalPanel("Coop_Submenu_Panel", canvasObj.transform, new Vector2(680f, 540f));
+            CreatePanelHeader(coopPanel.transform, "CREAR SALA EN RED LOCAL", "Anfitrión: Época 1929 (Academia en su Gloria)");
 
             GameObject coopButtons = new GameObject("Coop_Buttons_Column");
             coopButtons.transform.parent = coopPanel.transform;
@@ -221,6 +233,7 @@ namespace UltimoActo.Editor
             Button btnCreateRoom = CreateMenuButton("Btn_CreateRoom", coopButtons.transform, "CREAR SALA (HOST)", 48f);
             Button btnJoinRoom = CreateMenuButton("Btn_JoinRoom", coopButtons.transform, "UNIRSE A SALA (CLIENTE)", 48f);
             Button btnBackCoop = CreateMenuButton("Btn_BackCoop", coopButtons.transform, "VOLVER", 48f);
+            coopButtons.SetActive(false);
 
             // ========================================================
             // SUBMENÚ: CÓMO JUGAR (Modal Centrado)
@@ -275,6 +288,7 @@ namespace UltimoActo.Editor
 
             serMenu.FindProperty("btnNewGame").objectReferenceValue = btnNewGame;
             serMenu.FindProperty("btnCoop").objectReferenceValue = btnCoop;
+            serMenu.FindProperty("btnJoinLanMenu").objectReferenceValue = btnJoinLanMenu;
             serMenu.FindProperty("btnHowTo").objectReferenceValue = btnHowTo;
             serMenu.FindProperty("btnQuit").objectReferenceValue = btnQuit;
             serMenu.FindProperty("btnCreateRoom").objectReferenceValue = btnCreateRoom;
@@ -296,14 +310,15 @@ namespace UltimoActo.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"<color=green>[Último Acto]</color> ¡Menú Principal Centrado con Arte de Ópera y Efectos interactivos creado en {ScenePath}!");
-            EditorUtility.DisplayDialog("Último Acto — Menú Principal",
-                "¡Menú Principal reconstruido exitosamente!\n\n" +
-                "• Fondo de Gran Teatro de Ópera con telones borgoña, palcos dorados y lámpara de araña.\n" +
-                "• Título centrado (sin cortes de texto) y frase narrativa equilibrada.\n" +
-                "• Botones centrados con micro-animaciones (zoom suave al pasar el ratón, resplandor vino/oro y sonido).\n" +
-                "• EventSystem activo y operativo.\n\n" +
-                "Presiona 'Play' para probar.", "¡A jugar!");
+            Debug.Log($"<color=green>[Último Acto]</color> ¡Menú Principal LAN creado en {ScenePath}!");
+            if (showPopup)
+            {
+                EditorUtility.DisplayDialog("Último Acto — Menú Principal LAN",
+                    "¡Menú Principal con Conexión LAN reconstruido exitosamente!\n\n" +
+                    "• Botones: Jugar Solo, Crear Sala, Unirse a Sala, Cómo Jugar y Salir.\n" +
+                    "• Anuncio y búsqueda automática de salas por UDP Broadcast.\n\n" +
+                    "Presiona 'Play' para probar.", "¡A jugar!");
+            }
         }
 
         private static Sprite LoadOperaBackgroundSprite()
