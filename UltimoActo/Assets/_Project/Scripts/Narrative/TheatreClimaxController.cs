@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UltimoActo.Interaction;
 using UltimoActo.UI;
@@ -79,6 +80,8 @@ namespace UltimoActo.Narrative
         public static bool Phase3LightingActivated { get; private set; }
         public static bool Phase4CatwalkCurtainRaised { get; private set; }
         public static bool Phase5ClimaxCompleted { get; private set; }
+
+        public static event Action<int> OnClimaxPhaseActivated;
 
         [SerializeField] private TheatreClimaxNodeType nodeType;
         [SerializeField] private Transform primaryMovingTarget;
@@ -358,24 +361,77 @@ namespace UltimoActo.Narrative
             {
                 case TheatreClimaxNodeType.InteractivePhase1OrchestraStand:
                     ExecutePhase1Orchestra();
+                    OnClimaxPhaseActivated?.Invoke(1);
                     break;
 
                 case TheatreClimaxNodeType.InteractivePhase2StagePositions:
                     ExecutePhase2StagePositions();
+                    OnClimaxPhaseActivated?.Invoke(2);
                     break;
 
                 case TheatreClimaxNodeType.InteractivePhase3LightingConsole:
                     ExecutePhase3LightingConsole();
+                    OnClimaxPhaseActivated?.Invoke(3);
                     break;
 
                 case TheatreClimaxNodeType.InteractivePhase4CatwalkRigging:
                     ExecutePhase4CatwalkRigging();
+                    OnClimaxPhaseActivated?.Invoke(4);
                     break;
 
                 case TheatreClimaxNodeType.InteractivePhase5FinalStageClimax:
                     ExecutePhase5FinalClimax();
+                    OnClimaxPhaseActivated?.Invoke(5);
                     break;
             }
+        }
+
+        public static void ApplyNetworkPhaseState(int phaseMask)
+        {
+            bool p1 = (phaseMask & (1 << 0)) != 0;
+            bool p2 = (phaseMask & (1 << 1)) != 0;
+            bool p3 = (phaseMask & (1 << 2)) != 0;
+            bool p4 = (phaseMask & (1 << 3)) != 0;
+            bool p5 = (phaseMask & (1 << 4)) != 0;
+
+            Phase1MusicConfirmed |= p1;
+            Phase2PositionsAligned |= p2;
+            Phase3LightingActivated |= p3;
+            Phase4CatwalkCurtainRaised |= p4;
+            Phase5ClimaxCompleted |= p5;
+
+            TheatreClimaxController[] allNodes = FindObjectsByType<TheatreClimaxController>(FindObjectsSortMode.None);
+            for (int i = 0; i < allNodes.Length; i++)
+            {
+                TheatreClimaxController node = allNodes[i];
+                if (node == null) continue;
+
+                if (Phase2PositionsAligned && node.nodeType == TheatreClimaxNodeType.InteractivePhase2StagePositions && node.hiddenRevealObject != null)
+                {
+                    node.hiddenRevealObject.SetActive(true);
+                }
+                if (Phase3LightingActivated && node.nodeType == TheatreClimaxNodeType.InteractivePhase3LightingConsole)
+                {
+                    if (node.controlledSpotlight != null) node.controlledSpotlight.intensity = node.baseLightIntensity * 1.4f;
+                    if (node.secondarySpotlight != null) node.secondarySpotlight.intensity = node.baseLightIntensity * 1.3f;
+                    if (node.hiddenRevealObject != null) node.hiddenRevealObject.SetActive(true);
+                }
+                if (Phase5ClimaxCompleted && node.nodeType == TheatreClimaxNodeType.InteractivePhase5FinalStageClimax && node.hiddenRevealObject != null)
+                {
+                    node.hiddenRevealObject.SetActive(true);
+                }
+            }
+        }
+
+        public static int GetPhaseMaskSnapshot()
+        {
+            int mask = 0;
+            if (Phase1MusicConfirmed) mask |= (1 << 0);
+            if (Phase2PositionsAligned) mask |= (1 << 1);
+            if (Phase3LightingActivated) mask |= (1 << 2);
+            if (Phase4CatwalkCurtainRaised) mask |= (1 << 3);
+            if (Phase5ClimaxCompleted) mask |= (1 << 4);
+            return mask;
         }
 
         private void ExecutePhase1Orchestra()

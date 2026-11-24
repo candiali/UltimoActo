@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UltimoActo.Interaction;
 using UltimoActo.UI;
@@ -53,6 +54,9 @@ namespace UltimoActo.Narrative
 
         private bool isInspected;
         private float animTimer;
+
+        public static event Action<string> OnWinterGardenNodeInspected;
+        public bool IsInspected => isInspected;
         private Vector3 slabInitialLocalPos;
         private Vector3 boxInitialLocalPos;
         private float statueRotateCooldown;
@@ -278,13 +282,26 @@ namespace UltimoActo.Narrative
             {
                 case WinterGardenNodeType.DryFountainWaterEchoAndInspect:
                     InspectDryFountain();
+                    OnWinterGardenNodeInspected?.Invoke(Id);
                     break;
                 case WinterGardenNodeType.InteractiveElenaMemorialStatue:
                     InspectElenaMemorialStatue();
+                    OnWinterGardenNodeInspected?.Invoke(Id);
                     break;
                 case WinterGardenNodeType.InteractiveHiddenSlabAndMetalBox:
                     InspectHiddenSlabAndMetalBox();
+                    OnWinterGardenNodeInspected?.Invoke(Id);
                     break;
+            }
+        }
+
+        public void ApplyNetworkInspected()
+        {
+            if (isInspected) return;
+            isInspected = true;
+            if (appearingTableObject != null && !appearingTableObject.activeSelf)
+            {
+                appearingTableObject.SetActive(true);
             }
         }
 

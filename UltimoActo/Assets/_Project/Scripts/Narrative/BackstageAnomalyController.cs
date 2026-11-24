@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UltimoActo.Interaction;
 using UltimoActo.UI;
@@ -85,6 +86,9 @@ namespace UltimoActo.Narrative
 
         private bool interactionResolved;
         private float mechanismAnimProgress;
+
+        public static event Action<string> OnBackstageNodeResolved;
+        public bool IsResolved => interactionResolved;
 
         public void Configure(
             BackstageAnomalyType type,
@@ -396,15 +400,29 @@ namespace UltimoActo.Narrative
             {
                 case BackstageAnomalyType.InteractiveElenaBlackSwanSuit:
                     ExecuteElenaSuitReconstruction();
+                    OnBackstageNodeResolved?.Invoke(Id);
                     break;
 
                 case BackstageAnomalyType.InteractiveSceneryComparison:
                     ExecuteSceneryComparison();
+                    OnBackstageNodeResolved?.Invoke(Id);
                     break;
 
                 case BackstageAnomalyType.InteractivePulleyMechanismPuzzle:
                     ExecutePulleyMechanismPuzzle();
+                    OnBackstageNodeResolved?.Invoke(Id);
                     break;
+            }
+        }
+
+        public void ApplyNetworkResolved()
+        {
+            if (interactionResolved) return;
+            interactionResolved = true;
+            if (secretRevealObject != null) secretRevealObject.SetActive(true);
+            if (stageAccessDoubleDoor != null)
+            {
+                stageAccessDoubleDoor.ApplyNetworkState(true, false, true);
             }
         }
 

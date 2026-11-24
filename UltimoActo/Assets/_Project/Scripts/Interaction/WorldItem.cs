@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UltimoActo.Core;
 using UltimoActo.Player;
@@ -25,6 +26,8 @@ namespace UltimoActo.Interaction
         [SerializeField] private bool rotateInPlace = true;
         [SerializeField] private float rotationSpeed = 45f;
 
+        public static event Action<WorldItem> OnWorldItemPickedUp;
+
         public string Id => id;
         public string DisplayName => displayName;
         public ItemType Type => itemType;
@@ -38,11 +41,12 @@ namespace UltimoActo.Interaction
             }
         }
 
-        public bool CanInteract(GameObject player) => true;
+        public bool CanInteract(GameObject player) => gameObject.activeSelf;
 
         public void Interact(GameObject player)
         {
-            var inventory = player.GetComponent<SimpleInventory>();
+            var inventory = player != null ? player.GetComponent<SimpleInventory>() : null;
+            if (inventory == null) inventory = FindFirstObjectByType<SimpleInventory>();
             if (inventory != null)
             {
                 inventory.AddKey(id, displayName);
@@ -56,7 +60,7 @@ namespace UltimoActo.Interaction
             // Si es la linterna, activarla directamente en el controlador del jugador
             if (id == "flashlight_brass_1924" || itemType == ItemType.Tool)
             {
-                var flashlight = player.GetComponentInChildren<FlashlightController>();
+                var flashlight = player != null ? player.GetComponentInChildren<FlashlightController>() : null;
                 if (flashlight == null) flashlight = FindFirstObjectByType<FlashlightController>();
                 if (flashlight != null)
                 {
@@ -66,8 +70,37 @@ namespace UltimoActo.Interaction
 
             Debug.Log($"[Objeto Recogido] {displayName} (ID: {id}) recogido por el jugador.");
 
-            // Desactivamos el objeto en la escena
+            // Desactivamos el objeto en la escena y notificamos a la capa de sincronización LAN
             gameObject.SetActive(false);
+            OnWorldItemPickedUp?.Invoke(this);
+        }
+
+        public void ApplyNetworkPickedUp(bool showToast = false)
+        {
+            SimpleInventory inv = FindFirstObjectByType<SimpleInventory>();
+            if (inv != null)
+            {
+                inv.AddKeyFromNetwork(id, displayName);
+            }
+
+            if (id == "flashlight_brass_1924" || itemType == ItemType.Tool)
+            {
+                var flashlight = FindFirstObjectByType<FlashlightController>();
+                if (flashlight != null && !flashlight.HasFlashlight)
+                {
+                    flashlight.UnlockFlashlight();
+                }
+            }
+
+            if (showToast && NightManager.Instance != null)
+            {
+                NightManager.Instance.ShowToast($"[Cooperativo] Objeto recogido: {displayName}", 3.0f);
+            }
+
+            if (gameObject.activeSelf)
+            {
+                gameObject.SetActive(false);
+            }
         }
 
         public void Configure(string itemId, string itemName, ItemType type = ItemType.Key)

@@ -58,12 +58,26 @@ namespace UltimoActo.Player
         public bool HasFlashlight => hasFlashlight;
         public bool IsOn => isOn;
         public float Battery => battery;
+        public Transform AimTransform => cameraTransform != null ? cameraTransform : transform;
+        public float CurrentCameraPitch
+        {
+            get
+            {
+                if (cameraTransform == null && transform.parent != null)
+                {
+                    cameraTransform = transform.parent;
+                }
+                if (cameraTransform == null) return 0f;
+                float x = cameraTransform.localEulerAngles.x;
+                return x > 180f ? x - 360f : x;
+            }
+        }
 
         private void Awake()
         {
             if (Instance != null && Instance != this)
             {
-                Destroy(gameObject);
+                // Si se instancia un segundo jugador en red, no destruir su linterna; solo el jugador local usa Instance
                 return;
             }
             Instance = this;
@@ -71,6 +85,10 @@ namespace UltimoActo.Player
             if (spotLight == null)
             {
                 spotLight = GetComponentInChildren<Light>();
+            }
+            if (cameraTransform == null && transform.parent != null)
+            {
+                cameraTransform = transform.parent;
             }
 
             audioSource = GetComponent<AudioSource>();

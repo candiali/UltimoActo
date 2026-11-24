@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UltimoActo.Core;
@@ -6,6 +7,8 @@ namespace UltimoActo.Interaction
 {
     public class WorldDoor : MonoBehaviour, IInteractable
     {
+        public static event Action<WorldDoor> OnDoorStateChanged;
+
         [Header("Identificación")]
         [SerializeField] private string id = "door_sample";
 
@@ -100,7 +103,8 @@ namespace UltimoActo.Interaction
 
             if (isLocked)
             {
-                var inventory = player.GetComponent<SimpleInventory>();
+                var inventory = player != null ? player.GetComponent<SimpleInventory>() : null;
+                if (inventory == null) inventory = FindFirstObjectByType<SimpleInventory>();
                 if (inventory != null && inventory.HasKey(requiredKeyId))
                 {
                     isLocked = false;
@@ -122,6 +126,7 @@ namespace UltimoActo.Interaction
             if (rotateCoroutine != null) StopCoroutine(rotateCoroutine);
             isOpen = !isOpen;
             rotateCoroutine = StartCoroutine(AnimateDoor(isOpen ? openRotation : closedRotation));
+            OnDoorStateChanged?.Invoke(this);
         }
 
         public void UnlockDoor(bool openImmediately = false)
@@ -131,6 +136,33 @@ namespace UltimoActo.Interaction
             if (openImmediately && !isOpen)
             {
                 ToggleDoor();
+            }
+            else
+            {
+                OnDoorStateChanged?.Invoke(this);
+            }
+        }
+
+        public void ApplyNetworkState(bool targetOpen, bool targetLocked, bool animate = true)
+        {
+            isLocked = targetLocked;
+            if (!targetLocked)
+            {
+                lockedDescription = string.Empty;
+            }
+
+            if (isOpen != targetOpen)
+            {
+                isOpen = targetOpen;
+                if (rotateCoroutine != null) StopCoroutine(rotateCoroutine);
+                if (animate && gameObject.activeInHierarchy)
+                {
+                    rotateCoroutine = StartCoroutine(AnimateDoor(isOpen ? openRotation : closedRotation));
+                }
+                else if (doorHinge != null)
+                {
+                    doorHinge.localRotation = isOpen ? openRotation : closedRotation;
+                }
             }
         }
 

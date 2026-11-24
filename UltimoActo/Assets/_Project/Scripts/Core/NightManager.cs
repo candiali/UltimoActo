@@ -67,6 +67,7 @@ namespace UltimoActo.Core
 
         public event Action<NightDefinition, int> OnNightStarted;
         public event Action<int, int> OnEvidenceChanged;
+        public event Action<string> OnEvidenceIdRegistered;
         public event Action<int> OnNightCompleted;
 
         public int CurrentNightIndex => currentNightIndex;
@@ -74,6 +75,7 @@ namespace UltimoActo.Core
         public NightDefinition Current => nights[Mathf.Clamp(currentNightIndex, 0, nights.Count - 1)];
         public int EvidenceThisNight => evidenceThisNight;
         public bool IsTransitioning => isTransitioning;
+        public IReadOnlyCollection<string> GlobalEvidenceIds => globalEvidence;
 
         private readonly HashSet<string> globalEvidence = new HashSet<string>();
         private readonly Dictionary<string, int> doorUnlockNight = new Dictionary<string, int>();
@@ -213,8 +215,24 @@ namespace UltimoActo.Core
         /// <summary>Registra una evidencia (documento, secreto, anomalía). Solo cuenta la primera vez que se lee.</summary>
         public void RegisterEvidence(string evidenceId)
         {
+            RegisterEvidenceInternal(evidenceId, false);
+        }
+
+        public void RegisterEvidenceFromNetwork(string evidenceId)
+        {
+            RegisterEvidenceInternal(evidenceId, true);
+        }
+
+        private void RegisterEvidenceInternal(string evidenceId, bool fromNetwork)
+        {
             if (string.IsNullOrEmpty(evidenceId) || gameFinished || isTransitioning) return;
             if (!globalEvidence.Add(evidenceId)) return;
+
+            if (!fromNetwork)
+            {
+                OnEvidenceIdRegistered?.Invoke(evidenceId);
+            }
+
             if (awaitingDawn) return;
 
             evidenceThisNight++;
@@ -222,16 +240,57 @@ namespace UltimoActo.Core
             OnEvidenceChanged?.Invoke(evidenceThisNight, quota);
             RefreshHud();
 
+            // Si estamos conectados como Cliente invitado, la transición de noche la ordena el Host autoritativo
+            bool isNetworkClientOnly = LanSessionManager.Instance != null && LanSessionManager.Instance.CurrentMode == LanSessionMode.Client;
+
             if (evidenceThisNight >= quota)
             {
                 OnNightCompleted?.Invoke(currentNightIndex);
-                if (dawnRoutine != null) StopCoroutine(dawnRoutine);
-                dawnRoutine = StartCoroutine(DawnSequence());
+                if (!isNetworkClientOnly)
+                {
+                    if (dawnRoutine != null) StopCoroutine(dawnRoutine);
+                    dawnRoutine = StartCoroutine(DawnSequence());
+                }
+                else
+                {
+                    ShowToast("OBJETIVO CUMPLIDO — Esperando sincronización del anfitrión para el amanecer…", 5.0f);
+                }
             }
             else
             {
-                ShowToast($"Nueva evidencia registrada  ({evidenceThisNight}/{quota})", 3.0f);
+                string prefix = fromNetwork ? "[Compañero] Nueva evidencia compartida" : "Nueva evidencia registrada";
+                ShowToast($"{prefix}  ({evidenceThisNight}/{quota})", 3.0f);
             }
+        }
+
+        public void ApplyAuthoritativeNightFromHost(int hostNightIndex, int hostEvidenceCount)
+        {
+            int clamped = Mathf.Clamp(hostNightIndex, 0, Mathf.Max(0, nights.Count - 1));
+            if (currentNightIndex != clamped && !isTransitioning)
+            {
+                if (dawnRoutine != null)
+                {
+                    StopCoroutine(dawnRoutine);
+                    dawnRoutine = null;
+                }
+                currentNightIndex = clamped;
+                StartCoroutine(TransitionToNight(currentNightIndex, false));
+            }
+
+            if (evidenceThisNight != hostEvidenceCount && !isTransitioning)
+            {
+                evidenceThisNight = Mathf.Max(0, hostEvidenceCount);
+                RefreshHud();
+            }
+        }
+
+        public void HostPersistCurrentNightSave()
+        {
+            bool isClient = LanSessionManager.Instance != null && LanSessionManager.Instance.CurrentMode == LanSessionMode.Client;
+            if (isClient) return;
+
+            PlayerPrefs.SetInt(PrefsKey, currentNightIndex);
+            PlayerPrefs.Save();
         }
 
         public void ShowToast(string message, float seconds = 3.5f)
@@ -274,6 +333,7 @@ namespace UltimoActo.Core
                     PlayerPrefs.SetInt(PrefsKey, currentNightIndex);
                     PlayerPrefs.Save();
                 }
+                HostPersistCurrentNightSave();
                 StartCoroutine(TransitionToNight(currentNightIndex, false));
             }
             else

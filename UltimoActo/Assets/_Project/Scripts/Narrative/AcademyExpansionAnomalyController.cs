@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UltimoActo.Interaction;
 using UltimoActo.UI;
@@ -55,6 +56,9 @@ namespace UltimoActo.Narrative
         private float ambientTimer;
         private Vector3 initialPosA;
         private Quaternion initialRotA;
+
+        public static event Action<string> OnExpansionNodeInteracted;
+        public bool HasInteracted => hasInteracted;
 
         public string Id => $"academy_expansion_{nodeType}";
 
@@ -315,6 +319,17 @@ namespace UltimoActo.Narrative
                 case ExpansionNodeType.FrozenSwanPondGazeboSecret:
                     HandleSwanPondSecret();
                     break;
+            }
+            OnExpansionNodeInteracted?.Invoke(Id);
+        }
+
+        public void ApplyNetworkInteracted()
+        {
+            if (hasInteracted) return;
+            hasInteracted = true;
+            if (hiddenObjectTarget != null && nodeType != ExpansionNodeType.InfirmaryScreenShadowAnomaly)
+            {
+                hiddenObjectTarget.SetActive(true);
             }
         }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UltimoActo.Interaction;
@@ -36,7 +37,10 @@ namespace UltimoActo.Narrative
         private bool interactionCompleted = false;
         private bool isPlayingSequence = false;
 
-        public string Id => $"music_archive_{mode}";
+        public static event Action<string> OnMusicArchiveNodeCompleted;
+        public bool IsCompleted => interactionCompleted;
+
+        public string Id => $"music_archive_{mode}_{gameObject.name}";
 
         public string Prompt
         {
@@ -94,15 +98,28 @@ namespace UltimoActo.Narrative
             {
                 case MusicArchiveAnomalyType.InteractiveGrandPianoSequence:
                     StartCoroutine(PlayCorrectPianoSequenceAndOpenCompartment());
+                    OnMusicArchiveNodeCompleted?.Invoke(Id);
                     break;
 
                 case MusicArchiveAnomalyType.InteractiveScoreSortingTable:
                     StartCoroutine(SortScoresAndRevealOriginalSection());
+                    OnMusicArchiveNodeCompleted?.Invoke(Id);
                     break;
 
                 case MusicArchiveAnomalyType.InteractiveReelToReelRecorder:
                     StartCoroutine(PlayReelToReelComparison());
+                    OnMusicArchiveNodeCompleted?.Invoke(Id);
                     break;
+            }
+        }
+
+        public void ApplyNetworkCompleted()
+        {
+            if (interactionCompleted) return;
+            interactionCompleted = true;
+            if (hiddenCompartmentReveal != null)
+            {
+                hiddenCompartmentReveal.SetActive(true);
             }
         }
 
@@ -217,7 +234,7 @@ namespace UltimoActo.Narrative
                 if (primaryAudio != null && primaryAudio.clip != null) primaryAudio.Play();
                 if (primaryMovingPart != null)
                 {
-                    primaryMovingPart.localRotation = Quaternion.Euler(0f, Random.Range(-18f, 18f), 0f);
+                    primaryMovingPart.localRotation = Quaternion.Euler(0f, UnityEngine.Random.Range(-18f, 18f), 0f);
                 }
             }
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UltimoActo.Core;
@@ -10,6 +11,8 @@ namespace UltimoActo.Interaction
     /// </summary>
     public class WorldDoubleDoor : MonoBehaviour, IInteractable
     {
+        public static event Action<WorldDoubleDoor> OnDoubleDoorStateChanged;
+
         [Header("Identificación")]
         [SerializeField] private string id = "door_grand_entrance";
 
@@ -119,7 +122,8 @@ namespace UltimoActo.Interaction
 
             if (isLocked)
             {
-                var inventory = player.GetComponent<SimpleInventory>();
+                var inventory = player != null ? player.GetComponent<SimpleInventory>() : null;
+                if (inventory == null) inventory = FindFirstObjectByType<SimpleInventory>();
                 if (inventory != null && inventory.HasKey(requiredKeyId))
                 {
                     isLocked = false;
@@ -141,6 +145,31 @@ namespace UltimoActo.Interaction
             if (animateCoroutine != null) StopCoroutine(animateCoroutine);
             isOpen = !isOpen;
             animateCoroutine = StartCoroutine(AnimateDoubleDoors(isOpen));
+            OnDoubleDoorStateChanged?.Invoke(this);
+        }
+
+        public void ApplyNetworkState(bool targetOpen, bool targetLocked, bool animate = true)
+        {
+            isLocked = targetLocked;
+            if (!targetLocked)
+            {
+                lockedDescription = string.Empty;
+            }
+
+            if (isOpen != targetOpen)
+            {
+                isOpen = targetOpen;
+                if (animateCoroutine != null) StopCoroutine(animateCoroutine);
+                if (animate && gameObject.activeInHierarchy)
+                {
+                    animateCoroutine = StartCoroutine(AnimateDoubleDoors(isOpen));
+                }
+                else
+                {
+                    if (leftDoorHinge != null) leftDoorHinge.localRotation = isOpen ? leftOpenRot : leftClosedRot;
+                    if (rightDoorHinge != null) rightDoorHinge.localRotation = isOpen ? rightOpenRot : rightClosedRot;
+                }
+            }
         }
 
         private IEnumerator AnimateDoubleDoors(bool open)

@@ -32,6 +32,9 @@ namespace UltimoActo.UI
         private RectTransform mapBoard;
         private RectTransform playerDot;
         private RectTransform playerDirectionLine;
+        private RectTransform partnerDot;
+        private RectTransform partnerDirectionLine;
+        private Image partnerDotImg;
         private RectTransform keyArchivesMarker;
         private RectTransform keyElenaMarker;
         private Image keyArchivesBg;
@@ -65,16 +68,32 @@ namespace UltimoActo.UI
 
         private void FindPlayerReferences()
         {
-            GameObject pObj = GameObject.FindGameObjectWithTag("Player");
-            if (pObj != null)
+            if (UltimoActo.Network.NetworkCoopPlayer.LocalPlayer != null)
             {
-                playerTransform = pObj.transform;
-                playerInventory = pObj.GetComponent<SimpleInventory>();
+                playerTransform = UltimoActo.Network.NetworkCoopPlayer.LocalPlayer.transform;
+                playerInventory = playerTransform.GetComponent<SimpleInventory>();
             }
+            else
+            {
+                GameObject pObj = GameObject.FindGameObjectWithTag("Player");
+                if (pObj != null)
+                {
+                    playerTransform = pObj.transform;
+                    playerInventory = pObj.GetComponent<SimpleInventory>();
+                }
+            }
+
             if (Camera.main != null)
             {
                 cameraTransform = Camera.main.transform;
             }
+        }
+
+        public void BindLocalPlayer(Transform localPlayer, Transform localCamera, SimpleInventory localInventory)
+        {
+            playerTransform = localPlayer;
+            cameraTransform = localCamera;
+            playerInventory = localInventory;
         }
 
         private void EnsureMapUIHierarchy()
@@ -466,7 +485,7 @@ namespace UltimoActo.UI
             // Marcador CLÍMAX EN ESCENARIO PRINCIPAL (Zona 32)
             CreateMapPin("Pin_Stage_Climax", new Vector2(-8f, 109f), "CLÍMAX", new Color(0.95f, 0.32f, 0.38f), out _);
 
-            // Marcador del Jugador (Punto brillante + línea de dirección de mirada)
+            // Marcador del Jugador Local (Punto brillante + línea de dirección de mirada)
             GameObject pObj = new GameObject("PlayerMapMarker");
             pObj.transform.SetParent(mapBoard, false);
             playerDot = pObj.AddComponent<RectTransform>();
@@ -484,6 +503,26 @@ namespace UltimoActo.UI
             Image dirImg = dirObj.AddComponent<Image>();
             dirImg.color = new Color(1f, 1f, 1f, 0.95f);
             dirImg.raycastTarget = false;
+
+            // Marcador del Compañero en Red (2.º Jugador en la otra época)
+            GameObject partnerObj = new GameObject("PartnerMapMarker");
+            partnerObj.transform.SetParent(mapBoard, false);
+            partnerDot = partnerObj.AddComponent<RectTransform>();
+            partnerDot.sizeDelta = new Vector2(11f, 11f);
+            partnerDotImg = partnerObj.AddComponent<Image>();
+            partnerDotImg.color = new Color(0.95f, 0.78f, 0.35f, 1f);
+            partnerDotImg.raycastTarget = false;
+
+            GameObject partnerDirObj = new GameObject("PartnerLookPointer");
+            partnerDirObj.transform.SetParent(partnerDot, false);
+            partnerDirectionLine = partnerDirObj.AddComponent<RectTransform>();
+            partnerDirectionLine.pivot = new Vector2(0.5f, 0f);
+            partnerDirectionLine.anchoredPosition = Vector2.zero;
+            partnerDirectionLine.sizeDelta = new Vector2(2.5f, 11f);
+            Image partnerDirImg = partnerDirObj.AddComponent<Image>();
+            partnerDirImg.color = new Color(1f, 0.92f, 0.75f, 0.92f);
+            partnerDirImg.raycastTarget = false;
+            partnerObj.SetActive(false);
         }
 
         private RectTransform CreateMapPin(string name, Vector2 worldXZ, string text, Color bgCol, out Image bgImage)
@@ -616,6 +655,37 @@ namespace UltimoActo.UI
             {
                 float yaw = cameraTransform.eulerAngles.y;
                 playerDirectionLine.localRotation = Quaternion.Euler(0f, 0f, -yaw);
+            }
+
+            // Actualizar marcador del 2.º jugador (compañero en la otra época)
+            if (partnerDot != null)
+            {
+                UltimoActo.Network.NetworkCoopPlayer partner = UltimoActo.Network.NetworkCoopPlayer.RemotePlayer;
+                if (partner != null && partner != UltimoActo.Network.NetworkCoopPlayer.LocalPlayer)
+                {
+                    if (!partnerDot.gameObject.activeSelf) partnerDot.gameObject.SetActive(true);
+                    Vector3 rPos = partner.transform.position;
+                    Vector2 rNorm = WorldToNormalized(new Vector2(rPos.x, rPos.z));
+                    partnerDot.anchorMin = rNorm;
+                    partnerDot.anchorMax = rNorm;
+                    partnerDot.anchoredPosition = Vector2.zero;
+
+                    if (partnerDotImg != null)
+                    {
+                        partnerDotImg.color = partner.AssignedEra == EraVisual.Glory1929
+                            ? new Color(0.96f, 0.80f, 0.42f, 1f)
+                            : new Color(0.68f, 0.56f, 0.96f, 1f);
+                    }
+                    if (partnerDirectionLine != null)
+                    {
+                        float rYaw = partner.transform.eulerAngles.y;
+                        partnerDirectionLine.localRotation = Quaternion.Euler(0f, 0f, -rYaw);
+                    }
+                }
+                else if (partnerDot.gameObject.activeSelf)
+                {
+                    partnerDot.gameObject.SetActive(false);
+                }
             }
 
             string activeRoomTitle = "Explorando la Academia";

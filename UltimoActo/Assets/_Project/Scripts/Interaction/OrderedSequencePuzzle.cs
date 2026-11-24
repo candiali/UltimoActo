@@ -18,12 +18,14 @@ namespace UltimoActo.Interaction
         [SerializeField] private string solvedMessage = "Mecanismo resuelto.";
         [SerializeField] private string failMessage = "Orden incorrecto — el mecanismo se reinicia.";
 
+        public static event Action<OrderedSequencePuzzle, int, bool> OnAnySequencePuzzleUpdated;
         public event Action<int> OnStateChanged;
 
         private int progress;
         private bool solved;
         private AudioSource audioSource;
 
+        public string PuzzleId => puzzleId;
         public bool IsSolved => solved;
         public int Progress => progress;
 
@@ -50,15 +52,33 @@ namespace UltimoActo.Interaction
                 Beep(1.0f + progress * 0.15f);
                 StartCoroutine(Nudge(node));
                 OnStateChanged?.Invoke(progress);
-                if (progress >= correctOrder.Length) Solve();
+                bool nowSolved = progress >= correctOrder.Length;
+                if (nowSolved) Solve();
+                OnAnySequencePuzzleUpdated?.Invoke(this, progress, nowSolved);
             }
             else
             {
                 progress = 0;
                 Beep(0.55f);
                 OnStateChanged?.Invoke(0);
+                OnAnySequencePuzzleUpdated?.Invoke(this, 0, false);
                 if (NightManager.Instance != null) NightManager.Instance.ShowToast(failMessage, 3.0f);
             }
+        }
+
+        public void ApplyNetworkState(int targetProgress, bool targetSolved)
+        {
+            progress = Mathf.Max(0, targetProgress);
+            if (targetSolved && !solved)
+            {
+                Beep(1.35f);
+                Solve();
+            }
+            else if (!targetSolved && progress > 0)
+            {
+                Beep(1.0f + progress * 0.15f);
+            }
+            OnStateChanged?.Invoke(progress);
         }
 
         private void Solve()

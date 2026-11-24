@@ -29,13 +29,25 @@ namespace UltimoActo.UI
                 playerInteraction = FindFirstObjectByType<PlayerInteraction>();
             }
 
+            BindToPlayerInteraction(playerInteraction);
+            HidePrompt();
+        }
+
+        public void BindToPlayerInteraction(PlayerInteraction targetInteraction)
+        {
+            if (playerInteraction != null)
+            {
+                playerInteraction.OnFocusInteractable -= ShowPrompt;
+                playerInteraction.OnLostFocusInteractable -= HidePrompt;
+            }
+
+            playerInteraction = targetInteraction;
+
             if (playerInteraction != null)
             {
                 playerInteraction.OnFocusInteractable += ShowPrompt;
                 playerInteraction.OnLostFocusInteractable += HidePrompt;
             }
-
-            HidePrompt();
         }
 
         private void OnDestroy()

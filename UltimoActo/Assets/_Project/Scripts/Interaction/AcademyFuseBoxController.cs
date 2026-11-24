@@ -15,6 +15,8 @@ namespace UltimoActo.Interaction
     public class AcademyFuseBoxController : MonoBehaviour, IInteractable
     {
         public static AcademyFuseBoxController Instance { get; private set; }
+        public static event Action<int> OnFuseSlotInstalled;
+        public static event Action OnPowerRestoredEvent;
 
         [Header("Identificación")]
         [SerializeField] private string id = "fuse_box_reception";
@@ -129,6 +131,7 @@ namespace UltimoActo.Interaction
             if (AllFusesInstalled())
             {
                 // Bajar la palanca y restaurar la corriente
+                OnPowerRestoredEvent?.Invoke();
                 powerUpRoutine = StartCoroutine(RestorePowerSequence());
                 return;
             }
@@ -142,6 +145,7 @@ namespace UltimoActo.Interaction
                 slotInstalled[slotToFill] = true;
                 UpdateIndicators();
                 PlayPorcelainSnapSound();
+                OnFuseSlotInstalled?.Invoke(slotToFill);
 
                 int total = InstalledFusesCount;
                 if (NightManager.Instance != null)
@@ -164,6 +168,39 @@ namespace UltimoActo.Interaction
                     NightManager.Instance.ShowToast($"Faltan fusibles cerámicos ({InstalledFusesCount}/3). Busca en Vestuarios, Taquillas y Administración.", 4.5f);
                 }
             }
+        }
+
+        public void ApplyNetworkFuseSlot(int slotIdx)
+        {
+            if (slotIdx < 0 || slotIdx >= slotInstalled.Length) return;
+            if (slotInstalled[slotIdx]) return;
+
+            slotInstalled[slotIdx] = true;
+            SimpleInventory inv = FindFirstObjectByType<SimpleInventory>();
+            if (inv != null && slotIdx < requiredFuseIds.Length)
+            {
+                inv.RemoveKeyFromNetwork(requiredFuseIds[slotIdx]);
+            }
+            UpdateIndicators();
+            PlayPorcelainSnapSound();
+
+            if (NightManager.Instance != null)
+            {
+                int total = InstalledFusesCount;
+                NightManager.Instance.ShowToast(
+                    total >= 3
+                        ? "[Cooperativo] ¡3/3 fusibles instalados! Ya se puede accionar la palanca."
+                        : $"[Cooperativo] Fusible instalado en el cuadro ({total}/3).",
+                    3.2f);
+            }
+        }
+
+        public void ApplyNetworkPowerRestored()
+        {
+            if (isPowerRestored || powerUpRoutine != null) return;
+            for (int i = 0; i < slotInstalled.Length; i++) slotInstalled[i] = true;
+            UpdateIndicators();
+            powerUpRoutine = StartCoroutine(RestorePowerSequence());
         }
 
         public bool AllFusesInstalled()

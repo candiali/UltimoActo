@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UltimoActo.Interaction;
 using UltimoActo.UI;
@@ -66,6 +67,9 @@ namespace UltimoActo.Narrative
         private bool hasEnteredDepotOnce;
         private bool hasLeftDepotAfterEntering;
         private bool hasShiftedDepotCrate;
+
+        public static event Action<string> OnSecretZoneNodeActivated;
+        public bool IsActivated => isActivated;
 
         public void Configure(
             SecretZoneNodeType type,
@@ -268,19 +272,34 @@ namespace UltimoActo.Narrative
             {
                 case SecretZoneNodeType.InteractiveSecretPanelEntrance:
                     ExecuteSecretPanelOpen();
+                    OnSecretZoneNodeActivated?.Invoke(Id);
                     break;
 
                 case SecretZoneNodeType.InteractiveSealedDepotInvestigation:
                     ExecuteSealedDepotInvestigation();
+                    OnSecretZoneNodeActivated?.Invoke(Id);
                     break;
 
                 case SecretZoneNodeType.InteractiveForbiddenArchivesTimeline:
                     ExecuteForbiddenArchivesTimeline();
+                    OnSecretZoneNodeActivated?.Invoke(Id);
                     break;
 
                 case SecretZoneNodeType.InteractiveBehindStageFinalBox:
                     ExecuteBehindStageFinalBox();
+                    OnSecretZoneNodeActivated?.Invoke(Id);
                     break;
+            }
+        }
+
+        public void ApplyNetworkActivated()
+        {
+            if (isActivated) return;
+            isActivated = true;
+            if (hiddenRevealObject != null) hiddenRevealObject.SetActive(true);
+            if (linkedDoorToUnlock != null)
+            {
+                linkedDoorToUnlock.ApplyNetworkState(true, false, true);
             }
         }
 

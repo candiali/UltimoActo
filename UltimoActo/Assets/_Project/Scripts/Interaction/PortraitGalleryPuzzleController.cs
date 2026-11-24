@@ -15,6 +15,8 @@ namespace UltimoActo.Interaction
     public class PortraitGalleryPuzzleController : MonoBehaviour
     {
         public static PortraitGalleryPuzzleController Instance { get; private set; }
+        public static event Action<int, int> OnDialRotated;
+        public static event Action OnPortraitPuzzleSolved;
 
         public static readonly string[] SeasonNames = new string[]
         {
@@ -83,10 +85,37 @@ namespace UltimoActo.Interaction
                 dialTransforms[portraitIndex].localRotation = Quaternion.Euler(0f, 0f, currentDialIndices[portraitIndex] * 90f);
             }
 
+            OnDialRotated?.Invoke(portraitIndex, currentDialIndices[portraitIndex]);
+
+            if (CheckSolution())
+            {
+                OnPortraitPuzzleSolved?.Invoke();
+                solveRoutine = StartCoroutine(SolveSequence());
+            }
+        }
+
+        public void ApplyNetworkDialState(int portraitIndex, int dialValue)
+        {
+            if (isSolved || solveRoutine != null) return;
+            if (portraitIndex < 0 || portraitIndex >= currentDialIndices.Length) return;
+
+            currentDialIndices[portraitIndex] = Mathf.Clamp(dialValue, 0, 3);
+            PlayDialClickSound();
+
+            if (dialTransforms != null && portraitIndex < dialTransforms.Length && dialTransforms[portraitIndex] != null)
+            {
+                dialTransforms[portraitIndex].localRotation = Quaternion.Euler(0f, 0f, currentDialIndices[portraitIndex] * 90f);
+            }
+
             if (CheckSolution())
             {
                 solveRoutine = StartCoroutine(SolveSequence());
             }
+        }
+
+        public int[] GetCurrentDialSnapshot()
+        {
+            return currentDialIndices;
         }
 
         private bool CheckSolution()
