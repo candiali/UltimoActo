@@ -47,6 +47,18 @@ namespace UltimoActo.Network
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoBootstrap()
         {
+            SceneManager.sceneLoaded -= OnSceneLoadedBootstrap;
+            SceneManager.sceneLoaded += OnSceneLoadedBootstrap;
+            TrySpawnInActiveScene();
+        }
+
+        private static void OnSceneLoadedBootstrap(Scene scene, LoadSceneMode mode)
+        {
+            TrySpawnInActiveScene();
+        }
+
+        private static void TrySpawnInActiveScene()
+        {
             if (Instance != null) return;
             if (FindFirstObjectByType<CoopPlayerSpawnerAndCompassHUD>() != null) return;
             if (FindFirstObjectByType<PlayerMovement>() == null) return;
@@ -452,6 +464,8 @@ namespace UltimoActo.Network
             bool partnerIs1929 = remote.AssignedEra == EraVisual.Glory1929;
             string eraShort = partnerIs1929 ? "ÉPOCA 1929" : "ÉPOCA RUINAS";
             string flashState = remote.IsFlashlightActive ? "Linterna ON" : "Linterna OFF";
+            bool partnerTalking = LanVoiceChatManager.Instance != null && LanVoiceChatManager.Instance.IsRemoteSpeaking;
+            string speakTag = partnerTalking ? "  ·  <color=#78E89A>● HABLANDO</color>" : "";
 
             if (markerTopTitle != null)
             {
@@ -463,7 +477,7 @@ namespace UltimoActo.Network
 
             if (markerBottomInfo != null)
             {
-                markerBottomInfo.text = $"{distanceMeters:0.0} m  ·  {flashState}";
+                markerBottomInfo.text = $"{distanceMeters:0.0} m  ·  {flashState}{speakTag}";
             }
 
             if (markerOuterBorder != null)

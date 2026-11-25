@@ -83,14 +83,39 @@ namespace UltimoActo.Player
 
         private void HandleCursorToggle()
         {
+            // Si el Menú de Pausa [ESC], el Diario de Evidencias [J]/[TAB], el Visor de Documentos
+            // o la Pausa de Desconexión están activos, ellos gestionan el cursor para no interferir con la cámara.
+            if (UltimoActo.UI.InGamePauseMenuUI.Instance != null)
+            {
+                if (UltimoActo.UI.InGamePauseMenuUI.Instance.IsOpen) return;
+                if (UltimoActo.UI.EvidenceJournalUI.Instance != null && UltimoActo.UI.EvidenceJournalUI.Instance.IsOpen) return;
+
+                // Solo volver a bloquear el cursor con clic izquierdo cuando ningún menú esté abierto
+#if ENABLE_INPUT_SYSTEM
+                var mouse = Mouse.current;
+                if (mouse != null && mouse.leftButton.wasPressedThisFrame && !isCursorLocked &&
+                    (UltimoActo.UI.DocumentUI.Instance == null || !UltimoActo.UI.DocumentUI.Instance.IsOpen))
+                {
+                    SetCursorLock(true);
+                }
+#else
+                if (Input.GetMouseButtonDown(0) && !isCursorLocked &&
+                    (UltimoActo.UI.DocumentUI.Instance == null || !UltimoActo.UI.DocumentUI.Instance.IsOpen))
+                {
+                    SetCursorLock(true);
+                }
+#endif
+                return;
+            }
+
 #if ENABLE_INPUT_SYSTEM
             var keyboard = Keyboard.current;
-            var mouse = Mouse.current;
+            var mouseFallback = Mouse.current;
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             {
                 SetCursorLock(!isCursorLocked);
             }
-            else if (mouse != null && mouse.leftButton.wasPressedThisFrame && !isCursorLocked)
+            else if (mouseFallback != null && mouseFallback.leftButton.wasPressedThisFrame && !isCursorLocked)
             {
                 SetCursorLock(true);
             }

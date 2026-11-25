@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 #endif
 using UltimoActo.Core;
+using UltimoActo.Network;
 using UltimoActo.Player;
 
 namespace UltimoActo.UI
@@ -40,6 +41,16 @@ namespace UltimoActo.UI
         private Button toggleEraButton;
         private TextMeshProUGUI toggleEraButtonLabel;
 
+        // Controles de Chat de Voz en LAN (Paso 5)
+        private TextMeshProUGUI voiceStatusLabel;
+        private TextMeshProUGUI btnVoiceModeLabel;
+        private TextMeshProUGUI btnMicDeviceLabel;
+        private TextMeshProUGUI btnInputGainLabel;
+        private TextMeshProUGUI btnOutputVolLabel;
+        private TextMeshProUGUI btnMuteRemoteLabel;
+        private TextMeshProUGUI btnEraVoiceEffectLabel;
+        private TextMeshProUGUI btnLoopbackTestLabel;
+
         // Aviso de punto seguro al iniciar cada noche
         private CanvasGroup checkpointToastGroup;
         private TextMeshProUGUI checkpointToastText;
@@ -61,6 +72,18 @@ namespace UltimoActo.UI
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoBootstrap()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoadedBootstrap;
+            SceneManager.sceneLoaded += OnSceneLoadedBootstrap;
+            TrySpawnInActiveScene();
+        }
+
+        private static void OnSceneLoadedBootstrap(Scene scene, LoadSceneMode mode)
+        {
+            TrySpawnInActiveScene();
+        }
+
+        private static void TrySpawnInActiveScene()
         {
             if (Instance != null) return;
             if (FindFirstObjectByType<InGamePauseMenuUI>() != null) return;
@@ -100,6 +123,10 @@ namespace UltimoActo.UI
             {
                 EraVisualManager.Instance.OnEraChanged += OnEraChangedHandler;
             }
+            if (LanVoiceChatManager.Instance != null)
+            {
+                LanVoiceChatManager.Instance.OnVoiceSettingsChanged += OnVoiceSettingsChangedHandler;
+            }
 
             // Mostrar aviso de punto seguro al comenzar la partida si está en modo Solo
             StartCoroutine(InitialSafeCheckpointNoticeRoutine());
@@ -120,7 +147,19 @@ namespace UltimoActo.UI
             {
                 EraVisualManager.Instance.OnEraChanged -= OnEraChangedHandler;
             }
+            if (LanVoiceChatManager.Instance != null)
+            {
+                LanVoiceChatManager.Instance.OnVoiceSettingsChanged -= OnVoiceSettingsChangedHandler;
+            }
             if (Instance == this) Instance = null;
+        }
+
+        private void OnVoiceSettingsChangedHandler()
+        {
+            if (isOpen)
+            {
+                RefreshStatusTexts();
+            }
         }
 
         private IEnumerator InitialSafeCheckpointNoticeRoutine()
@@ -209,12 +248,16 @@ namespace UltimoActo.UI
 #endif
             if (escPressed)
             {
-                // Si el visor de documentos está abierto o se acaba de cerrar en este mismo frame con ESC, no abrir pausa
+                // Si el visor de documentos o el Diario de Evidencias [J]/[TAB] están abiertos o se acaban de cerrar con ESC, no abrir pausa
                 if (DocumentUI.Instance != null && (DocumentUI.Instance.IsOpen || DocumentUI.Instance.LastClosedFrame == Time.frameCount))
                 {
                     return;
                 }
-                if (NightManager.Instance != null && NightManager.Instance.IsTransitioning)
+                if (EvidenceJournalUI.Instance != null && (EvidenceJournalUI.Instance.IsOpen || EvidenceJournalUI.Instance.LastClosedFrame == Time.frameCount))
+                {
+                    return;
+                }
+                if (CoopDisconnectRecoveryUI.Instance != null && CoopDisconnectRecoveryUI.Instance.IsRecoveryModalOpen)
                 {
                     return;
                 }
@@ -235,6 +278,7 @@ namespace UltimoActo.UI
             if (pauseRootPanel == null) return;
             isOpen = true;
             pauseRootPanel.SetActive(true);
+            Time.timeScale = 0f;
 
             if (cachedPlayerMovement == null) cachedPlayerMovement = FindFirstObjectByType<PlayerMovement>();
             if (cachedPlayerLook == null) cachedPlayerLook = FindFirstObjectByType<PlayerCameraLook>();
@@ -268,6 +312,7 @@ namespace UltimoActo.UI
             if (pauseRootPanel == null) return;
             isOpen = false;
             pauseRootPanel.SetActive(false);
+            Time.timeScale = 1f;
 
             if (cachedPlayerMovement == null) cachedPlayerMovement = FindFirstObjectByType<PlayerMovement>();
             if (cachedPlayerLook == null) cachedPlayerLook = FindFirstObjectByType<PlayerCameraLook>();
@@ -370,6 +415,73 @@ namespace UltimoActo.UI
                 {
                     toggleEraButtonLabel.text = "CAMBIO DE ÉPOCA [Q] BLOQUEADO (2/2 JUGADORES)";
                 }
+            }
+
+            RefreshVoiceChatControls();
+        }
+
+        private void RefreshVoiceChatControls()
+        {
+            LanVoiceChatManager voice = LanVoiceChatManager.Instance;
+            if (voice == null) return;
+
+            if (voiceStatusLabel != null)
+            {
+                if (voice.HasMicrophoneIssue)
+                {
+                    voiceStatusLabel.color = new Color(0.95f, 0.58f, 0.54f, 1f);
+                    voiceStatusLabel.text = $"ESTADO DE MICRÓFONO: {voice.MicStatusDescription}";
+                }
+                else
+                {
+                    voiceStatusLabel.color = new Color(0.76f, 0.86f, 0.78f, 1f);
+                    voiceStatusLabel.text = $"CHAT DE VOZ LAN: {voice.MicStatusDescription} · Recomendación: Usa auriculares para evitar eco acústico";
+                }
+            }
+
+            if (btnVoiceModeLabel != null)
+            {
+                btnVoiceModeLabel.text = voice.IsPushToTalk
+                    ? "MODO: PULSAR PARA HABLAR [TECLA V]"
+                    : "MODO: MICRÓFONO ABIERTO (AUTOMÁTICO)";
+            }
+
+            if (btnMicDeviceLabel != null)
+            {
+                string micName = voice.ActiveMicName;
+                if (micName.Length > 28) micName = micName.Substring(0, 28) + "…";
+                btnMicDeviceLabel.text = $"MICRÓFONO ({voice.AvailableMicCount}): {micName}";
+            }
+
+            if (btnInputGainLabel != null)
+            {
+                btnInputGainLabel.text = $"VOLUMEN ENTRADA (MIC): {Mathf.RoundToInt(voice.InputGain * 100f)}%";
+            }
+
+            if (btnOutputVolLabel != null)
+            {
+                btnOutputVolLabel.text = $"VOLUMEN SALIDA (VOZ): {Mathf.RoundToInt(voice.OutputVolume * 100f)}%";
+            }
+
+            if (btnMuteRemoteLabel != null)
+            {
+                btnMuteRemoteLabel.text = voice.IsRemoteMuted
+                    ? "OTRO JUGADOR: SILENCIADO (PULSA PARA OÍR)"
+                    : "SILENCIAR AL OTRO JUGADOR: NO";
+            }
+
+            if (btnEraVoiceEffectLabel != null)
+            {
+                btnEraVoiceEffectLabel.text = voice.IsExperimentalEraEffectEnabled
+                    ? "AUDIO POR ÉPOCA (ECO RUINAS): ACTIVADO"
+                    : "AUDIO POR ÉPOCA: DESACTIVADO (VOZ CLARA)";
+            }
+
+            if (btnLoopbackTestLabel != null)
+            {
+                btnLoopbackTestLabel.text = voice.IsLoopbackTestEnabled
+                    ? "PRUEBA DE MICRO LOCAL (OÍRTE A TI MISMO): ON"
+                    : "PROBAR MI MICRÓFONO EN LOCAL (LOOPBACK): OFF";
             }
         }
 
@@ -526,14 +638,14 @@ namespace UltimoActo.UI
             Image backdropImg = pauseRootPanel.AddComponent<Image>();
             backdropImg.color = ColBackdrop;
 
-            // Tarjeta central estilo Gran Ópera
+            // Tarjeta central estilo Gran Ópera (ampliada para incluir Sala LAN + Chat de Voz LAN)
             GameObject cardBorder = new GameObject("OperaPauseCard_Border");
             cardBorder.transform.SetParent(pauseRootPanel.transform, false);
             RectTransform cardBorderRt = cardBorder.AddComponent<RectTransform>();
             cardBorderRt.anchorMin = new Vector2(0.5f, 0.5f);
             cardBorderRt.anchorMax = new Vector2(0.5f, 0.5f);
             cardBorderRt.pivot = new Vector2(0.5f, 0.5f);
-            cardBorderRt.sizeDelta = new Vector2(820f, 650f);
+            cardBorderRt.sizeDelta = new Vector2(880f, 890f);
 
             Image borderImg = cardBorder.AddComponent<Image>();
             borderImg.color = ColGoldBorder;
@@ -550,11 +662,11 @@ namespace UltimoActo.UI
             fillImg.color = ColCardBg;
 
             // Cabecera
-            CreateLabel(cardFill.transform, "Eyebrow", "ACADEMIA VESPER · PAUSA Y SALA COOPERATIVA LAN", 14f, ColGoldBright, FontStyles.Bold,
-                new Vector2(0.5f, 1f), new Vector2(0f, -26f), new Vector2(740f, 24f));
+            CreateLabel(cardFill.transform, "Eyebrow", "ACADEMIA VESPER · PAUSA, SALA COOPERATIVA Y CHAT DE VOZ LAN", 13.5f, ColGoldBright, FontStyles.Bold,
+                new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(800f, 22f));
 
-            CreateLabel(cardFill.transform, "MainTitle", "GESTIÓN DE ÉPOCA Y SEGUNDO JUGADOR", 28f, ColIvoryText, FontStyles.Bold,
-                new Vector2(0.5f, 1f), new Vector2(0f, -58f), new Vector2(740f, 38f));
+            CreateLabel(cardFill.transform, "MainTitle", "GESTIÓN DE ÉPOCA, SEGUNDO JUGADOR Y VOZ", 25f, ColIvoryText, FontStyles.Bold,
+                new Vector2(0.5f, 1f), new Vector2(0f, -48f), new Vector2(800f, 34f));
 
             // Línea divisoria dorada
             GameObject div = new GameObject("GoldDivider");
@@ -563,68 +675,163 @@ namespace UltimoActo.UI
             divRt.anchorMin = new Vector2(0.5f, 1f);
             divRt.anchorMax = new Vector2(0.5f, 1f);
             divRt.pivot = new Vector2(0.5f, 0.5f);
-            divRt.anchoredPosition = new Vector2(0f, -104f);
-            divRt.sizeDelta = new Vector2(700f, 1.5f);
+            divRt.anchoredPosition = new Vector2(0f, -88f);
+            divRt.sizeDelta = new Vector2(780f, 1.5f);
             Image divImg = div.AddComponent<Image>();
             divImg.color = new Color(0.85f, 0.71f, 0.41f, 0.45f);
 
             // Etiquetas de estado de Noche, Red y Época
-            nightProgressLabel = CreateLabel(cardFill.transform, "NightProgress", "", 16.5f, ColGoldBright, FontStyles.Bold,
-                new Vector2(0.5f, 1f), new Vector2(0f, -132f), new Vector2(730f, 28f));
+            nightProgressLabel = CreateLabel(cardFill.transform, "NightProgress", "", 15.5f, ColGoldBright, FontStyles.Bold,
+                new Vector2(0.5f, 1f), new Vector2(0f, -108f), new Vector2(790f, 24f));
 
-            sessionStatusLabel = CreateLabel(cardFill.transform, "SessionStatus", "", 15.5f, ColIvoryText, FontStyles.Normal,
-                new Vector2(0.5f, 1f), new Vector2(0f, -164f), new Vector2(730f, 28f));
+            sessionStatusLabel = CreateLabel(cardFill.transform, "SessionStatus", "", 14.5f, ColIvoryText, FontStyles.Normal,
+                new Vector2(0.5f, 1f), new Vector2(0f, -134f), new Vector2(790f, 24f));
 
-            eraStatusLabel = CreateLabel(cardFill.transform, "EraStatus", "", 15.5f, ColIvoryText, FontStyles.Normal,
-                new Vector2(0.5f, 1f), new Vector2(0f, -196f), new Vector2(730f, 28f));
+            eraStatusLabel = CreateLabel(cardFill.transform, "EraStatus", "", 14.5f, ColIvoryText, FontStyles.Normal,
+                new Vector2(0.5f, 1f), new Vector2(0f, -160f), new Vector2(790f, 24f));
 
-            // Caja para abrir sala en LAN desde Modo Solo sin perder progreso
+            // Caja 1: Abrir sala en LAN desde Modo Solo sin perder progreso
             GameObject lanBox = new GameObject("LanOpenBox");
             lanBox.transform.SetParent(cardFill.transform, false);
             RectTransform lanBoxRt = lanBox.AddComponent<RectTransform>();
             lanBoxRt.anchorMin = new Vector2(0.5f, 1f);
             lanBoxRt.anchorMax = new Vector2(0.5f, 1f);
             lanBoxRt.pivot = new Vector2(0.5f, 1f);
-            lanBoxRt.anchoredPosition = new Vector2(0f, -238f);
-            lanBoxRt.sizeDelta = new Vector2(720f, 152f);
+            lanBoxRt.anchoredPosition = new Vector2(0f, -192f);
+            lanBoxRt.sizeDelta = new Vector2(800f, 134f);
 
             Image lanBoxBg = lanBox.AddComponent<Image>();
             lanBoxBg.color = new Color(0.12f, 0.06f, 0.08f, 0.92f);
 
             CreateLabel(lanBox.transform, "LanBoxTitle",
                 "ENTRADA DE 2.º JUGADOR EN PUNTO SEGURO (CONSERVA NOCHE, LLAVES Y PUERTAS)",
-                14f, ColGoldBright, FontStyles.Bold,
-                new Vector2(0.5f, 1f), new Vector2(0f, -18f), new Vector2(680f, 22f));
+                13.5f, ColGoldBright, FontStyles.Bold,
+                new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(750f, 20f));
 
-            CreateLabel(lanBox.transform, "RoomInputLabel", "Nombre de la Sala en LAN:", 14.5f, ColMutedRose, FontStyles.Normal,
-                new Vector2(0f, 1f), new Vector2(24f, -56f), new Vector2(210f, 36f), TextAlignmentOptions.Left);
+            CreateLabel(lanBox.transform, "RoomInputLabel", "Nombre de la Sala en LAN:", 14f, ColMutedRose, FontStyles.Normal,
+                new Vector2(0f, 1f), new Vector2(24f, -46f), new Vector2(210f, 34f), TextAlignmentOptions.Left);
 
             roomNameInput = CreateInputField(lanBox.transform, "RoomNameInput", "Academia Vesper",
-                new Vector2(0f, 1f), new Vector2(225f, -52f), new Vector2(470f, 38f));
+                new Vector2(0f, 1f), new Vector2(225f, -42f), new Vector2(550f, 34f));
 
             openLanRoomButton = CreateOperaButton(lanBox.transform, "BtnOpenLanRoom",
                 "ABRIR SALA A 2.º JUGADOR EN LAN (SIN PERDER PROGRESO)",
-                new Vector2(0.5f, 1f), new Vector2(0f, -104f), new Vector2(672f, 44f),
+                new Vector2(0.5f, 1f), new Vector2(0f, -86f), new Vector2(752f, 38f),
                 out openLanRoomButtonLabel, OnOpenLanRoomClicked);
 
+            // Caja 2: Chat de Voz en LAN (Paso 5)
+            GameObject voiceBox = new GameObject("LanVoiceChatBox");
+            voiceBox.transform.SetParent(cardFill.transform, false);
+            RectTransform voiceBoxRt = voiceBox.AddComponent<RectTransform>();
+            voiceBoxRt.anchorMin = new Vector2(0.5f, 1f);
+            voiceBoxRt.anchorMax = new Vector2(0.5f, 1f);
+            voiceBoxRt.pivot = new Vector2(0.5f, 1f);
+            voiceBoxRt.anchoredPosition = new Vector2(0f, -338f);
+            voiceBoxRt.sizeDelta = new Vector2(800f, 286f);
+
+            Image voiceBoxBg = voiceBox.AddComponent<Image>();
+            voiceBoxBg.color = new Color(0.10f, 0.05f, 0.07f, 0.94f);
+
+            CreateLabel(voiceBox.transform, "VoiceBoxTitle",
+                "CHAT DE VOZ EN RED LOCAL (NETCODE PCM 16 kHz · SIN SERVICIOS EXTERNOS)",
+                13.5f, ColGoldBright, FontStyles.Bold,
+                new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(760f, 20f));
+
+            voiceStatusLabel = CreateLabel(voiceBox.transform, "VoiceStatusLabel",
+                "Recomendación: Usa auriculares para evitar eco acústico entre micrófono y altavoces.",
+                12.5f, ColMutedRose, FontStyles.Italic,
+                new Vector2(0.5f, 1f), new Vector2(0f, -34f), new Vector2(760f, 20f));
+
+            // Fila 1 de voz: Modo [V] / Mic Abierto  +  Selección de Micrófono
+            CreateOperaButton(voiceBox.transform, "BtnVoiceMode",
+                "MODO: PULSAR PARA HABLAR [TECLA V]",
+                new Vector2(0.5f, 1f), new Vector2(-192f, -64f), new Vector2(368f, 38f),
+                out btnVoiceModeLabel, () =>
+                {
+                    LanVoiceChatManager.Instance?.TogglePushToTalkMode();
+                    RefreshVoiceChatControls();
+                });
+
+            CreateOperaButton(voiceBox.transform, "BtnMicDevice",
+                "MICRÓFONO: PREDETERMINADO",
+                new Vector2(0.5f, 1f), new Vector2(192f, -64f), new Vector2(368f, 38f),
+                out btnMicDeviceLabel, () =>
+                {
+                    LanVoiceChatManager.Instance?.CycleMicrophoneDevice();
+                    RefreshVoiceChatControls();
+                });
+
+            // Fila 2 de voz: Volumen Entrada  +  Volumen Salida
+            CreateOperaButton(voiceBox.transform, "BtnInputGain",
+                "VOLUMEN ENTRADA (MIC): 115%",
+                new Vector2(0.5f, 1f), new Vector2(-192f, -112f), new Vector2(368f, 38f),
+                out btnInputGainLabel, () =>
+                {
+                    LanVoiceChatManager.Instance?.CycleInputGain();
+                    RefreshVoiceChatControls();
+                });
+
+            CreateOperaButton(voiceBox.transform, "BtnOutputVol",
+                "VOLUMEN SALIDA (VOZ): 100%",
+                new Vector2(0.5f, 1f), new Vector2(192f, -112f), new Vector2(368f, 38f),
+                out btnOutputVolLabel, () =>
+                {
+                    LanVoiceChatManager.Instance?.CycleOutputVolume();
+                    RefreshVoiceChatControls();
+                });
+
+            // Fila 3 de voz: Silenciar al otro jugador  +  Audio espacial experimental por época
+            CreateOperaButton(voiceBox.transform, "BtnMuteRemote",
+                "SILENCIAR AL OTRO JUGADOR: NO",
+                new Vector2(0.5f, 1f), new Vector2(-192f, -160f), new Vector2(368f, 38f),
+                out btnMuteRemoteLabel, () =>
+                {
+                    LanVoiceChatManager.Instance?.ToggleMuteRemotePlayer();
+                    RefreshVoiceChatControls();
+                });
+
+            CreateOperaButton(voiceBox.transform, "BtnEraEffect",
+                "AUDIO POR ÉPOCA: DESACTIVADO (VOZ CLARA)",
+                new Vector2(0.5f, 1f), new Vector2(192f, -160f), new Vector2(368f, 38f),
+                out btnEraVoiceEffectLabel, () =>
+                {
+                    LanVoiceChatManager.Instance?.ToggleExperimentalEraEffect();
+                    RefreshVoiceChatControls();
+                });
+
+            // Fila 4 de voz: Botón para probar el propio micrófono en local (Loopback)
+            CreateOperaButton(voiceBox.transform, "BtnLoopbackTest",
+                "PROBAR MI MICRÓFONO EN LOCAL (LOOPBACK): OFF",
+                new Vector2(0.5f, 1f), new Vector2(0f, -208f), new Vector2(752f, 36f),
+                out btnLoopbackTestLabel, () =>
+                {
+                    LanVoiceChatManager.Instance?.ToggleLoopbackTestMode();
+                    RefreshVoiceChatControls();
+                });
+
+            CreateLabel(voiceBox.transform, "HeadphonesAdvice",
+                "Cancelación de eco básica (puerta de ruido adaptativa) activa · Se recomienda usar auriculares.",
+                12f, new Color(0.75f, 0.82f, 0.76f, 0.90f), FontStyles.Normal,
+                new Vector2(0.5f, 1f), new Vector2(0f, -254f), new Vector2(750f, 20f));
+
             // Mensaje de confirmación / feedback
-            feedbackMessageLabel = CreateLabel(cardFill.transform, "FeedbackMsg", "", 14.5f, new Color(0.60f, 0.90f, 0.68f, 1f), FontStyles.Italic,
-                new Vector2(0.5f, 1f), new Vector2(0f, -404f), new Vector2(720f, 42f));
+            feedbackMessageLabel = CreateLabel(cardFill.transform, "FeedbackMsg", "", 13.5f, new Color(0.60f, 0.90f, 0.68f, 1f), FontStyles.Italic,
+                new Vector2(0.5f, 1f), new Vector2(0f, -634f), new Vector2(780f, 34f));
 
             // Botones de acción inferiores
             toggleEraButton = CreateOperaButton(cardFill.transform, "BtnToggleEra",
                 "ALTERNAR ÉPOCA (1929 / RUINAS) [TECLA Q]",
-                new Vector2(0.5f, 1f), new Vector2(0f, -456f), new Vector2(672f, 46f),
+                new Vector2(0.5f, 1f), new Vector2(0f, -678f), new Vector2(752f, 42f),
                 out toggleEraButtonLabel, OnToggleEraInsideMenuClicked);
 
             CreateOperaButton(cardFill.transform, "BtnResume",
                 "REANUDAR INVESTIGACIÓN [ESC]",
-                new Vector2(0.5f, 1f), new Vector2(0f, -514f), new Vector2(672f, 46f),
+                new Vector2(0.5f, 1f), new Vector2(0f, -730f), new Vector2(752f, 42f),
                 out _, ClosePauseMenu);
 
             CreateOperaButton(cardFill.transform, "BtnMainMenu",
                 "VOLVER AL MENÚ PRINCIPAL",
-                new Vector2(0.5f, 1f), new Vector2(0f, -572f), new Vector2(672f, 44f),
+                new Vector2(0.5f, 1f), new Vector2(0f, -782f), new Vector2(752f, 40f),
                 out _, OnReturnToMainMenuClicked);
 
             pauseRootPanel.SetActive(false);

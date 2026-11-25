@@ -66,6 +66,8 @@ namespace UltimoActo.Core
             remove => OnPlayerCountChanged -= value;
         }
         public event Action OnRoomOpenedInGame;
+        public event Action<string> OnPartnerDisconnected;
+        public event Action OnPartnerReconnected;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoBootstrapOnSceneLoad()
@@ -271,6 +273,7 @@ namespace UltimoActo.Core
             int clamped = Mathf.Clamp(count, 1, 2);
             if (connectedPlayers == clamped) return;
 
+            int previousCount = connectedPlayers;
             connectedPlayers = clamped;
             if (discovery != null)
             {
@@ -292,16 +295,99 @@ namespace UltimoActo.Core
                     string eraLabel = lockedEra == EraVisual.Glory1929 ? "1929 (Gloria)" : "Ruinas (Actualidad)";
                     NightManager.Instance.ShowToast($"2.º INVESTIGADOR CONECTADO (2/2) — Cambio [Q] desactivado · Tu época es {eraLabel}", 5.5f);
                 }
+
+                if (previousCount < 2)
+                {
+                    OnPartnerReconnected?.Invoke();
+                }
             }
             else
             {
-                if (NightManager.Instance != null && sessionMode != LanSessionMode.Client)
+                if (NightManager.Instance != null)
                 {
-                    NightManager.Instance.ShowToast("Investigador desconectado (1/2) — Cambio de época [Q] reactivado", 4.5f);
+                    NightManager.Instance.HostPersistCurrentNightSave();
+                    if (sessionMode != LanSessionMode.Client)
+                    {
+                        NightManager.Instance.ShowToast("Investigador desconectado (1/2) — Progreso guardado por el anfitrión", 4.5f);
+                    }
+                }
+
+                if (previousCount >= 2)
+                {
+                    string reason = sessionMode == LanSessionMode.Client
+                        ? "Se ha perdido la conexión con el anfitrión de la sala."
+                        : "El segundo investigador (Época Ruinas) se ha desconectado de la sala.";
+                    OnPartnerDisconnected?.Invoke(reason);
                 }
             }
 
             OnPlayerCountChanged?.Invoke(connectedPlayers);
+        }
+
+        /// <summary>
+        /// Paso 6: Permite al Cliente intentar reconectar en caliente con la última IP/Puerto del Host
+        /// sin recargar la escena ni perder el estado visual/progreso cargado.
+        /// </summary>
+        public bool TryReconnectClientInPlace()
+        {
+            string targetIp = string.IsNullOrWhiteSpace(hostIpAddress)
+                ? PlayerPrefs.GetString("LanHostIp", "127.0.0.1")
+                : hostIpAddress;
+
+            if (discovery != null)
+            {
+                discovery.BeginVerifyAndJoin(targetIp, gamePort);
+            }
+
+#if ULTIMOACTO_NETCODE
+            ShutdownNetworkIfActive();
+            EnsureNetcodeManagerConfigured(targetIp, (ushort)gamePort, false);
+            if (NetworkManager.Singleton != null)
+            {
+                bool started = NetworkManager.Singleton.StartClient();
+                if (started)
+                {
+                    sessionMode = LanSessionMode.Client;
+                    connectedPlayers = 2;
+                    OnPartnerReconnected?.Invoke();
+                    OnPlayerCountChanged?.Invoke(2);
+                    return true;
+                }
+            }
+#endif
+            return false;
+        }
+
+        /// <summary>
+        /// Paso 6: Si el otro jugador se desconecta definitivamente y el jugador local decide continuar
+        /// la partida en solitario desde el mismo punto sin volver al menú ni perder progreso.
+        /// </summary>
+        public void ContinueInSoloAfterDisconnect()
+        {
+            if (NightManager.Instance != null)
+            {
+                NightManager.Instance.HostPersistCurrentNightSave();
+            }
+
+            if (sessionMode == LanSessionMode.Client)
+            {
+                ShutdownNetworkIfActive();
+                if (discovery != null) discovery.StopAllDiscovery();
+                sessionMode = LanSessionMode.Solo;
+                connectedPlayers = 1;
+                PlayerPrefs.SetString("NetworkRole", "Solo");
+                PlayerPrefs.Save();
+            }
+            else
+            {
+                connectedPlayers = 1;
+                if (discovery != null)
+                {
+                    discovery.HostCurrentPlayers = 1;
+                }
+            }
+
+            OnPlayerCountChanged?.Invoke(1);
         }
 
         public void BeginSearchingLanRooms()
@@ -460,15 +546,16 @@ namespace UltimoActo.Core
             {
                 transport.SetConnectionData("0.0.0.0", port, "0.0.0.0");
                 nm.ConnectionApprovalCallback = OnNetcodeConnectionApproval;
-                nm.OnClientConnectedCallback -= OnNetcodeClientConnected;
-                nm.OnClientConnectedCallback += OnNetcodeClientConnected;
-                nm.OnClientDisconnectCallback -= OnNetcodeClientDisconnected;
-                nm.OnClientDisconnectCallback += OnNetcodeClientDisconnected;
             }
             else
             {
                 transport.SetConnectionData(address, port);
             }
+
+            nm.OnClientConnectedCallback -= OnNetcodeClientConnected;
+            nm.OnClientConnectedCallback += OnNetcodeClientConnected;
+            nm.OnClientDisconnectCallback -= OnNetcodeClientDisconnected;
+            nm.OnClientDisconnectCallback += OnNetcodeClientDisconnected;
         }
 
         private void OnNetcodeConnectionApproval(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -488,15 +575,30 @@ namespace UltimoActo.Core
         private void OnNetcodeClientConnected(ulong clientId)
         {
             if (NetworkManager.Singleton == null) return;
-            int count = Mathf.Clamp(NetworkManager.Singleton.ConnectedClientsIds.Count, 1, 2);
-            SetConnectedPlayerCount(count);
+            if (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost)
+            {
+                int count = Mathf.Clamp(NetworkManager.Singleton.ConnectedClientsIds.Count, 1, 2);
+                SetConnectedPlayerCount(count);
+            }
+            else if (clientId == NetworkManager.Singleton.LocalClientId)
+            {
+                SetConnectedPlayerCount(2);
+            }
         }
 
         private void OnNetcodeClientDisconnected(ulong clientId)
         {
             if (NetworkManager.Singleton == null) return;
-            int count = Mathf.Clamp(NetworkManager.Singleton.ConnectedClientsIds.Count, 1, 2);
-            SetConnectedPlayerCount(count);
+            if (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost)
+            {
+                int count = Mathf.Clamp(NetworkManager.Singleton.ConnectedClientsIds.Count, 1, 2);
+                SetConnectedPlayerCount(count);
+            }
+            else
+            {
+                // El cliente perdió la conexión con el Host
+                SetConnectedPlayerCount(1);
+            }
         }
 #endif
     }

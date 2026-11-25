@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using TMPro;
 #if ENABLE_INPUT_SYSTEM
@@ -12,6 +13,12 @@ namespace UltimoActo.UI
     public class DocumentUI : MonoBehaviour
     {
         public static DocumentUI Instance { get; set; }
+
+        /// <summary>
+        /// Evento disparado cada vez que se muestra un documento/evidencia: (docId, title, body, subtitle).
+        /// Permite al Diario / Archivo de Evidencias (SharedEvidenceJournalManager) registrarlo automáticamente.
+        /// </summary>
+        public static event Action<string, string, string, string> OnDocumentDisplayed;
 
         [Header("Elementos de UI")]
         [SerializeField] private GameObject documentPanel;
@@ -106,10 +113,15 @@ namespace UltimoActo.UI
         public void OpenDocument(WorldDocument doc)
         {
             if (doc == null) return;
-            ShowDocument(doc.Title, doc.Content, doc.Subtitle);
+            ShowDocumentWithId(doc.Id, doc.Title, doc.Content, doc.Subtitle);
         }
 
         public void ShowDocument(string title, string body, string subtitle = "")
+        {
+            ShowDocumentWithId(title, title, body, subtitle);
+        }
+
+        public void ShowDocumentWithId(string docId, string title, string body, string subtitle = "", bool skipJournalRecord = false)
         {
             EnsureReferences();
 
@@ -122,6 +134,7 @@ namespace UltimoActo.UI
             isOpen = true;
             openTime = Time.unscaledTime;
             documentPanel.SetActive(true);
+            documentPanel.transform.SetAsLastSibling();
 
             if (titleText != null) titleText.text = title;
             if (subtitleText != null) subtitleText.text = subtitle;
@@ -131,9 +144,15 @@ namespace UltimoActo.UI
             Debug.Log($"<color=cyan>[DocumentUI]</color> Abriendo documento en pantalla: {title}");
 
             // Sistema de noches: cada documento / secreto leído por primera vez cuenta como evidencia
-            if (NightManager.Instance != null)
+            if (!skipJournalRecord && NightManager.Instance != null)
             {
                 NightManager.Instance.RegisterEvidence(title);
+            }
+
+            if (!skipJournalRecord)
+            {
+                string effectiveId = string.IsNullOrEmpty(docId) ? title : docId;
+                OnDocumentDisplayed?.Invoke(effectiveId, title, body, subtitle);
             }
 
             // Pausar rotación de cámara para leer cómodamente
@@ -163,15 +182,24 @@ namespace UltimoActo.UI
 
             Debug.Log("<color=cyan>[DocumentUI]</color> Documento cerrado. Reanudando control.");
 
-            // Reanudar controles del jugador
-            if (playerCameraLook != null)
+            // Si el Diario de Evidencias [J]/[TAB] sigue abierto debajo, no bloquear el cursor al cerrar el visor
+            bool journalStillOpen = EvidenceJournalUI.Instance != null && EvidenceJournalUI.Instance.IsOpen;
+            if (!journalStillOpen)
             {
-                playerCameraLook.enabled = true;
-                playerCameraLook.SetCursorLock(true);
+                if (playerCameraLook != null)
+                {
+                    playerCameraLook.enabled = true;
+                    playerCameraLook.SetCursorLock(true);
+                }
+                if (playerMovement != null)
+                {
+                    playerMovement.enabled = true;
+                }
             }
-            if (playerMovement != null)
+            else
             {
-                playerMovement.enabled = true;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
             }
         }
     }

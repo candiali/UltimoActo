@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -119,7 +120,20 @@ namespace UltimoActo.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
+            SceneManager.sceneLoaded -= OnSceneLoadedBootstrap;
+            SceneManager.sceneLoaded += OnSceneLoadedBootstrap;
+            TrySpawnInActiveScene();
+        }
+
+        private static void OnSceneLoadedBootstrap(Scene scene, LoadSceneMode mode)
+        {
+            TrySpawnInActiveScene();
+        }
+
+        private static void TrySpawnInActiveScene()
+        {
             if (Instance != null) return;
+            if (FindFirstObjectByType<NightManager>() != null) return;
             if (FindFirstObjectByType<PlayerMovement>() == null) return;
             new GameObject("NightManager").AddComponent<NightManager>();
         }

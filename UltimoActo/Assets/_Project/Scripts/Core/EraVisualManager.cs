@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -90,6 +91,18 @@ namespace UltimoActo.Core
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoBootstrap()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoadedBootstrap;
+            SceneManager.sceneLoaded += OnSceneLoadedBootstrap;
+            TrySpawnInActiveScene();
+        }
+
+        private static void OnSceneLoadedBootstrap(Scene scene, LoadSceneMode mode)
+        {
+            TrySpawnInActiveScene();
+        }
+
+        private static void TrySpawnInActiveScene()
         {
             if (Instance != null) return;
             if (FindFirstObjectByType<EraVisualManager>() != null) return;
@@ -877,7 +890,7 @@ namespace UltimoActo.Core
                 ? $"<color=#78C890>CO-OP LAN (2/2)</color>"
                 : (roomOpen ? "<color=#E5C168>SALA ABIERTA (1/2)</color>" : "<color=#B8A89A>SOLO (1/2)</color>");
 
-            bottomStatusPillText.text = $"{eraLabel}  ·  {qHint}  ·  {lanHint}  ·  <color=#C4B4A5>[ESC] Sala / Pausa</color>";
+            bottomStatusPillText.text = $"{eraLabel}  ·  {qHint}  ·  {lanHint}  ·  <color=#E6D098>[J/TAB] Diario</color>  ·  <color=#C4B4A5>[ESC] Pausa</color>";
 
             if (bottomStatusPillBorder != null)
             {

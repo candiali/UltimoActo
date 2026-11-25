@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 #if ULTIMOACTO_NETCODE
 using Unity.Collections;
 using Unity.Netcode;
@@ -8,6 +9,7 @@ using Unity.Netcode;
 using UltimoActo.Core;
 using UltimoActo.Interaction;
 using UltimoActo.Narrative;
+using UltimoActo.Puzzles;
 
 namespace UltimoActo.Network
 {
@@ -42,6 +44,7 @@ namespace UltimoActo.Network
         private readonly Dictionary<string, SecretZoneAnomalyController> secretById = new Dictionary<string, SecretZoneAnomalyController>();
         private readonly Dictionary<string, WinterGardenAnomalyController> gardenById = new Dictionary<string, WinterGardenAnomalyController>();
         private readonly Dictionary<string, AcademyExpansionAnomalyController> expansionById = new Dictionary<string, AcademyExpansionAnomalyController>();
+        private readonly Dictionary<string, CoopPuzzleBase> coopPuzzlesById = new Dictionary<string, CoopPuzzleBase>();
 
         private readonly HashSet<string> pickedItemIds = new HashSet<string>();
         private bool isApplyingRemoteState = false;
@@ -49,6 +52,18 @@ namespace UltimoActo.Network
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoBootstrap()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoadedBootstrap;
+            SceneManager.sceneLoaded += OnSceneLoadedBootstrap;
+            TrySpawnInActiveScene();
+        }
+
+        private static void OnSceneLoadedBootstrap(Scene scene, LoadSceneMode mode)
+        {
+            TrySpawnInActiveScene();
+        }
+
+        private static void TrySpawnInActiveScene()
         {
             if (Instance != null) return;
             if (FindFirstObjectByType<SharedWorldStateSync>() != null) return;
@@ -181,6 +196,13 @@ namespace UltimoActo.Network
                 if (e == null) continue;
                 expansionById[e.Id] = e;
             }
+
+            coopPuzzlesById.Clear();
+            foreach (CoopPuzzleBase cp in FindObjectsByType<CoopPuzzleBase>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (cp == null || string.IsNullOrEmpty(cp.PuzzleId)) continue;
+                coopPuzzlesById[cp.PuzzleId] = cp;
+            }
         }
 
         private static string GetUniqueObjectKey(string baseId, Transform t)
@@ -206,6 +228,8 @@ namespace UltimoActo.Network
             SecretZoneAnomalyController.OnSecretZoneNodeActivated += HandleLocalSecretActivated;
             WinterGardenAnomalyController.OnWinterGardenNodeInspected += HandleLocalGardenInspected;
             AcademyExpansionAnomalyController.OnExpansionNodeInteracted += HandleLocalExpansionInteracted;
+            SharedEvidenceJournalManager.OnLocalEntryCreatedForNetwork += HandleLocalJournalEntryCreated;
+            CoopPuzzleBase.OnCoopPuzzleNetworkCommand += HandleLocalCoopPuzzleCommand;
 
             if (NightManager.Instance != null)
             {
@@ -231,6 +255,8 @@ namespace UltimoActo.Network
             SecretZoneAnomalyController.OnSecretZoneNodeActivated -= HandleLocalSecretActivated;
             WinterGardenAnomalyController.OnWinterGardenNodeInspected -= HandleLocalGardenInspected;
             AcademyExpansionAnomalyController.OnExpansionNodeInteracted -= HandleLocalExpansionInteracted;
+            SharedEvidenceJournalManager.OnLocalEntryCreatedForNetwork -= HandleLocalJournalEntryCreated;
+            CoopPuzzleBase.OnCoopPuzzleNetworkCommand -= HandleLocalCoopPuzzleCommand;
 
             if (NightManager.Instance != null)
             {
@@ -387,6 +413,21 @@ namespace UltimoActo.Network
         {
             if (isApplyingRemoteState || string.IsNullOrEmpty(nodeId)) return;
             DispatchStatePacket($"NODE_EXPANSION|{nodeId}");
+        }
+
+        private void HandleLocalJournalEntryCreated(EvidenceJournalEntry entry)
+        {
+            if (isApplyingRemoteState || entry == null) return;
+            string json = JsonUtility.ToJson(entry);
+            string b64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
+            DispatchStatePacket($"JOURNAL_ENTRY|{b64}");
+        }
+
+        private void HandleLocalCoopPuzzleCommand(string puzzleId, string subPayload)
+        {
+            if (isApplyingRemoteState || string.IsNullOrEmpty(puzzleId) || string.IsNullOrEmpty(subPayload)) return;
+            string b64Payload = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(subPayload));
+            DispatchStatePacket($"COOP_PUZZLE|{puzzleId}|{b64Payload}");
         }
 
         // ====================================================================
@@ -669,6 +710,32 @@ namespace UltimoActo.Network
             {
                 if (kv.Value != null && kv.Value.HasInteracted) DispatchStatePacket($"NODE_EXPANSION|{kv.Key}");
             }
+
+            // 10. Diario Compartido de Evidencias (SharedEvidenceJournalManager)
+            if (SharedEvidenceJournalManager.Instance != null)
+            {
+                var allEntries = SharedEvidenceJournalManager.Instance.AllEntries;
+                for (int i = 0; i < allEntries.Count; i++)
+                {
+                    string json = JsonUtility.ToJson(allEntries[i]);
+                    string b64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
+                    DispatchStatePacket($"JOURNAL_ENTRY|{b64}");
+                }
+            }
+
+            // 11. Puzles Cooperativos (CoopPuzzleBase)
+            foreach (var kv in coopPuzzlesById)
+            {
+                if (kv.Value != null)
+                {
+                    string snapPayload = kv.Value.GetNetworkSnapshotPayload();
+                    if (!string.IsNullOrEmpty(snapPayload))
+                    {
+                        string b64Payload = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(snapPayload));
+                        DispatchStatePacket($"COOP_PUZZLE|{kv.Key}|{b64Payload}");
+                    }
+                }
+            }
         }
 
         // ====================================================================
@@ -858,6 +925,50 @@ namespace UltimoActo.Network
                         if (parts.Length >= 2 && expansionById.TryGetValue(parts[1], out var eNode) && eNode != null)
                         {
                             eNode.ApplyNetworkInteracted();
+                        }
+                        break;
+
+                    case "JOURNAL_ENTRY":
+                        if (parts.Length >= 2 && SharedEvidenceJournalManager.Instance != null)
+                        {
+                            try
+                            {
+                                byte[] bytes = Convert.FromBase64String(parts[1]);
+                                string json = System.Text.Encoding.UTF8.GetString(bytes);
+                                EvidenceJournalEntry entry = JsonUtility.FromJson<EvidenceJournalEntry>(json);
+                                if (entry != null)
+                                {
+                                    SharedEvidenceJournalManager.Instance.ApplyEntryFromNetwork(entry);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogWarning($"[SharedWorldStateSync] Error decodificando entrada del diario: {ex.Message}");
+                            }
+                        }
+                        break;
+
+                    case "COOP_PUZZLE":
+                        if (parts.Length >= 3)
+                        {
+                            string pId = parts[1];
+                            try
+                            {
+                                byte[] bytes = Convert.FromBase64String(parts[2]);
+                                string subPayload = System.Text.Encoding.UTF8.GetString(bytes);
+                                if (!coopPuzzlesById.ContainsKey(pId))
+                                {
+                                    IndexSceneInteractiveObjects();
+                                }
+                                if (coopPuzzlesById.TryGetValue(pId, out CoopPuzzleBase cp) && cp != null)
+                                {
+                                    cp.ApplyNetworkCommand(subPayload);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogWarning($"[SharedWorldStateSync] Error decodificando puzle cooperativo '{pId}': {ex.Message}");
+                            }
                         }
                         break;
                 }
