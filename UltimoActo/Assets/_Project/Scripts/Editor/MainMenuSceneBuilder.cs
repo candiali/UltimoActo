@@ -239,7 +239,7 @@ namespace UltimoActo.Editor
             // SUBMENÚ: CÓMO JUGAR (Modal Centrado)
             // ========================================================
             GameObject howToPanel = CreateModalPanel("HowToPlay_Panel", canvasObj.transform, new Vector2(860f, 620f));
-            CreatePanelHeader(howToPanel.transform, "MANUAL DE INVESTIGACIÓN", "Reglas y Controles en la Academia del Cisne");
+            CreatePanelHeader(howToPanel.transform, "MANUAL DE INVESTIGACIÓN", "Reglas y Controles en la Academia Vesper");
 
             GameObject instructionsObj = new GameObject("Instructions_Text");
             instructionsObj.transform.parent = howToPanel.transform;
@@ -250,17 +250,18 @@ namespace UltimoActo.Editor
             instTMP.raycastTarget = false;
             instTMP.text =
                 "<b>PREMISA</b>\n" +
-                "Dos investigadores reciben una invitación a la abandonada Academia del Cisne.\n" +
-                "Ningún jugador posee habilidades exclusivas. La verdad se descubre compartiendo pistas y coordinando mecanismos.\n\n" +
+                "Dos investigadores reciben una invitación anónima a la clausurada Academia Vesper.\n" +
+                "Ningún jugador posee habilidades exclusivas. La verdad se descubre compartiendo pistas entre épocas (1929 y Ruinas) y coordinando mecanismos.\n\n" +
                 "<b>CONTROLES DE EXPLORACIÓN</b>\n" +
                 "• <color=#D8B468>[W, A, S, D]</color> Desplazarse por los salones de ballet\n" +
                 "• <color=#D8B468>[Ratón]</color> Observar el entorno e inspeccionar espejos\n" +
                 "• <color=#D8B468>[E]</color> Interactuar con puertas, documentos y mecanismos\n" +
-                "• <color=#D8B468>[Shift Izquierdo]</color> Correr\n" +
-                "• <color=#D8B468>[Tab]</color> Consultar el Cuaderno de Investigación compartido\n\n" +
+                "• <color=#D8B468>[F / R]</color> Encender linterna / Recargar dínamo\n" +
+                "• <color=#D8B468>[J / Tab]</color> Consultar el Diario de Evidencias compartido\n" +
+                "• <color=#D8B468>[V]</color> Hablar por voz en red local (o [Q] cambiar época en modo Solo)\n\n" +
                 "<b>REGLAS CLAVE</b>\n" +
                 "• <b>Progreso Compartido:</b> Puertas, llaves y puzles tienen el mismo estado para ambos.\n" +
-                "• <b>Puzles Deducibles:</b> Las pistas nunca se pierden. Si un mecanismo falla, utiliza la palanca de reinicio.";
+                "• <b>Puzles Deducibles:</b> Las pistas nunca se pierden y quedan archivadas en el Diario.";
 
             RectTransform instRect = instructionsObj.GetComponent<RectTransform>();
             instRect.anchorMin = new Vector2(0.5f, 0.5f);

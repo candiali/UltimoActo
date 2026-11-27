@@ -154,6 +154,17 @@ namespace UltimoActo.Network
                 NightManager.Instance.HostPersistCurrentNightSave();
             }
 
+            // BLOQUE 3.6 — Si la secuencia final / amanecer / créditos está en curso, NO congelar la partida
+            // ni bloquear la pantalla con el modal de espera: permitir que este jugador termine el final y vuelva al menú.
+            if (UltimoActo.Narrative.UltimateFinaleAndCreditsController.IsFinaleRunning)
+            {
+                if (NightManager.Instance != null)
+                {
+                    NightManager.Instance.ShowToast("Tu compañero se ha desconectado durante el desenlace. Puedes terminar los créditos y volver al menú.", 4.5f);
+                }
+                return;
+            }
+
             // Si el menú de pausa normal estaba abierto, cerrarlo para mostrar la pausa de desconexión
             if (InGamePauseMenuUI.Instance != null && InGamePauseMenuUI.Instance.IsOpen)
             {

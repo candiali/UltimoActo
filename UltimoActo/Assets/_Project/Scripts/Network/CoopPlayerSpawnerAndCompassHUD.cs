@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 #if ULTIMOACTO_NETCODE
+using Unity.Collections;
 using Unity.Netcode;
 #endif
 using UltimoActo.Core;
@@ -30,9 +31,14 @@ namespace UltimoActo.Network
     {
         public static CoopPlayerSpawnerAndCompassHUD Instance { get; private set; }
 
+        public const string MsgCoopPlayerPose = "UltimoActo_CoopPlayerPose_Msg";
+
         private GameObject runtimePlayerPrefabTemplate;
         private NetworkCoopPlayer simulatedPartnerInstance;
+        private NetworkCoopPlayer liveRemotePartnerInstance;
         private float simulatedOrbitAngle;
+        private float nextPoseBroadcastTime;
+        private bool poseHandlerRegistered;
 
         // HUD discreto de ubicación del otro jugador
         private Canvas compassCanvas;
@@ -119,9 +125,6 @@ namespace UltimoActo.Network
             GameObject scenePlayer = existingMove.gameObject;
             EnsurePlayerHasNetworkComponents(scenePlayer);
 
-            // Guardar plantilla desactivada para poder instanciar al 2.º jugador cuando se una por LAN
-            CreateHiddenPlayerTemplate(scenePlayer);
-
             LanSessionManager session = LanSessionManager.EnsureInstance();
 
 #if ULTIMOACTO_NETCODE
@@ -134,29 +137,19 @@ namespace UltimoActo.Network
             }
 #endif
 
-            if (session.CurrentMode == LanSessionMode.Client)
+            // Configurar el Player de la escena como jugador local (Host/Solo = 1929, Cliente = Ruinas)
+            NetworkCoopPlayer coop = scenePlayer.GetComponent<NetworkCoopPlayer>();
+            if (coop != null)
             {
-                // En cliente conectado a un Host Netcode, comprobamos si el Host ya nos spawneó un NetworkObject propio
-                StartCoroutine(ClientAwaitOrBindPlayerRoutine(scenePlayer));
+                coop.ConfigureAsLocalOwner();
             }
-            else
-            {
-                // Modo Solo o Host: el jugador de la escena es el jugador local (Época 1929)
-                NetworkCoopPlayer coop = scenePlayer.GetComponent<NetworkCoopPlayer>();
-                if (coop != null)
-                {
-                    coop.ConfigureAsLocalOwner();
-                }
 
-#if ULTIMOACTO_NETCODE
-                if (session.CurrentMode == LanSessionMode.Host &&
-                    NetworkManager.Singleton != null &&
-                    NetworkManager.Singleton.IsHost)
-                {
-                    SpawnHostScenePlayerIfNeeded(scenePlayer);
-                }
-#endif
+            if (session.CurrentMode == LanSessionMode.Client && EraVisualManager.Instance != null)
+            {
+                EraVisualManager.Instance.SetEra(EraVisual.Ruins, true);
             }
+
+            TryRegisterPoseMessagingHandler();
         }
 
         private static void EnsurePlayerHasNetworkComponents(GameObject playerObj)
@@ -164,112 +157,34 @@ namespace UltimoActo.Network
             if (playerObj == null) return;
 
 #if ULTIMOACTO_NETCODE
-            if (playerObj.GetComponent<NetworkObject>() == null)
+            // Importante: NO añadir NetworkObject en runtime a un GameObject de escena sin GlobalObjectIdHash serializado,
+            // ya que Netcode emite el error "Detected NetworkObject GlobalObjectIdHash value of 0!".
+            // La posición, linterna y época se sincronizan limpiamente por CustomMessagingManager.
+            NetworkObject preExistingNetObj = playerObj.GetComponent<NetworkObject>();
+            if (preExistingNetObj != null && !preExistingNetObj.IsSpawned)
             {
-                playerObj.AddComponent<NetworkObject>();
+                DestroyImmediate(preExistingNetObj);
             }
 #endif
-            if (playerObj.GetComponent<ClientNetworkTransform>() == null)
-            {
-                playerObj.AddComponent<ClientNetworkTransform>();
-            }
             if (playerObj.GetComponent<NetworkCoopPlayer>() == null)
             {
                 playerObj.AddComponent<NetworkCoopPlayer>();
             }
         }
 
-        private void CreateHiddenPlayerTemplate(GameObject sourcePlayer)
-        {
-            if (runtimePlayerPrefabTemplate != null || sourcePlayer == null) return;
-
-            runtimePlayerPrefabTemplate = Instantiate(sourcePlayer);
-            runtimePlayerPrefabTemplate.name = "PF_CoopNetworkPlayer_RuntimeTemplate";
-            runtimePlayerPrefabTemplate.SetActive(false);
-            DontDestroyOnLoad(runtimePlayerPrefabTemplate);
-        }
-
         private void OnRoomOpenedInGameHandler()
         {
-#if ULTIMOACTO_NETCODE
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost && NetworkCoopPlayer.LocalPlayer != null)
-            {
-                SpawnHostScenePlayerIfNeeded(NetworkCoopPlayer.LocalPlayer.gameObject);
-            }
-#endif
+            TryRegisterPoseMessagingHandler();
         }
 
 #if ULTIMOACTO_NETCODE
-        private void SpawnHostScenePlayerIfNeeded(GameObject hostPlayerObj)
-        {
-            if (hostPlayerObj == null || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer) return;
-
-            NetworkObject netObj = hostPlayerObj.GetComponent<NetworkObject>();
-            if (netObj != null && !netObj.IsSpawned)
-            {
-                try
-                {
-                    netObj.SpawnAsPlayerObject(NetworkManager.Singleton.LocalClientId, true);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"[CoopPlayerSpawner] Aviso al spawnear NetworkObject del Host: {ex.Message}");
-                }
-            }
-        }
-
         private void OnNetcodeClientConnected(ulong clientId)
         {
-            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer) return;
-            if (clientId == NetworkManager.Singleton.LocalClientId) return;
-
-            // Si había un compañero simulado de prueba [F2], lo retiramos al entrar un jugador real
-            DestroySimulatedPartnerIfPresent();
-
-            // Spawnear el jugador para el cliente recién conectado (Época Ruinas) junto al anfitrión
-            if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient netClient) &&
-                netClient.PlayerObject != null)
+            TryRegisterPoseMessagingHandler();
+            if (NetworkManager.Singleton == null) return;
+            if (clientId != NetworkManager.Singleton.LocalClientId)
             {
-                return;
-            }
-
-            if (runtimePlayerPrefabTemplate == null && NetworkCoopPlayer.LocalPlayer != null)
-            {
-                CreateHiddenPlayerTemplate(NetworkCoopPlayer.LocalPlayer.gameObject);
-            }
-            if (runtimePlayerPrefabTemplate == null) return;
-
-            Vector3 spawnPos = new Vector3(1.4f, 0.1f, -34f);
-            Quaternion spawnRot = Quaternion.identity;
-            if (NetworkCoopPlayer.LocalPlayer != null)
-            {
-                Transform hostT = NetworkCoopPlayer.LocalPlayer.transform;
-                spawnPos = hostT.position + hostT.right * 1.35f;
-                spawnRot = hostT.rotation;
-            }
-
-            GameObject clientPlayerObj = Instantiate(runtimePlayerPrefabTemplate, spawnPos, spawnRot);
-            clientPlayerObj.name = $"Player_NetClient_{clientId}_Ruins";
-            clientPlayerObj.SetActive(true);
-            EnsurePlayerHasNetworkComponents(clientPlayerObj);
-
-            NetworkObject netObj = clientPlayerObj.GetComponent<NetworkObject>();
-            if (netObj != null)
-            {
-                try
-                {
-                    netObj.SpawnAsPlayerObject(clientId, true);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"[CoopPlayerSpawner] Spawneo estándar alternativo para cliente {clientId}: {ex.Message}");
-                }
-            }
-
-            NetworkCoopPlayer coopComp = clientPlayerObj.GetComponent<NetworkCoopPlayer>();
-            if (coopComp != null && !coopComp.IsLocalControlled)
-            {
-                coopComp.ConfigureAsRemotePeer();
+                DestroySimulatedPartnerIfPresent();
             }
         }
 
@@ -278,66 +193,113 @@ namespace UltimoActo.Network
             if (NetworkManager.Singleton == null) return;
             if (clientId == NetworkManager.Singleton.LocalClientId) return;
 
-            if (NetworkCoopPlayer.RemotePlayer != null && !NetworkCoopPlayer.RemotePlayer.IsSimulatedPreview)
+            if (liveRemotePartnerInstance != null)
             {
-                Destroy(NetworkCoopPlayer.RemotePlayer.gameObject);
+                Destroy(liveRemotePartnerInstance.gameObject);
+                liveRemotePartnerInstance = null;
             }
         }
 #endif
 
-        private IEnumerator ClientAwaitOrBindPlayerRoutine(GameObject fallbackScenePlayer)
+        private void TryRegisterPoseMessagingHandler()
         {
-            // Si el cliente entró por descubrimiento UDP o IP manual, configurar su época en Ruinas inmediatamente
-            if (EraVisualManager.Instance != null)
-            {
-                EraVisualManager.Instance.SetEra(EraVisual.Ruins, true);
-            }
+#if ULTIMOACTO_NETCODE
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening) return;
+            if (NetworkManager.Singleton.CustomMessagingManager == null) return;
 
-            float waitElapsed = 0f;
-            bool boundNetcodeOwner = false;
+            var cmm = NetworkManager.Singleton.CustomMessagingManager;
+            cmm.UnregisterNamedMessageHandler(MsgCoopPlayerPose);
+            cmm.RegisterNamedMessageHandler(MsgCoopPlayerPose, OnReceivedRemotePlayerPose);
+            poseHandlerRegistered = true;
+#endif
+        }
 
 #if ULTIMOACTO_NETCODE
-            while (waitElapsed < 1.2f)
+        private void OnReceivedRemotePlayerPose(ulong senderClientId, FastBufferReader reader)
+        {
+            if (NetworkManager.Singleton == null || senderClientId == NetworkManager.Singleton.LocalClientId) return;
+
+            try
             {
-                if (NetworkManager.Singleton != null &&
-                    NetworkManager.Singleton.IsClient &&
-                    NetworkManager.Singleton.LocalClient != null &&
-                    NetworkManager.Singleton.LocalClient.PlayerObject != null)
+                reader.ReadValueSafe(out float px);
+                reader.ReadValueSafe(out float py);
+                reader.ReadValueSafe(out float pz);
+                reader.ReadValueSafe(out float yaw);
+                reader.ReadValueSafe(out float pitch);
+                reader.ReadValueSafe(out byte flags);
+                reader.ReadValueSafe(out FixedString64Bytes peerNameFs);
+
+                bool flOn = (flags & 1) != 0;
+                EraVisual peerEra = ((flags & 2) != 0) ? EraVisual.Ruins : EraVisual.Glory1929;
+                string peerName = peerNameFs.ToString();
+
+                DestroySimulatedPartnerIfPresent();
+
+                if (liveRemotePartnerInstance == null)
                 {
-                    GameObject spawnedOwner = NetworkManager.Singleton.LocalClient.PlayerObject.gameObject;
-                    if (spawnedOwner != fallbackScenePlayer && fallbackScenePlayer != null)
-                    {
-                        fallbackScenePlayer.SetActive(false);
-                    }
-                    NetworkCoopPlayer ownerCoop = spawnedOwner.GetComponent<NetworkCoopPlayer>();
-                    if (ownerCoop != null)
-                    {
-                        ownerCoop.ConfigureAsLocalOwner();
-                    }
-                    boundNetcodeOwner = true;
-                    break;
+                    GameObject remObj = new GameObject($"CoopPartner_NetPeer_{senderClientId}");
+                    liveRemotePartnerInstance = remObj.AddComponent<NetworkCoopPlayer>();
                 }
-                waitElapsed += Time.unscaledDeltaTime;
-                yield return null;
+
+                liveRemotePartnerInstance.ApplyLiveNetworkTelemetry(
+                    new Vector3(px, py, pz),
+                    yaw,
+                    pitch,
+                    flOn,
+                    peerEra,
+                    peerName);
             }
-#else
-            yield return null;
+            catch { }
+        }
 #endif
 
-            if (!boundNetcodeOwner && fallbackScenePlayer != null)
+        private void BroadcastLocalPlayerPoseIfConnected()
+        {
+#if ULTIMOACTO_NETCODE
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening)
             {
-                // Si el cliente aún no tiene prefab registrado en NetworkPrefabsList, usa el Player de la escena en Ruinas
-                fallbackScenePlayer.SetActive(true);
-                NetworkCoopPlayer coop = fallbackScenePlayer.GetComponent<NetworkCoopPlayer>();
-                if (coop != null)
-                {
-                    coop.ConfigureAsLocalOwner();
-                }
-                if (EraVisualManager.Instance != null)
-                {
-                    EraVisualManager.Instance.SetEra(EraVisual.Ruins, false);
-                }
+                poseHandlerRegistered = false;
+                return;
             }
+            if (!poseHandlerRegistered)
+            {
+                TryRegisterPoseMessagingHandler();
+            }
+            if (NetworkCoopPlayer.LocalPlayer == null) return;
+            if (Time.unscaledTime < nextPoseBroadcastTime) return;
+            nextPoseBroadcastTime = Time.unscaledTime + 0.04f; // 25 Hz
+
+            var cmm = NetworkManager.Singleton.CustomMessagingManager;
+            if (cmm == null) return;
+
+            NetworkCoopPlayer local = NetworkCoopPlayer.LocalPlayer;
+            Vector3 pos = local.transform.position;
+            float yaw = local.transform.eulerAngles.y;
+            float pitch = local.SyncedCameraPitch;
+            byte flags = 0;
+            if (local.IsFlashlightActive) flags |= 1;
+            if (local.AssignedEra == EraVisual.Ruins) flags |= 2;
+            FixedString64Bytes nameFs = new FixedString64Bytes(
+                string.IsNullOrEmpty(local.DisplayName) ? "Investigador" : local.DisplayName);
+
+            using FastBufferWriter writer = new FastBufferWriter(128, Unity.Collections.Allocator.Temp);
+            writer.WriteValueSafe(pos.x);
+            writer.WriteValueSafe(pos.y);
+            writer.WriteValueSafe(pos.z);
+            writer.WriteValueSafe(yaw);
+            writer.WriteValueSafe(pitch);
+            writer.WriteValueSafe(flags);
+            writer.WriteValueSafe(nameFs);
+
+            if (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost)
+            {
+                cmm.SendNamedMessageToAll(MsgCoopPlayerPose, writer, NetworkDelivery.Unreliable);
+            }
+            else
+            {
+                cmm.SendNamedMessage(MsgCoopPlayerPose, NetworkManager.ServerClientId, writer, NetworkDelivery.Unreliable);
+            }
+#endif
         }
 
         /// <summary>
@@ -395,6 +357,7 @@ namespace UltimoActo.Network
 
         private void Update()
         {
+            BroadcastLocalPlayerPoseIfConnected();
             UpdateSimulatedPartnerMotion();
             UpdatePartnerCompassIndicator();
         }

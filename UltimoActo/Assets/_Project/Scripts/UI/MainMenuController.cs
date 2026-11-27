@@ -57,6 +57,14 @@ namespace UltimoActo.UI
         [Header("Submenú Cómo Jugar")]
         [SerializeField] private Button btnCloseHowTo;
 
+        [Header("Pantalla de Colección y Progreso Completado (Bloque 3.7)")]
+        [SerializeField] private Button btnCollectionMenu;
+        [SerializeField] private GameObject collectionPanel;
+        [SerializeField] private TextMeshProUGUI collectionSummaryTMP;
+        [SerializeField] private TextMeshProUGUI collectionEntriesTMP;
+        [SerializeField] private Button btnResetNightKeepCollection;
+        [SerializeField] private Button btnCloseCollection;
+
         [Header("Configuración de Escenas")]
         [SerializeField] private string targetSceneName = "SampleScene";
 
@@ -198,6 +206,21 @@ namespace UltimoActo.UI
                 btnCloseHowTo.onClick.RemoveAllListeners();
                 btnCloseHowTo.onClick.AddListener(OnCloseHowToPlayClicked);
             }
+            if (btnCollectionMenu != null)
+            {
+                btnCollectionMenu.onClick.RemoveAllListeners();
+                btnCollectionMenu.onClick.AddListener(OnOpenCollectionPanelClicked);
+            }
+            if (btnCloseCollection != null)
+            {
+                btnCloseCollection.onClick.RemoveAllListeners();
+                btnCloseCollection.onClick.AddListener(OnCloseCollectionPanelClicked);
+            }
+            if (btnResetNightKeepCollection != null)
+            {
+                btnResetNightKeepCollection.onClick.RemoveAllListeners();
+                btnResetNightKeepCollection.onClick.AddListener(OnResetNightKeepCollectionClicked);
+            }
         }
 
         private void PopulateDefaultInputs()
@@ -228,15 +251,47 @@ namespace UltimoActo.UI
 
         private void RefreshHostNightSummary()
         {
-            if (hostNightAndVersionInfoTMP == null) return;
-
             var nights = NightManager.BuildDefaultNights();
-            int nIdx = Mathf.Clamp(PlayerPrefs.GetInt(NightManager.PrefsKey, 0), 0, nights.Count - 1);
+            int rawSavedNight = PlayerPrefs.GetInt(NightManager.PrefsKey, 0);
+            bool gameCompleted = PlayerPrefs.GetInt("UltimoActo_GameCompleted", 0) == 1;
+
+            // BLOQUE 3.7 — Evitar que el progreso guardado apunte a una noche inexistente (>= 8)
+            if (rawSavedNight < 0 || rawSavedNight >= nights.Count)
+            {
+                rawSavedNight = 0;
+                PlayerPrefs.SetInt(NightManager.PrefsKey, 0);
+                PlayerPrefs.Save();
+            }
+
+            int nIdx = Mathf.Clamp(rawSavedNight, 0, nights.Count - 1);
             NightDefinition cur = nights[nIdx];
             string ver = LanRoomDiscovery.ProtocolGameVersion;
 
+            // Actualizar etiqueta del botón principal según si hay partida en curso o partida ya completada
+            if (btnNewGame != null)
+            {
+                if (gameCompleted && nIdx == 0)
+                {
+                    SetButtonLabel(btnNewGame, "REJUGAR SOLO (NOCHE I)");
+                }
+                else if (nIdx > 0)
+                {
+                    SetButtonLabel(btnNewGame, $"CONTINUAR SOLO (NOCHE {cur.roman})");
+                }
+                else
+                {
+                    SetButtonLabel(btnNewGame, "JUGAR SOLO");
+                }
+            }
+
+            if (hostNightAndVersionInfoTMP == null) return;
+
+            string completedBadge = gameCompleted
+                ? "   ·   <color=#6EE88E>★ Obra Completada (Colección Desbloqueada)</color>"
+                : "";
+
             hostNightAndVersionInfoTMP.text =
-                $"• <b>Época del Anfitrión:</b> <color=#E8C97A>1929 (Academia en su Gloria)</color>\n" +
+                $"• <b>Época del Anfitrión:</b> <color=#E8C97A>1929 (Academia en su Gloria)</color>{completedBadge}\n" +
                 $"• <b>Progreso actual a anunciar:</b> Noche {cur.roman} — {cur.title} ({cur.clockTime})\n" +
                 $"• <b>Versión del protocolo:</b> v{ver}   ·   <b>Cupo:</b> 2 Jugadores en Red Local (UDP Broadcast)";
         }
@@ -571,9 +626,9 @@ namespace UltimoActo.UI
             {
                 Transform col = btnCoop.transform.parent;
                 RectTransform colRt = col.GetComponent<RectTransform>();
-                if (colRt != null && colRt.sizeDelta.y < 380f)
+                if (colRt != null && colRt.sizeDelta.y < 440f)
                 {
-                    colRt.sizeDelta = new Vector2(colRt.sizeDelta.x, 390f);
+                    colRt.sizeDelta = new Vector2(colRt.sizeDelta.x, 450f);
                 }
 
                 GameObject clone = Instantiate(btnCoop.gameObject, col);
@@ -583,10 +638,26 @@ namespace UltimoActo.UI
                 SetButtonLabel(btnJoinLanMenu, "UNIRSE A SALA");
             }
 
+            // Insertar botón "COLECCIÓN" en la columna principal del menú para consultar lo encontrado y rejugar
+            if (btnCollectionMenu == null && btnJoinLanMenu != null && btnJoinLanMenu.transform.parent != null)
+            {
+                Transform col = btnJoinLanMenu.transform.parent;
+                GameObject colClone = Instantiate(btnJoinLanMenu.gameObject, col);
+                colClone.name = "Btn_CollectionMenu";
+                colClone.transform.SetSiblingIndex(btnJoinLanMenu.transform.GetSiblingIndex() + 1);
+                btnCollectionMenu = colClone.GetComponent<Button>();
+                bool done = PlayerPrefs.GetInt("UltimoActo_GameCompleted", 0) == 1;
+                SetButtonLabel(btnCollectionMenu, done ? "COLECCIÓN ★" : "COLECCIÓN");
+            }
+
             // Si aún no existe joinLanPanel (escena previa al Paso 1), lo construimos en tiempo de ejecución con la estética del teatro
             if (joinLanPanel == null)
             {
                 BuildRuntimeLanPanels();
+            }
+            if (collectionPanel == null)
+            {
+                BuildRuntimeCollectionPanel();
             }
         }
 
@@ -884,6 +955,202 @@ namespace UltimoActo.UI
             if (coopPanel != null) coopPanel.SetActive(false);
             if (joinLanPanel != null) joinLanPanel.SetActive(false);
             if (howToPlayPanel != null) howToPlayPanel.SetActive(false);
+            if (collectionPanel != null) collectionPanel.SetActive(false);
+            RefreshHostNightSummary();
+        }
+
+        public void OnOpenCollectionPanelClicked()
+        {
+            PlayClickSound();
+            isSearchingLan = false;
+            RefreshCollectionPanelContent();
+            if (mainPanel != null) mainPanel.SetActive(false);
+            if (coopPanel != null) coopPanel.SetActive(false);
+            if (joinLanPanel != null) joinLanPanel.SetActive(false);
+            if (howToPlayPanel != null) howToPlayPanel.SetActive(false);
+            if (collectionPanel != null) collectionPanel.SetActive(true);
+        }
+
+        public void OnCloseCollectionPanelClicked()
+        {
+            PlayClickSound();
+            ShowMainPanel();
+        }
+
+        public void OnResetNightKeepCollectionClicked()
+        {
+            PlayClickSound();
+            // Reinicia la noche actual a Noche I (0) SIN borrar la colección, el diario ni los logros desbloqueados
+            PlayerPrefs.SetInt(NightManager.PrefsKey, 0);
+            PlayerPrefs.Save();
+            RefreshHostNightSummary();
+            RefreshCollectionPanelContent();
+        }
+
+        private void BuildRuntimeCollectionPanel()
+        {
+            Transform canvasRoot = transform;
+
+            collectionPanel = new GameObject("Collection_Submenu_Panel");
+            collectionPanel.transform.SetParent(canvasRoot, false);
+            RectTransform crt = collectionPanel.AddComponent<RectTransform>();
+            crt.anchorMin = new Vector2(0.5f, 0.5f);
+            crt.anchorMax = new Vector2(0.5f, 0.5f);
+            crt.pivot = new Vector2(0.5f, 0.5f);
+            crt.anchoredPosition = Vector2.zero;
+            crt.sizeDelta = new Vector2(880f, 660f);
+
+            Image cBg = collectionPanel.AddComponent<Image>();
+            cBg.color = ColOperaDarkBg;
+
+            GameObject border = new GameObject("Gold_Modal_Border");
+            border.transform.SetParent(collectionPanel.transform, false);
+            RectTransform bRect = border.AddComponent<RectTransform>();
+            bRect.anchorMin = Vector2.zero;
+            bRect.anchorMax = Vector2.one;
+            bRect.offsetMin = new Vector2(-1.5f, -1.5f);
+            bRect.offsetMax = new Vector2(1.5f, 1.5f);
+            Image bImg = border.AddComponent<Image>();
+            bImg.color = new Color(ColOperaGold.r, ColOperaGold.g, ColOperaGold.b, 0.7f);
+            bImg.raycastTarget = false;
+            border.transform.SetAsFirstSibling();
+
+            CreateStyledText("Col_Title", collectionPanel.transform, new Vector2(0f, 286f), new Vector2(800f, 36f),
+                22f, TextAlignmentOptions.Center, ColOperaIvory, FontStyles.Bold).text =
+                "COLECCIÓN DE LA ACADEMIA VESPER Y EXPEDIENTE DE PARTIDAS";
+
+            collectionSummaryTMP = CreateStyledText("Col_Summary", collectionPanel.transform,
+                new Vector2(0f, 200f), new Vector2(780f, 110f), 14.5f, TextAlignmentOptions.TopLeft, ColOperaGold);
+
+            collectionEntriesTMP = CreateStyledText("Col_Entries", collectionPanel.transform,
+                new Vector2(0f, -25f), new Vector2(780f, 310f), 13.5f, TextAlignmentOptions.TopLeft, ColOperaIvory);
+
+            btnResetNightKeepCollection = CreateStyledButton("Btn_ResetNightKeepCol", collectionPanel.transform,
+                "REINICIAR A NOCHE I (CONSERVAR COLECCIÓN)", new Vector2(-150f, -268f), new Vector2(420f, 44f));
+
+            btnCloseCollection = CreateStyledButton("Btn_CloseCollection", collectionPanel.transform,
+                "VOLVER AL MENÚ", new Vector2(230f, -268f), new Vector2(240f, 44f));
+
+            collectionPanel.SetActive(false);
+        }
+
+        private void RefreshCollectionPanelContent()
+        {
+            bool completed = PlayerPrefs.GetInt("UltimoActo_GameCompleted", 0) == 1;
+            int bestEv = PlayerPrefs.GetInt("UltimoActo_BestEvidencesCount", 0);
+            int bestSec = PlayerPrefs.GetInt("UltimoActo_BestSecretsCount", 0);
+            int bestAnom = PlayerPrefs.GetInt("UltimoActo_BestAnomaliesCount", 0);
+            int bestAch = PlayerPrefs.GetInt("UltimoActo_BestAchievementsCount", 0);
+            int tier = PlayerPrefs.GetInt("UltimoActo_UnlockedEndingTier", 0);
+            int currentSavedNight = Mathf.Clamp(PlayerPrefs.GetInt(NightManager.PrefsKey, 0), 0, 7);
+            var nights = NightManager.BuildDefaultNights();
+            string curNightRoman = nights[currentSavedNight].roman;
+
+            // Leer entradas guardadas en el Diario Compartido del Host
+            int journalCount = 0;
+            List<string> recentTitles = new List<string>();
+            List<string> savedAch = new List<string>();
+            if (PlayerPrefs.HasKey(SharedEvidenceJournalManager.SavePrefsKey))
+            {
+                try
+                {
+                    string json = PlayerPrefs.GetString(SharedEvidenceJournalManager.SavePrefsKey, "");
+                    if (!string.IsNullOrEmpty(json))
+                    {
+                        EvidenceJournalSaveData data = JsonUtility.FromJson<EvidenceJournalSaveData>(json);
+                        if (data != null)
+                        {
+                            if (data.entries != null)
+                            {
+                                journalCount = data.entries.Count;
+                                int start = Mathf.Max(0, data.entries.Count - 10);
+                                for (int i = data.entries.Count - 1; i >= start; i--)
+                                {
+                                    if (data.entries[i] != null && !string.IsNullOrEmpty(data.entries[i].title))
+                                    {
+                                        recentTitles.Add($"• {data.entries[i].title} <color=#C8B898>({data.entries[i].nightLabel})</color>");
+                                    }
+                                }
+                            }
+                            if (data.unlockedAchievements != null)
+                            {
+                                savedAch.AddRange(data.unlockedAchievements);
+                            }
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            // Leer coleccionables y secretos desbloqueados desde CollectibleAndSecretManager
+            UltimoActo.Narrative.CollectibleAndSecretManager colMgr = UltimoActo.Narrative.CollectibleAndSecretManager.Instance;
+            int colUnlocked = colMgr != null ? colMgr.UnlockedCollectiblesCount : 0;
+            int colGoal = colMgr != null ? colMgr.TotalCollectiblesGoal : 32;
+            int secUnlocked = colMgr != null ? colMgr.UnlockedSecretsCount : 0;
+            int secGoal = colMgr != null ? colMgr.TotalSecretsGoal : 8;
+
+            List<string> unlockedCollectibleLines = new List<string>();
+            List<string> missingVagueHints = new List<string>();
+            if (colMgr != null)
+            {
+                var cat = colMgr.FullCatalog;
+                for (int i = 0; i < cat.Count; i++)
+                {
+                    var d = cat[i];
+                    if (colMgr.IsUnlocked(d.id))
+                    {
+                        string prefix = d.isSpecialSecret ? "★ [Secreto] " : "✓ ";
+                        unlockedCollectibleLines.Add($"{prefix}<b>{d.title}</b> <color=#C8B898>(Noche {d.nightRoman} · {d.sectionName})</color>");
+                    }
+                    else if (missingVagueHints.Count < 4)
+                    {
+                        missingVagueHints.Add($"• <i>Noche {d.nightRoman} ({d.sectionName}): «{d.vagueMissingHint}»</i>");
+                    }
+                }
+            }
+
+            bestEv = Mathf.Max(bestEv, journalCount + colUnlocked);
+            bestSec = Mathf.Max(bestSec, secUnlocked);
+            bestAch = Mathf.Max(bestAch, savedAch.Count);
+
+            string tierDesc = tier >= 3
+                ? "Final III/III (Epílogo Íntegro de Coleccionista: «Dos Cisnes en Libertad»)"
+                : (tier == 2
+                    ? "Final II/III (Epílogo Extendido: «La Verdad del Espejo»)"
+                    : (completed ? "Final I/III (Desenlace Principal: «El Último Acto Completado»)" : "En progreso (Completa la Noche VIII para desbloquear el epílogo)"));
+
+            if (collectionSummaryTMP != null)
+            {
+                collectionSummaryTMP.text =
+                    $"<b>Estado general:</b> {(completed ? "<color=#6EE88E>★ OBRA COMPLETADA (06:00 AM)</color>" : $"<color=#F3D692>Investigación en curso (Noche actual: Noche {curNightRoman})</color>")}\n" +
+                    $"<b>Coleccionables Narrativos:</b> <color=#F3D692>{colUnlocked} / {colGoal}</color>   ·   " +
+                    $"<b>Secretos Especiales:</b> <color=#6EE88E>★ {bestSec} / {secGoal}</color>   ·   " +
+                    $"<b>Documentos en Diario:</b> <color=#F3D692>{bestEv}</color>\n" +
+                    $"<b>Logros Cooperativos:</b> <color=#6EE88E>{bestAch}</color>   ·   " +
+                    $"<b>Máximo Epílogo Desbloqueado:</b> <color=#F3D692>{tierDesc}</color>";
+            }
+
+            if (collectionEntriesTMP != null)
+            {
+                string achLine = savedAch.Count > 0
+                    ? string.Join(" · ", savedAch)
+                    : "Ninguno aún (resuelve puzles cooperativos entre 1929 y Ruinas para desbloquear «Voz en la oscuridad», «Sincronía» y «Dos tiempos»)";
+
+                string colBlock = unlockedCollectibleLines.Count > 0
+                    ? string.Join("\n", unlockedCollectibleLines.GetRange(0, Mathf.Min(6, unlockedCollectibleLines.Count)))
+                    : (recentTitles.Count > 0
+                        ? string.Join("\n", recentTitles.GetRange(0, Mathf.Min(5, recentTitles.Count)))
+                        : "• Aún no has desbloqueado coleccionables en partidas guardadas.");
+
+                string hintsBlock = missingVagueHints.Count > 0
+                    ? "\n\n<b><color=#D8B468>PISTAS VAGAS DE PIEZAS Y SECRETOS POR DESCUBRIR:</color></b>\n" + string.Join("\n", missingVagueHints)
+                    : "";
+
+                collectionEntriesTMP.text =
+                    $"<b><color=#D8B468>LOGROS COOPERATIVOS EN COLECCIÓN:</color></b>\n{achLine}\n\n" +
+                    $"<b><color=#D8B468>COLECCIONABLES, SECRETOS Y EVIDENCIAS DESBLOQUEADAS ({colUnlocked}/{colGoal} coleccionables · ★{bestSec}/{secGoal} secretos):</color></b>\n" +
+                    colBlock + hintsBlock;
+            }
         }
 
         public void PlayHoverSound()

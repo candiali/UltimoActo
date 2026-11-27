@@ -14,7 +14,8 @@ namespace UltimoActo.Core
         PuzzleClues = 1,
         Photographs = 2,
         ScoresAndMusic = 3,
-        PersonalNotes = 4
+        PersonalNotes = 4,
+        CollectiblesAndSecrets = 5
     }
 
     [Serializable]

@@ -169,7 +169,14 @@ namespace UltimoActo.Network
                 ? "<color=#6EE88E>[RESUELTO: I Cisne + III Lira]</color>"
                 : "<color=#F0C868>[Pendiente: Pórtico (Columna 1929 + Columna Ruinas)]</color>";
 
-            string chkJournal = $"<color=#6EE88E>[{journalEntries} Entradas · {achievementsCount} Logros · Tecla J/TAB]</color>";
+            int colUnl = UltimoActo.Narrative.CollectibleAndSecretManager.Instance != null
+                ? UltimoActo.Narrative.CollectibleAndSecretManager.Instance.UnlockedCollectiblesCount
+                : 0;
+            int secUnl = UltimoActo.Narrative.CollectibleAndSecretManager.Instance != null
+                ? UltimoActo.Narrative.CollectibleAndSecretManager.Instance.UnlockedSecretsCount
+                : 0;
+
+            string chkJournal = $"<color=#6EE88E>[{journalEntries} Entradas · Colección {colUnl}/32 · ★{secUnl}/8 · J/TAB]</color>";
 
             string chkFuses = powerOn
                 ? "<color=#6EE88E>[COMPLETADO: 220V Restaurados]</color>"
@@ -246,8 +253,8 @@ namespace UltimoActo.Network
             rt.anchorMin = new Vector2(0f, 1f);
             rt.anchorMax = new Vector2(0f, 1f);
             rt.pivot = new Vector2(0f, 1f);
-            rt.anchoredPosition = new Vector2(22f, -150f);
-            rt.sizeDelta = new Vector2(520f, 510f);
+            rt.anchoredPosition = new Vector2(22f, -130f);
+            rt.sizeDelta = new Vector2(540f, 650f);
 
             Image borderImg = verifierPanel.AddComponent<Image>();
             borderImg.color = ColGoldBorder;
@@ -274,7 +281,7 @@ namespace UltimoActo.Network
             titleRt.sizeDelta = new Vector2(-24f, 26f);
 
             TextMeshProUGUI titleTmp = titleObj.AddComponent<TextMeshProUGUI>();
-            titleTmp.text = "PASO 7 — VERIFICADOR INTEGRAL NOCHE I [F4]";
+            titleTmp.text = "VERIFICADOR INTEGRAL COOPERATIVO — NOCHES I A VIII [F4]";
             titleTmp.fontSize = 14.5f;
             titleTmp.fontStyle = FontStyles.Bold;
             titleTmp.color = ColGoldBright;
@@ -289,36 +296,77 @@ namespace UltimoActo.Network
             bodyRt.anchorMax = new Vector2(1f, 1f);
             bodyRt.pivot = new Vector2(0.5f, 1f);
             bodyRt.anchoredPosition = new Vector2(0f, -40f);
-            bodyRt.sizeDelta = new Vector2(-24f, 305f);
+            bodyRt.sizeDelta = new Vector2(-24f, 290f);
 
             checklistBodyText = bodyObj.AddComponent<TextMeshProUGUI>();
-            checklistBodyText.fontSize = 12.5f;
+            checklistBodyText.fontSize = 12.2f;
             checklistBodyText.color = ColIvoryText;
             checklistBodyText.alignment = TextAlignmentOptions.TopLeft;
-            checklistBodyText.lineSpacing = 4f;
+            checklistBodyText.lineSpacing = 3.5f;
             checklistBodyText.raycastTarget = false;
 
-            // Botones de navegación rápida por la Noche I para pruebas ágiles
-            CreateQuickTeleportButton(fillObj.transform, "BtnTpPortico", "Ir a 3. Pórtico (Puzle Coop Noche I)",
-                new Vector2(14f, -356f), new Vector2(238f, 32f), () => TeleportLocalPlayerTo(new Vector3(0f, 3.4f, 4.2f), 0f));
+            // Botones de navegación rápida por la Noche I y Noches II–VIII para pruebas ágiles en 2 instancias
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpPortico", "Noche I: Pórtico (Llave Dividida)",
+                new Vector2(14f, -338f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(0f, 3.4f, 4.2f), 0f));
 
-            CreateQuickTeleportButton(fillObj.transform, "BtnTpDireccion", "Ir a 7. Dirección (Llave 1 + 25A)",
-                new Vector2(264f, -356f), new Vector2(238f, 32f), () => TeleportLocalPlayerTo(new Vector3(-31f, 3.4f, 18f), -90f));
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpDireccion", "Noche I: 7. Dirección (Llave 1 + 25A)",
+                new Vector2(274f, -338f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(-31f, 3.4f, 18f), -90f));
 
-            CreateQuickTeleportButton(fillObj.transform, "BtnTpVestuario", "Ir a 11. Vestuario (Fusible 10A)",
-                new Vector2(14f, -394f), new Vector2(238f, 32f), () => TeleportLocalPlayerTo(new Vector3(19f, 3.4f, 19.5f), 180f));
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpVestuario", "Noche I: 11. Vestuario + 13. Taquillas",
+                new Vector2(14f, -372f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(19f, 3.4f, 19.5f), 180f));
 
-            CreateQuickTeleportButton(fillObj.transform, "BtnTpTaquillas", "Ir a 13. Taquillas (Llave 2 + 15A)",
-                new Vector2(264f, -394f), new Vector2(238f, 32f), () => TeleportLocalPlayerTo(new Vector3(33f, 3.4f, 22.5f), 90f));
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpRetratos", "Noche I: 10. Galería Retratos + 14. Elena",
+                new Vector2(274f, -372f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(-12f, 3.4f, 42f), 0f));
 
-            CreateQuickTeleportButton(fillObj.transform, "BtnTpArchivo", "Ir a 8. Archivo Expedientes",
-                new Vector2(14f, -432f), new Vector2(238f, 32f), () => TeleportLocalPlayerTo(new Vector3(-31f, 3.4f, 32f), 0f));
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN2Mirror", "Noche II: Espejo n.º 3 (1929)",
+                new Vector2(14f, -410f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(-34.8f, 3.4f, 59.0f), -90f));
 
-            CreateQuickTeleportButton(fillObj.transform, "BtnTpRetratos", "Ir a 10. Galería Retratos (Puzle)",
-                new Vector2(264f, -432f), new Vector2(238f, 32f), () => TeleportLocalPlayerTo(new Vector3(-12f, 3.4f, 42f), 0f));
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN2Mannequin", "Noche II: Sala Maniquíes (Ruinas)",
+                new Vector2(274f, -410f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(-19.0f, 3.4f, 72.5f), 0f));
 
-            CreateQuickTeleportButton(fillObj.transform, "BtnTpHabElena", "Ir a 14. Habitación de Elena",
-                new Vector2(14f, -470f), new Vector2(488f, 30f), () => TeleportLocalPlayerTo(new Vector3(19f, 3.4f, 56f), 0f));
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN3Lattice", "Noche III: Celosía Isadora (1929)",
+                new Vector2(14f, -444f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(-45.5f, 3.4f, 21.0f), 90f));
+
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN3Workshop", "Noche III: Taller Costura (Ruinas)",
+                new Vector2(274f, -444f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(-48.5f, 3.4f, 81.5f), 0f));
+
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN4Booth", "Noche IV: Sincronía Cabina Audio",
+                new Vector2(14f, -478f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(34.5f, 3.4f, 55.8f), 90f));
+
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN5Crypt", "Noche V: Cripta Efecto Espejo",
+                new Vector2(274f, -478f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(0.0f, -2.2f, 19.5f), 0f));
+
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN6Pulley", "Noche VI: Poleas Contrapeso III",
+                new Vector2(14f, -512f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(-19.5f, 3.4f, 91.5f), 0f));
+
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN7Theatre", "Noche VII: Gran Teatro y Guion B-00",
+                new Vector2(274f, -512f), new Vector2(248f, 30f), () => TeleportLocalPlayerTo(new Vector3(-8.0f, 3.4f, 114.5f), 0f));
+
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN8Chamber", "Noche VIII: Cámara Final y Amanecer (06:00)",
+                new Vector2(14f, -548f), new Vector2(248f, 32f), () => TeleportLocalPlayerTo(new Vector3(8.3f, 3.4f, 100.8f), 0f));
+
+            CreateQuickTeleportButton(fillObj.transform, "BtnTpN1Secret", "Noche I: Tocador Nº 3 (★ Secreto Coop I)",
+                new Vector2(274f, -548f), new Vector2(248f, 32f), () => TeleportLocalPlayerTo(new Vector3(23.5f, 3.4f, 32.8f), 0f));
+
+            CreateQuickTeleportButton(fillObj.transform, "BtnAdvanceNight", "Avanzar Noche (I → VIII)",
+                new Vector2(14f, -586f), new Vector2(210f, 32f), () =>
+                {
+                    if (NightManager.Instance != null)
+                    {
+                        NightManager.Instance.DevSkipNight();
+                    }
+                });
+
+            CreateQuickTeleportButton(fillObj.transform, "BtnTriggerFinale", "★ PROBAR FINAL DEFINITIVO 06:00 + CRÉDITOS",
+                new Vector2(232f, -586f), new Vector2(290f, 32f), () =>
+                {
+                    isVisible = false;
+                    if (verifierPanel != null) verifierPanel.SetActive(false);
+                    if (UltimoActo.Narrative.UltimateFinaleAndCreditsController.Instance != null)
+                    {
+                        UltimoActo.Narrative.UltimateFinaleAndCreditsController.Instance.RequestStartSynchronizedFinale("Prueba directa desde Panel [F4]");
+                    }
+                });
 
             verifierPanel.SetActive(false);
         }

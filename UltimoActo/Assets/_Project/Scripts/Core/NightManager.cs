@@ -401,12 +401,21 @@ namespace UltimoActo.Core
             gameFinished = true;
             CloseOpenDocument();
             SetPlayerControl(false);
+
+            // BLOQUE 3 — Sustituir la tarjeta "(Continuará — final definitivo en desarrollo)"
+            // por la secuencia final completa, sincronizada (Amanecer 06:00 + Epílogo + Estadísticas + Créditos + Menú).
+            if (UltimoActo.Narrative.UltimateFinaleAndCreditsController.Instance != null)
+            {
+                UltimoActo.Narrative.UltimateFinaleAndCreditsController.Instance.RequestStartSynchronizedFinale("Noche VIII completada");
+                yield break;
+            }
+
             yield return FadeTo(1f, 2.0f);
 
-            cardRoman.text = "FIN DE LAS OCHO NOCHES";
-            cardTitle.text = "El telón desciende";
-            cardSubtitle.text = "Has recorrido la Academia Vesper de principio a fin.\n(Continuará — final definitivo en desarrollo)";
-            cardClock.text = "";
+            cardRoman.text = "06:00 AM — AMANECER EN LA ACADEMIA VESPER";
+            cardTitle.text = "El Último Acto se ha completado";
+            cardSubtitle.text = "Las dos épocas se han unido en la luz del alba.";
+            cardClock.text = "06:00";
             yield return FadeCard(1f, 2.0f);
         }
 

@@ -230,6 +230,10 @@ namespace UltimoActo.Network
             AcademyExpansionAnomalyController.OnExpansionNodeInteracted += HandleLocalExpansionInteracted;
             SharedEvidenceJournalManager.OnLocalEntryCreatedForNetwork += HandleLocalJournalEntryCreated;
             CoopPuzzleBase.OnCoopPuzzleNetworkCommand += HandleLocalCoopPuzzleCommand;
+            AsymmetricAnomalyManager.OnAnomalyTriggeredForNetwork += HandleLocalAnomalyTriggered;
+            UltimateFinaleAndCreditsController.OnHostBroadcastFinalePacket += HandleHostBroadcastFinalePacket;
+            UltimoActo.UI.AcademyMapUI.OnLocalZoneVisitedForNetwork += HandleLocalMapZoneVisited;
+            CollectibleAndSecretManager.OnCollectibleNetworkEvent += HandleLocalCollectibleEvent;
 
             if (NightManager.Instance != null)
             {
@@ -257,6 +261,10 @@ namespace UltimoActo.Network
             AcademyExpansionAnomalyController.OnExpansionNodeInteracted -= HandleLocalExpansionInteracted;
             SharedEvidenceJournalManager.OnLocalEntryCreatedForNetwork -= HandleLocalJournalEntryCreated;
             CoopPuzzleBase.OnCoopPuzzleNetworkCommand -= HandleLocalCoopPuzzleCommand;
+            AsymmetricAnomalyManager.OnAnomalyTriggeredForNetwork -= HandleLocalAnomalyTriggered;
+            UltimateFinaleAndCreditsController.OnHostBroadcastFinalePacket -= HandleHostBroadcastFinalePacket;
+            UltimoActo.UI.AcademyMapUI.OnLocalZoneVisitedForNetwork -= HandleLocalMapZoneVisited;
+            CollectibleAndSecretManager.OnCollectibleNetworkEvent -= HandleLocalCollectibleEvent;
 
             if (NightManager.Instance != null)
             {
@@ -428,6 +436,32 @@ namespace UltimoActo.Network
             if (isApplyingRemoteState || string.IsNullOrEmpty(puzzleId) || string.IsNullOrEmpty(subPayload)) return;
             string b64Payload = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(subPayload));
             DispatchStatePacket($"COOP_PUZZLE|{puzzleId}|{b64Payload}");
+        }
+
+        private void HandleLocalAnomalyTriggered(string anomalyId)
+        {
+            if (isApplyingRemoteState || string.IsNullOrEmpty(anomalyId)) return;
+            DispatchStatePacket($"ANOMALY_TRIG|{anomalyId}");
+        }
+
+        private void HandleHostBroadcastFinalePacket(string finalePayload)
+        {
+            if (isApplyingRemoteState || string.IsNullOrEmpty(finalePayload)) return;
+            string b64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(finalePayload));
+            DispatchStatePacket($"FINAL_DAWN_START|{b64}");
+        }
+
+        private void HandleLocalMapZoneVisited(string zoneId)
+        {
+            if (isApplyingRemoteState || string.IsNullOrEmpty(zoneId)) return;
+            DispatchStatePacket($"MAP_VISIT|{zoneId}");
+        }
+
+        private void HandleLocalCollectibleEvent(string collectiblePayload)
+        {
+            if (isApplyingRemoteState || string.IsNullOrEmpty(collectiblePayload)) return;
+            string b64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(collectiblePayload));
+            DispatchStatePacket($"COLLECTIBLE_SYNC|{b64}");
         }
 
         // ====================================================================
@@ -736,6 +770,26 @@ namespace UltimoActo.Network
                     }
                 }
             }
+
+            // 12. Niebla de Guerra del Mapa Compartido (AcademyMapUI)
+            if (UltimoActo.UI.AcademyMapUI.Instance != null)
+            {
+                foreach (string zId in UltimoActo.UI.AcademyMapUI.Instance.VisitedZoneIds)
+                {
+                    DispatchStatePacket($"MAP_VISIT|{zId}");
+                }
+            }
+
+            // 13. Coleccionables y Secretos Especiales (CollectibleAndSecretManager)
+            if (CollectibleAndSecretManager.Instance != null)
+            {
+                List<string> colSnapshots = CollectibleAndSecretManager.Instance.BuildNetworkSnapshotPackets();
+                for (int i = 0; i < colSnapshots.Count; i++)
+                {
+                    string b64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(colSnapshots[i]));
+                    DispatchStatePacket($"COLLECTIBLE_SYNC|{b64}");
+                }
+            }
         }
 
         // ====================================================================
@@ -968,6 +1022,52 @@ namespace UltimoActo.Network
                             catch (Exception ex)
                             {
                                 Debug.LogWarning($"[SharedWorldStateSync] Error decodificando puzle cooperativo '{pId}': {ex.Message}");
+                            }
+                        }
+                        break;
+
+                    case "ANOMALY_TRIG":
+                        if (parts.Length >= 2 && AsymmetricAnomalyManager.Instance != null)
+                        {
+                            AsymmetricAnomalyManager.Instance.ApplyAnomalyTriggerFromNetwork(parts[1]);
+                        }
+                        break;
+
+                    case "FINAL_DAWN_START":
+                        if (parts.Length >= 2 && UltimateFinaleAndCreditsController.Instance != null)
+                        {
+                            try
+                            {
+                                byte[] bytes = Convert.FromBase64String(parts[1]);
+                                string finalePayload = System.Text.Encoding.UTF8.GetString(bytes);
+                                UltimateFinaleAndCreditsController.Instance.ApplyRemoteFinaleStartFromHost(finalePayload);
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogWarning($"[SharedWorldStateSync] Error decodificando inicio del final: {ex.Message}");
+                            }
+                        }
+                        break;
+
+                    case "MAP_VISIT":
+                        if (parts.Length >= 2 && UltimoActo.UI.AcademyMapUI.Instance != null)
+                        {
+                            UltimoActo.UI.AcademyMapUI.Instance.ApplyVisitedZoneFromNetwork(parts[1]);
+                        }
+                        break;
+
+                    case "COLLECTIBLE_SYNC":
+                        if (parts.Length >= 2 && CollectibleAndSecretManager.Instance != null)
+                        {
+                            try
+                            {
+                                byte[] bytes = Convert.FromBase64String(parts[1]);
+                                string colPayload = System.Text.Encoding.UTF8.GetString(bytes);
+                                CollectibleAndSecretManager.Instance.ApplyNetworkPacket(colPayload);
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.LogWarning($"[SharedWorldStateSync] Error decodificando coleccionable: {ex.Message}");
                             }
                         }
                         break;

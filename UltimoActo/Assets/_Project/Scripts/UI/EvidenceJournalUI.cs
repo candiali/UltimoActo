@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 #endif
 using UltimoActo.Core;
+using UltimoActo.Narrative;
 using UltimoActo.Network;
 using UltimoActo.Player;
 
@@ -38,8 +39,8 @@ namespace UltimoActo.UI
         private const int EntriesPerPage = 7;
 
         private GameObject journalRootPanel;
-        private readonly Button[] tabButtons = new Button[5];
-        private readonly TextMeshProUGUI[] tabButtonLabels = new TextMeshProUGUI[5];
+        private readonly Button[] tabButtons = new Button[6];
+        private readonly TextMeshProUGUI[] tabButtonLabels = new TextMeshProUGUI[6];
         private readonly Button[] entrySlotButtons = new Button[EntriesPerPage];
         private readonly TextMeshProUGUI[] entrySlotTitles = new TextMeshProUGUI[EntriesPerPage];
         private readonly TextMeshProUGUI[] entrySlotSubtitles = new TextMeshProUGUI[EntriesPerPage];
@@ -55,6 +56,14 @@ namespace UltimoActo.UI
         private GameObject personalNoteComposerBox;
         private TMP_InputField personalNoteInput;
         private TextMeshProUGUI saveStatusFooterLabel;
+
+        // BLOQUE 2 — Vitrina visual de Coleccionables y Secretos por Sección dentro del Diario
+        private GameObject collectiblesFilterBox;
+        private TextMeshProUGUI collectiblesProgressHeaderLabel;
+        private readonly Button[] sectionFilterButtons = new Button[6];
+        private readonly TextMeshProUGUI[] sectionFilterLabels = new TextMeshProUGUI[6];
+        private int activeCollectibleSectionFilter = 0; // 0=Todas, 1=Secc 1-3 (Noche I), 2=Secc 4-5, 3=Secc 6-8, 4=Secc 9-12, 5=Solo Secretos
+        private CollectibleDefinition selectedCollectibleDef;
 
         private EvidenceJournalEntry selectedEntry;
         private PlayerMovement cachedPlayerMovement;
@@ -116,6 +125,10 @@ namespace UltimoActo.UI
             {
                 SharedEvidenceJournalManager.Instance.OnJournalUpdated += OnJournalDataUpdated;
             }
+            if (CollectibleAndSecretManager.Instance != null)
+            {
+                CollectibleAndSecretManager.Instance.OnCollectionUpdated += OnJournalDataUpdated;
+            }
         }
 
         private void OnDestroy()
@@ -123,6 +136,10 @@ namespace UltimoActo.UI
             if (SharedEvidenceJournalManager.Instance != null)
             {
                 SharedEvidenceJournalManager.Instance.OnJournalUpdated -= OnJournalDataUpdated;
+            }
+            if (CollectibleAndSecretManager.Instance != null)
+            {
+                CollectibleAndSecretManager.Instance.OnCollectionUpdated -= OnJournalDataUpdated;
             }
             if (Instance == this) Instance = null;
         }
@@ -262,6 +279,7 @@ namespace UltimoActo.UI
             currentTab = category;
             currentPage = 0;
             selectedEntry = null;
+            selectedCollectibleDef = null;
             RefreshJournalView();
         }
 
@@ -270,23 +288,40 @@ namespace UltimoActo.UI
             SharedEvidenceJournalManager mgr = SharedEvidenceJournalManager.Instance;
             if (mgr == null) return;
 
-            // Actualizar contadores en las 5 pestañas
+            CollectibleAndSecretManager colMgr = CollectibleAndSecretManager.Instance;
+            int colUnlocked = colMgr != null ? colMgr.UnlockedCollectiblesCount : 0;
+            int colGoal = colMgr != null ? colMgr.TotalCollectiblesGoal : 32;
+            int secUnlocked = colMgr != null ? colMgr.UnlockedSecretsCount : 0;
+            int secGoal = colMgr != null ? colMgr.TotalSecretsGoal : 8;
+
+            // Actualizar contadores en las 6 pestañas
             string[] tabBaseNames =
             {
                 "DOCUMENTOS",
                 "PISTAS Y PUZLES",
                 "FOTOGRAFÍAS",
-                "PARTITURAS / MÚSICA",
-                "NOTAS PROPIAS"
+                "PARTITURAS",
+                "NOTAS PROPIAS",
+                "COLECCIÓN"
             };
 
-            for (int t = 0; t < 5; t++)
+            for (int t = 0; t < 6; t++)
             {
                 JournalTabCategory cat = (JournalTabCategory)t;
-                int count = mgr.GetEntriesForTab(cat).Count;
+                string labelText;
+                if (cat == JournalTabCategory.CollectiblesAndSecrets)
+                {
+                    labelText = $"COLECCIÓN ({colUnlocked}/{colGoal} · ★{secUnlocked}/{secGoal})";
+                }
+                else
+                {
+                    int count = mgr.GetEntriesForTab(cat).Count;
+                    labelText = $"{tabBaseNames[t]} ({count})";
+                }
+
                 if (tabButtonLabels[t] != null)
                 {
-                    tabButtonLabels[t].text = $"{tabBaseNames[t]} ({count})";
+                    tabButtonLabels[t].text = labelText;
                     tabButtonLabels[t].color = (cat == currentTab) ? ColGoldBright : ColIvoryText;
                 }
                 if (tabButtons[t] != null && tabButtons[t].targetGraphic != null)
@@ -298,6 +333,16 @@ namespace UltimoActo.UI
             if (personalNoteComposerBox != null)
             {
                 personalNoteComposerBox.SetActive(currentTab == JournalTabCategory.PersonalNotes);
+            }
+            if (collectiblesFilterBox != null)
+            {
+                collectiblesFilterBox.SetActive(currentTab == JournalTabCategory.CollectiblesAndSecrets);
+            }
+
+            if (currentTab == JournalTabCategory.CollectiblesAndSecrets)
+            {
+                RefreshCollectiblesAndSecretsShowcase(colMgr, mgr);
+                return;
             }
 
             List<EvidenceJournalEntry> tabEntries = mgr.GetEntriesForTab(currentTab);
@@ -363,8 +408,205 @@ namespace UltimoActo.UI
                 int totalCount = mgr.AllEntries.Count;
                 int achCount = mgr.UnlockedAchievements.Count;
                 saveStatusFooterLabel.text = isClient
-                    ? $"DIARIO COMPARTIDO EN RED ({totalCount} entradas · {achCount} logros) · Sincronizado con el Anfitrión"
-                    : $"DIARIO COMPARTIDO ({totalCount} entradas · {achCount} logros) · Guardado automáticamente en el Anfitrión";
+                    ? $"DIARIO COMPARTIDO EN RED ({totalCount} entradas · {colUnlocked}/{colGoal} coleccionables · ★{secUnlocked}/{secGoal} secretos) · Sincronizado con el Anfitrión"
+                    : $"DIARIO COMPARTIDO ({totalCount} entradas · {colUnlocked}/{colGoal} coleccionables · ★{secUnlocked}/{secGoal} secretos) · Guardado en el Anfitrión";
+            }
+        }
+
+        private void RefreshCollectiblesAndSecretsShowcase(CollectibleAndSecretManager colMgr, SharedEvidenceJournalManager journalMgr)
+        {
+            if (colMgr == null) return;
+
+            for (int f = 0; f < sectionFilterButtons.Length; f++)
+            {
+                bool active = f == activeCollectibleSectionFilter;
+                if (sectionFilterLabels[f] != null)
+                {
+                    sectionFilterLabels[f].color = active ? ColGoldBright : ColIvoryText;
+                }
+                if (sectionFilterButtons[f] != null && sectionFilterButtons[f].targetGraphic != null)
+                {
+                    sectionFilterButtons[f].targetGraphic.color = active ? ColTabActive : ColTabNormal;
+                }
+            }
+
+            if (collectiblesProgressHeaderLabel != null)
+            {
+                collectiblesProgressHeaderLabel.text =
+                    $"VITRINA POR SECCIÓN — Coleccionables: <color=#F3D692><b>{colMgr.UnlockedCollectiblesCount}/{colMgr.TotalCollectiblesGoal}</b></color>   ·   " +
+                    $"Secretos Especiales: <color=#6EE88E><b>★ {colMgr.UnlockedSecretsCount}/{colMgr.TotalSecretsGoal}</b></color>   " +
+                    "<i>(Las piezas que faltan muestran pistas vagas sin revelarse en el mapa)</i>";
+            }
+
+            List<CollectibleDefinition> filtered = new List<CollectibleDefinition>();
+            var full = colMgr.FullCatalog;
+            for (int i = 0; i < full.Count; i++)
+            {
+                var d = full[i];
+                if (MatchesSectionFilter(d, activeCollectibleSectionFilter))
+                {
+                    filtered.Add(d);
+                }
+            }
+
+            int totalPages = Mathf.Max(1, Mathf.CeilToInt((float)filtered.Count / EntriesPerPage));
+            currentPage = Mathf.Clamp(currentPage, 0, totalPages - 1);
+
+            if (pageCounterLabel != null)
+            {
+                pageCounterLabel.text = $"Vitrina {currentPage + 1} / {totalPages}  ({filtered.Count} piezas)";
+            }
+
+            if (selectedCollectibleDef == null && filtered.Count > 0)
+            {
+                selectedCollectibleDef = filtered[0];
+            }
+
+            int startIndex = currentPage * EntriesPerPage;
+            for (int i = 0; i < EntriesPerPage; i++)
+            {
+                int idx = startIndex + i;
+                if (idx < filtered.Count)
+                {
+                    CollectibleDefinition d = filtered[idx];
+                    bool unlocked = colMgr.IsUnlocked(d.id);
+                    entrySlotButtons[i].gameObject.SetActive(true);
+
+                    bool isSelected = selectedCollectibleDef != null && selectedCollectibleDef.id == d.id;
+                    if (entrySlotButtons[i].targetGraphic != null)
+                    {
+                        entrySlotButtons[i].targetGraphic.color = isSelected ? ColSlotSelected : ColSlotNormal;
+                    }
+
+                    string eraShort = d.originEra == EraVisibilityMode.Only1929
+                        ? "<color=#F5D488>[1929]</color>"
+                        : (d.originEra == EraVisibilityMode.OnlyRuins ? "<color=#92C2F4>[Ruinas]</color>" : "<color=#6EE88E>[Coop 1929+Ruinas]</color>");
+
+                    if (unlocked)
+                    {
+                        CollectibleUnlockRecord rec = colMgr.GetUnlockRecord(d.id);
+                        string finder = rec != null ? rec.foundByPlayer : "Descubierto";
+                        entrySlotTitles[i].text = (d.isSpecialSecret ? "★ " : "✓ ") + d.title;
+                        entrySlotTitles[i].color = d.isSpecialSecret ? ColGoldBright : new Color(0.55f, 0.94f, 0.68f, 1f);
+                        entrySlotSubtitles[i].text = $"{CollectibleAndSecretManager.FormatTypeShort(d.type)} · Noche {d.nightRoman} (Secc. {d.sectionIndex}) · Por <b>{finder}</b> {eraShort}";
+                    }
+                    else
+                    {
+                        entrySlotTitles[i].text = (d.isSpecialSecret ? "★ ??? — [Secreto Especial por Descubrir]" : "🔒 ??? — [Coleccionable por Descubrir]");
+                        entrySlotTitles[i].color = new Color(0.72f, 0.66f, 0.62f, 0.90f);
+                        entrySlotSubtitles[i].text = $"{CollectibleAndSecretManager.FormatTypeShort(d.type)} · Noche {d.nightRoman} · {d.sectionName} {eraShort}";
+                    }
+
+                    int captured = idx;
+                    entrySlotButtons[i].onClick.RemoveAllListeners();
+                    entrySlotButtons[i].onClick.AddListener(() =>
+                    {
+                        selectedCollectibleDef = filtered[captured];
+                        RefreshJournalView();
+                    });
+                }
+                else
+                {
+                    entrySlotButtons[i].gameObject.SetActive(false);
+                }
+            }
+
+            RefreshSelectedCollectibleDetail(colMgr);
+        }
+
+        private static bool MatchesSectionFilter(CollectibleDefinition d, int filterIdx)
+        {
+            if (d == null) return false;
+            switch (filterIdx)
+            {
+                case 1: return d.sectionIndex >= 1 && d.sectionIndex <= 3; // Secciones 1–3 (Noche I)
+                case 2: return d.sectionIndex == 4 || d.sectionIndex == 5 || d.sectionIndex == 9 || d.sectionIndex == 10; // Ensayo, Archivo, Jardín, Enfermería
+                case 3: return d.sectionIndex >= 6 && d.sectionIndex <= 8; // Camerinos, Teatro y Bóveda B-00
+                case 4: return d.sectionIndex == 11 || d.sectionIndex == 12; // Internado, Planta Alta, Cripta y Exteriores
+                case 5: return d.isSpecialSecret; // Solo los 8 Secretos Especiales
+                default: return true;
+            }
+        }
+
+        private void RefreshSelectedCollectibleDetail(CollectibleAndSecretManager colMgr)
+        {
+            if (selectedCollectibleDef == null || colMgr == null)
+            {
+                if (detailTitleLabel != null) detailTitleLabel.text = "Selecciona una pieza de la vitrina";
+                if (detailMetadataLabel != null) detailMetadataLabel.text = "";
+                if (detailVisibilityBadgeLabel != null) detailVisibilityBadgeLabel.text = "";
+                if (detailBodyLabel != null) detailBodyLabel.text = "";
+                if (openFullViewerButton != null) openFullViewerButton.gameObject.SetActive(false);
+                return;
+            }
+
+            bool unlocked = colMgr.IsUnlocked(selectedCollectibleDef.id);
+            string eraBadge = SharedEvidenceJournalManager.FormatVisibilityBadge((int)selectedCollectibleDef.originEra);
+
+            if (unlocked)
+            {
+                CollectibleUnlockRecord rec = colMgr.GetUnlockRecord(selectedCollectibleDef.id);
+                string finder = rec != null ? rec.foundByPlayer : "Investigador";
+
+                if (detailTitleLabel != null)
+                {
+                    detailTitleLabel.text = (selectedCollectibleDef.isSpecialSecret ? "★ " : "✓ ") + selectedCollectibleDef.title;
+                }
+                if (detailMetadataLabel != null)
+                {
+                    detailMetadataLabel.text =
+                        $"Tipo: <color=#F3D692><b>{CollectibleAndSecretManager.FormatTypeShort(selectedCollectibleDef.type)}</b></color>   |   " +
+                        $"Ubicación: <b>{selectedCollectibleDef.zoneName} ({selectedCollectibleDef.sectionName})</b>   |   " +
+                        $"Hallado por: <b>{finder}</b>";
+                }
+                if (detailVisibilityBadgeLabel != null)
+                {
+                    detailVisibilityBadgeLabel.text = $"{eraBadge} · Noche {selectedCollectibleDef.nightRoman} — Pieza registrada en la Colección Compartida";
+                }
+                if (detailBodyLabel != null)
+                {
+                    detailBodyLabel.text =
+                        $"<b>DESCRIPCIÓN DE LA PIEZA:</b>\n{selectedCollectibleDef.description}\n\n" +
+                        "────────────────────────────────────────────────────────\n" +
+                        $"<b><color=#F3D692>HISTORIA SECUNDARIA / RECOMPENSA NARRATIVA (BIBLIA NARRATIVA):</color></b>\n" +
+                        $"{selectedCollectibleDef.secondaryLoreReward}";
+                }
+                if (openFullViewerButton != null)
+                {
+                    openFullViewerButton.gameObject.SetActive(true);
+                }
+            }
+            else
+            {
+                if (detailTitleLabel != null)
+                {
+                    detailTitleLabel.text = selectedCollectibleDef.isSpecialSecret
+                        ? $"★ SECRETO ESPECIAL NO DESCUBIERTO (Noche {selectedCollectibleDef.nightRoman})"
+                        : $"🔒 PIEZA DE COLECCIÓN NO DESCUBIERTA (Noche {selectedCollectibleDef.nightRoman})";
+                }
+                if (detailMetadataLabel != null)
+                {
+                    detailMetadataLabel.text =
+                        $"Categoría: <color=#F3D692><b>{CollectibleAndSecretManager.FormatTypeShort(selectedCollectibleDef.type)}</b></color>   |   " +
+                        $"Sección: <b>{selectedCollectibleDef.sectionName}</b>   |   " +
+                        $"Noche: <b>Noche {selectedCollectibleDef.nightRoman}</b>";
+                }
+                if (detailVisibilityBadgeLabel != null)
+                {
+                    detailVisibilityBadgeLabel.text = $"{eraBadge} · No se marca en el mapa para preservar la exploración";
+                }
+                if (detailBodyLabel != null)
+                {
+                    detailBodyLabel.text =
+                        "<b><color=#F3D692>PISTA VAGA PARA ENCONTRAR ESTA PIEZA:</color></b>\n\n" +
+                        $"<i>«{selectedCollectibleDef.vagueMissingHint}»</i>\n\n" +
+                        "────────────────────────────────────────────────────────\n" +
+                        "<color=#B8B0A4>Consejo cooperativo: Recuerda que muchas piezas y secretos solo son visibles en una de las dos épocas (1929 o Ruinas), o requieren que un jugador observe una señal en 1929 y guíe por voz a su compañero en las Ruinas.</color>";
+                }
+                if (openFullViewerButton != null)
+                {
+                    openFullViewerButton.gameObject.SetActive(false);
+                }
             }
         }
 
@@ -422,7 +664,29 @@ namespace UltimoActo.UI
 
         private void OnOpenInDocumentViewerClicked()
         {
-            if (selectedEntry == null || DocumentUI.Instance == null) return;
+            if (DocumentUI.Instance == null) return;
+
+            if (currentTab == JournalTabCategory.CollectiblesAndSecrets)
+            {
+                if (selectedCollectibleDef == null || CollectibleAndSecretManager.Instance == null) return;
+                if (!CollectibleAndSecretManager.Instance.IsUnlocked(selectedCollectibleDef.id)) return;
+
+                string sub = $"{CollectibleAndSecretManager.FormatTypeShort(selectedCollectibleDef.type)} · {selectedCollectibleDef.sectionName} ({selectedCollectibleDef.zoneName}) · Noche {selectedCollectibleDef.nightRoman}";
+                string body =
+                    $"{selectedCollectibleDef.description}\n\n" +
+                    "──────────────────────────────────────────────\n" +
+                    $"<b>HISTORIA SECUNDARIA / RECOMPENSA NARRATIVA:</b>\n{selectedCollectibleDef.secondaryLoreReward}";
+
+                DocumentUI.Instance.ShowDocumentWithId(
+                    $"collectible_view_{selectedCollectibleDef.id}",
+                    selectedCollectibleDef.title,
+                    body,
+                    sub,
+                    skipJournalRecord: true);
+                return;
+            }
+
+            if (selectedEntry == null) return;
 
             string fullSubtitle =
                 $"{selectedEntry.foundByPlayer} · {selectedEntry.nightLabel} · {selectedEntry.eraSeenLabel} · " +
@@ -512,11 +776,19 @@ namespace UltimoActo.UI
                 new Vector2(1f, 1f), new Vector2(-120f, -32f), new Vector2(200f, 38f),
                 out _, CloseJournal);
 
-            // Barra de 5 Pestañas
-            string[] defaultTabs = { "DOCUMENTOS (0)", "PISTAS Y PUZLES (0)", "FOTOGRAFÍAS (0)", "PARTITURAS / MÚSICA (0)", "NOTAS PROPIAS (0)" };
-            for (int t = 0; t < 5; t++)
+            // Barra de 6 Pestañas (incluyendo COLECCIÓN con contador X/32 y Secretos Y/8)
+            string[] defaultTabs =
             {
-                float xOffset = -560f + (t * 280f);
+                "DOCUMENTOS (0)",
+                "PISTAS Y PUZLES (0)",
+                "FOTOGRAFÍAS (0)",
+                "PARTITURAS (0)",
+                "NOTAS PROPIAS (0)",
+                "COLECCIÓN (0/32)"
+            };
+            for (int t = 0; t < 6; t++)
+            {
+                float xOffset = -585f + (t * 234f);
                 int capturedTab = t;
                 tabButtons[t] = CreateSmallButton(
                     cardFill.transform,
@@ -524,7 +796,7 @@ namespace UltimoActo.UI
                     defaultTabs[t],
                     new Vector2(0.5f, 1f),
                     new Vector2(xOffset, -94f),
-                    new Vector2(268f, 42f),
+                    new Vector2(226f, 42f),
                     out tabButtonLabels[t],
                     () => SelectTab((JournalTabCategory)capturedTab));
             }
@@ -612,6 +884,55 @@ namespace UltimoActo.UI
             CreateSmallButton(personalNoteComposerBox.transform, "BtnAddNote", "COMPARTIR NOTA",
                 new Vector2(1f, 1f), new Vector2(-108f, -32f), new Vector2(188f, 40f),
                 out _, OnAddPersonalNoteClicked);
+
+            // BLOQUE 2 — Vitrina visual y filtro por Sección (visible en la pestaña COLECCIÓN)
+            collectiblesFilterBox = new GameObject("CollectiblesSectionFilterBox");
+            collectiblesFilterBox.transform.SetParent(rightCol.transform, false);
+            RectTransform colBoxRt = collectiblesFilterBox.AddComponent<RectTransform>();
+            colBoxRt.anchorMin = new Vector2(0.5f, 1f);
+            colBoxRt.anchorMax = new Vector2(0.5f, 1f);
+            colBoxRt.pivot = new Vector2(0.5f, 1f);
+            colBoxRt.anchoredPosition = new Vector2(0f, -12f);
+            colBoxRt.sizeDelta = new Vector2(815f, 84f);
+
+            Image colBoxBg = collectiblesFilterBox.AddComponent<Image>();
+            colBoxBg.color = new Color(0.14f, 0.06f, 0.09f, 0.96f);
+
+            collectiblesProgressHeaderLabel = CreateLabel(collectiblesFilterBox.transform, "ColBoxHeader",
+                "VITRINA DE COLECCIONABLES Y SECRETOS POR SECCIÓN:",
+                12.2f, ColGoldBright, FontStyles.Bold,
+                new Vector2(0f, 1f), new Vector2(14f, -8f), new Vector2(785f, 20f), TextAlignmentOptions.Left);
+
+            string[] filterCaptions =
+            {
+                "Todas (1-12)",
+                "Secc. 1-3 (N. I)",
+                "Secc. 4-5 y 9-10",
+                "Secc. 6-8 (Teatro)",
+                "Secc. 11-12",
+                "★ Secretos (8)"
+            };
+            for (int f = 0; f < 6; f++)
+            {
+                float fx = -335f + (f * 134f);
+                int capturedFilter = f;
+                sectionFilterButtons[f] = CreateSmallButton(
+                    collectiblesFilterBox.transform,
+                    $"SecFilterBtn_{f}",
+                    filterCaptions[f],
+                    new Vector2(0.5f, 1f),
+                    new Vector2(fx, -34f),
+                    new Vector2(128f, 38f),
+                    out sectionFilterLabels[f],
+                    () =>
+                    {
+                        activeCollectibleSectionFilter = capturedFilter;
+                        currentPage = 0;
+                        selectedCollectibleDef = null;
+                        RefreshJournalView();
+                    });
+            }
+            collectiblesFilterBox.SetActive(false);
 
             // Cabecera de la entrada seleccionada
             detailTitleLabel = CreateLabel(rightCol.transform, "DetailTitle",

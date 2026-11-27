@@ -208,6 +208,29 @@ namespace UltimoActo.Player
             }
         }
 
+        /// <summary>
+        /// Dispara un pulso breve de interferencia electromagnética/temporal en la linterna
+        /// cuando comienza una anomalía asimétrica (PARTE 3 — Sistema de Anomalías).
+        /// </summary>
+        public void TriggerBriefAnomalyFlicker(float durationSeconds = 1.4f)
+        {
+            if (!hasFlashlight || !isOn) return;
+            StartCoroutine(BriefAnomalyPulseRoutine(durationSeconds));
+        }
+
+        private IEnumerator BriefAnomalyPulseRoutine(float durationSeconds)
+        {
+            float elapsed = 0f;
+            while (elapsed < durationSeconds && isOn)
+            {
+                anomalyFlickerMultiplier = UnityEngine.Random.Range(0.18f, 0.92f);
+                float step = UnityEngine.Random.Range(0.05f, 0.14f);
+                elapsed += step;
+                yield return new WaitForSeconds(step);
+            }
+            anomalyFlickerMultiplier = 1.0f;
+        }
+
         // ====================================================================
         // DRENAJE Y PARPADEO
         // ====================================================================

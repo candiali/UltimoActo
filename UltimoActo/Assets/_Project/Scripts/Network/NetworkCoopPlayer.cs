@@ -88,11 +88,17 @@ namespace UltimoActo.Network
         public string DisplayName => syncedDisplayName;
         public bool IsSimulatedPreview => isSimulatedPreviewPartner;
 
+        // Interpolación suave para telemetría recibida por CustomMessagingManager
+        private bool isNetworkRemotePeer = false;
+        private Vector3 targetRemotePos;
+        private Quaternion targetRemoteRot = Quaternion.identity;
+        private bool hasRemotePoseSample = false;
+
         public bool IsLocalControlled
         {
             get
             {
-                if (isSimulatedPreviewPartner) return false;
+                if (isSimulatedPreviewPartner || isNetworkRemotePeer) return false;
 #if ULTIMOACTO_NETCODE
                 if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && IsSpawned)
                 {
@@ -342,10 +348,54 @@ namespace UltimoActo.Network
         public void ConfigureAsSimulatedPreviewPartner(EraVisual partnerEra, string partnerName)
         {
             isSimulatedPreviewPartner = true;
+            isNetworkRemotePeer = false;
             assignedEra = partnerEra;
             syncedDisplayName = partnerName;
             flashlightActive = true;
             ConfigureAsRemotePeer();
+        }
+
+        public void ApplyLiveNetworkTelemetry(
+            Vector3 worldPos,
+            float yawDegrees,
+            float pitchDegrees,
+            bool isFlashlightOn,
+            EraVisual peerEra,
+            string peerName)
+        {
+            if (!isNetworkRemotePeer)
+            {
+                isNetworkRemotePeer = true;
+                isSimulatedPreviewPartner = false;
+                ConfigureAsRemotePeer();
+            }
+
+            targetRemotePos = worldPos;
+            targetRemoteRot = Quaternion.Euler(0f, yawDegrees, 0f);
+            if (!hasRemotePoseSample)
+            {
+                hasRemotePoseSample = true;
+                transform.SetPositionAndRotation(targetRemotePos, targetRemoteRot);
+            }
+
+            syncedCameraPitch = pitchDegrees;
+
+            if (!string.IsNullOrEmpty(peerName))
+            {
+                syncedDisplayName = peerName;
+            }
+
+            if (assignedEra != peerEra)
+            {
+                assignedEra = peerEra;
+                ApplyRemoteEraStyling();
+            }
+
+            if (flashlightActive != isFlashlightOn)
+            {
+                flashlightActive = isFlashlightOn;
+                ApplyRemoteFlashlightState();
+            }
         }
 
         private void RebindLocalSceneSystems()
@@ -419,6 +469,20 @@ namespace UltimoActo.Network
 
         private void UpdateRemotePeerVisuals()
         {
+            if (isNetworkRemotePeer && hasRemotePoseSample)
+            {
+                float dist = Vector3.Distance(transform.position, targetRemotePos);
+                if (dist > 8.0f)
+                {
+                    transform.SetPositionAndRotation(targetRemotePos, targetRemoteRot);
+                }
+                else
+                {
+                    transform.position = Vector3.Lerp(transform.position, targetRemotePos, Time.deltaTime * 16f);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRemoteRot, Time.deltaTime * 18f);
+                }
+            }
+
             if (remoteHeadLightPivot != null)
             {
                 remoteHeadLightPivot.localRotation = Quaternion.Euler(syncedCameraPitch, 0f, 0f);

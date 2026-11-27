@@ -23,9 +23,48 @@ namespace UltimoActo.Narrative
         public string Subtitle => subtitle;
         public string Content => content;
 
-        public string Prompt => $"[E] Leer {title}";
+        public void ConfigureDocument(string docId, string docTitle, string docContent, string docSubtitle = "")
+        {
+            if (!string.IsNullOrEmpty(docId)) id = docId;
+            if (!string.IsNullOrEmpty(docTitle)) title = docTitle;
+            content = docContent ?? string.Empty;
+            if (!string.IsNullOrEmpty(docSubtitle)) subtitle = docSubtitle;
+        }
 
-        public bool CanInteract(GameObject player) => true;
+        public string Prompt
+        {
+            get
+            {
+                UltimoActo.Core.EraOnlyVisibility eov = GetComponentInParent<UltimoActo.Core.EraOnlyVisibility>();
+                if (eov != null && eov.Visibility != UltimoActo.Core.EraVisibilityMode.Both)
+                {
+                    var curEra = UltimoActo.Core.EraVisualManager.Instance != null
+                        ? UltimoActo.Core.EraVisualManager.Instance.CurrentEra
+                        : UltimoActo.Core.EraVisual.Glory1929;
+                    if (eov.Visibility == UltimoActo.Core.EraVisibilityMode.Only1929 && curEra != UltimoActo.Core.EraVisual.Glory1929)
+                        return string.Empty;
+                    if (eov.Visibility == UltimoActo.Core.EraVisibilityMode.OnlyRuins && curEra != UltimoActo.Core.EraVisual.Ruins)
+                        return string.Empty;
+                }
+                return $"[E] Leer {title}";
+            }
+        }
+
+        public bool CanInteract(GameObject player)
+        {
+            UltimoActo.Core.EraOnlyVisibility eov = GetComponentInParent<UltimoActo.Core.EraOnlyVisibility>();
+            if (eov != null && eov.Visibility != UltimoActo.Core.EraVisibilityMode.Both)
+            {
+                var curEra = UltimoActo.Core.EraVisualManager.Instance != null
+                    ? UltimoActo.Core.EraVisualManager.Instance.CurrentEra
+                    : UltimoActo.Core.EraVisual.Glory1929;
+                if (eov.Visibility == UltimoActo.Core.EraVisibilityMode.Only1929 && curEra != UltimoActo.Core.EraVisual.Glory1929)
+                    return false;
+                if (eov.Visibility == UltimoActo.Core.EraVisibilityMode.OnlyRuins && curEra != UltimoActo.Core.EraVisual.Ruins)
+                    return false;
+            }
+            return true;
+        }
 
         public void Interact(GameObject player)
         {
